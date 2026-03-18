@@ -27,7 +27,7 @@ def get_base64_of_bin_file(bin_file):
     except: return ""
 
 # Make sure this matches your uploaded image name exactly
-img_name = "imgbin_5c1e0f1844143bbe86237e6decb92448.jpg"
+img_name = "broiler chicken.jpg"
 img_64 = get_base64_of_bin_file(img_name)
 bg_style = f"url('data:image/jpg;base64,{img_64}')" if img_64 else "none"
 
