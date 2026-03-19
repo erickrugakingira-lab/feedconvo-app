@@ -11,7 +11,7 @@ st.set_page_config(page_title="FeedConvo: Full Manager", layout="wide", page_ico
 
 # --- 2. THE BACKGROUND FIX ---
 # IMPORTANT: Ensure this filename matches your GitHub upload EXACTLY (case-sensitive)
-IMG_FILENAME = "imgbin_5c1e0f1844143bbe86237e6decb92448.jpg"
+IMG_FILENAME = "broiler chicken.png"
 
 def get_base64_image(file):
     try:
