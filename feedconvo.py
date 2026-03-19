@@ -92,31 +92,64 @@ current_stage = "Starter (Wk 1)" if age_days < 8 else ("Grower (Wk 2-3)" if age_
 
 # --- 6. DASHBOARD ---
 if menu == "📊 Dashboard":
-    st.title(f"📈 Performance Tracking: {age_days} Days")
+    st.title(f"📊 Flock Performance: Day {age_days}")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Live Flock Size", f"{flock_size} Birds")
-    with col2:
-        st.metric("Current Phase", current_stage)
+    # 1. CORE CALCULATIONS
+    # Get target weight in grams (g) based on age
+    weights_g = [42, 185, 450, 910, 1450, 1980, 2400]
+    target_weight_g = weights_g[min(age_days//7, 6)]
+    expected_yield_kg = (active_birds * target_weight_g) / 1000
 
-    st.subheader("Weight Growth Curve (Standard vs. Target)")
+    # 2. TOP METRICS
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Live Birds", f"{active_birds}")
+    c2.metric("Mortality Rate", f"{(mortality/flock_size)*100:.1f}%", delta_color="inverse")
+    c3.metric("Expected Yield", f"{expected_yield_kg:.1f} kg")
+
+    st.divider()
+
+    # 3. ROI CALCULATOR SECTION
+    st.subheader("💰 ROI & Profit Calculator")
+    with st.expander("Click to Edit Costs & Prices"):
+        col_a, col_b = st.columns(2)
+        chick_cost = col_a.number_input("Cost per Day-Old Chick (TSH)", value=1800)
+        sale_price_kg = col_b.number_input("Selling Price (TSH per kg)", value=8500)
+        other_costs = st.number_input("Other Costs (Medication, Heat, Water) per Bird", value=500)
+
+    # Calculate Total Expenses
+    total_chick_investment = flock_size * chick_cost
+    total_other_expenses = active_birds * other_costs
+    # Assuming average feed consumption to date
+    estimated_feed_cost = (active_birds * (age_days * 0.1) * 1200) # Placeholder estimate
+    total_investment = total_chick_investment + total_other_expenses + estimated_feed_cost
     
-    # Growth data based on Tanzanian Broiler Standards
-    growth_data = pd.DataFrame({
+    # Calculate Potential Revenue
+    potential_revenue = expected_yield_kg * sale_price_kg
+    profit = potential_revenue - total_investment
+    roi_percent = (profit / total_investment) * 100 if total_investment > 0 else 0
+
+    # Display ROI Cards
+    r1, r2, r3 = st.columns(3)
+    r1.metric("Total Investment", f"{int(total_investment):,} TSH")
+    r2.metric("Potential Revenue", f"{int(potential_revenue):,} TSH")
+    
+    # Color coding profit (Green for +, Red for -)
+    if profit > 0:
+        r3.metric("Estimated Profit", f"{int(profit):,} TSH", f"{roi_percent:.1f}% ROI")
+    else:
+        r3.metric("Estimated Profit", f"{int(profit):,} TSH", f"{roi_percent:.1f}% ROI", delta_color="inverse")
+
+    st.divider()
+
+    # 4. RESTORE THE GROWTH GRAPH
+    st.subheader("📈 Growth Projection")
+    df_growth = pd.DataFrame({
         "Day": [0, 7, 14, 21, 28, 35, 42],
-        "Target Weight (g)": [42, 185, 450, 910, 1450, 1980, 2400]
+        "Target (g)": weights_g
     })
-    
-    # Create the visual graph
-    fig = px.line(growth_data, x="Day", y="Target Weight (g)", 
-                 title="Standard Broiler Growth Curve",
-                 markers=True, line_shape="spline")
-    fig.update_traces(line_color='#1b4332')
-    
+    fig = px.line(df_growth, x="Day", y="Target (g)", markers=True, title="Standard Broiler Growth Curve")
+    fig.update_traces(line_color='#1b4332', line_width=3)
     st.plotly_chart(fig, use_container_width=True)
-    
-    st.info(f"💡 At Day {age_days}, your birds should be approaching {growth_data.iloc[min(age_days//7, 6)]['Target Weight (g)']} grams.")
     
  # --- 7. INGREDIENT GUIDE BLOCK ---
 elif menu == "📚 Ingredient Guide":
