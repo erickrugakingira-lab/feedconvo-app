@@ -24,7 +24,7 @@ bg_style = f"url('data:image/png;base64,{bg_data}')" if bg_data else "none"
 st.markdown(f"""
 <style>
     .stApp {{
-        background: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), {bg_style};
+        background: linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0.75)), {bg_style};
         background-size: cover; background-attachment: fixed;
     }}
     
@@ -117,6 +117,45 @@ if menu == "📊 Dashboard":
     st.plotly_chart(fig, use_container_width=True)
     
     st.info(f"💡 At Day {age_days}, your birds should be approaching {growth_data.iloc[min(age_days//7, 6)]['Target Weight (g)']} grams.")
+    
+ # --- 7. INGREDIENT GUIDE BLOCK ---
+elif menu == "📚 Ingredient Guide":
+    st.title("📚 Ingredient Knowledge & QC")
+    st.write("Click an ingredient to learn about nutrition, safety, and quality control.")
+    
+    # 1. Selection Dropdown
+    sel_ing = st.selectbox("Select Ingredient to Inspect:", list(ING_DATABASE.keys()))
+    ing_data = ING_DATABASE[sel_ing]
+    
+    col1, col2 = st.columns([1, 1.5])
+    
+    # 2. Display Local Image
+    with col1:
+        img_b64_ing = get_base64_image(ing_data['file'])
+        if img_b64_ing:
+            st.markdown(f'''
+                <div style="border: 2px solid #1b4332; border-radius: 15px; overflow: hidden;">
+                    <img src="data:image/jpg;base64,{img_b64_ing}" style="width:100%; display:block;">
+                </div>
+            ''', unsafe_allow_html=True)
+        else:
+            st.warning(f"⚠️ Image not found: Please upload '{ing_data['file']}' to GitHub.")
+    
+    # 3. QC Checklist & Nutrition
+    with col2:
+        st.subheader(f"🔍 {sel_ing} Quality Inspection")
+        st.info(f"**Nutrition:** {ing_data['prot']}% Protein | {ing_data['en']} kcal/kg")
+        
+        st.write("📈 **Checklist for Farmers:** (Check these before mixing)")
+        # This creates the interactive checklist
+        for point in ing_data['qc']:
+            st.checkbox(point, key=f"qc_check_{sel_ing}_{point}")
+            
+        st.markdown(f"""
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 10px; border-left: 5px solid #ffc107; color: #856404;">
+                <strong>💡 Management Tip:</strong> {ing_data['details']}
+            </div>
+        """, unsafe_allow_html=True)
     
 # --- 8. FEED SOLVER ---
 elif menu == "🧪 Feed Solver":
