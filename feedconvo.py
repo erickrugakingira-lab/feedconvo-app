@@ -86,19 +86,10 @@ with st.sidebar:
     flock_size = st.number_input("Birds", value=100)
     start_date = st.date_input("Start Date", datetime.date.today() - datetime.timedelta(days=7))
 
-# Calculations
-age_days = (datetime.date.today() - start_date).days
-current_stage = "Starter (Wk 1)" if age_days < 8 else ("Grower (Wk 2-3)" if age_days < 22 else "Finisher (Wk 4+)")
-
-# 1. Calculate Active Flock
 active_birds = flock_size - mortality
-
-# 2. Get Age & Stage
 age_days = (datetime.date.today() - start_date).days
 weights_g = [42, 185, 450, 910, 1450, 1980, 2400]
-target_weight_g = weights_g[min(age_days//7, 6)]
-
-# 3. Calculate Yield (This was the line causing the error)
+target_weight_g = weights_g[min(max(age_days//7, 0), 6)]
 expected_yield_kg = (active_birds * target_weight_g) / 1000
 
 # --- 6. DASHBOARD ---
