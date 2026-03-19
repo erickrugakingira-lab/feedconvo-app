@@ -4,115 +4,151 @@ import pandas as pd
 import datetime
 import base64
 import urllib.parse
+import os
 
 # --- 1. PAGE CONFIG ---
-st.set_page_config(page_title="FeedConvo: Safety First", layout="wide", page_icon="🌽")
+st.set_page_config(page_title="FeedConvo: QC & Solver", layout="wide", page_icon="🛡️")
 
-# --- 2. THE BACKGROUND IMAGE ---
-IMG_FILENAME = "broiler chicken.png"
-def get_base64_image(file):
-    try:
-        with open(file, 'rb') as f:
+# --- 2. IMAGE LOADER ---
+def get_base64_image(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as f:
             return base64.b64encode(f.read()).decode()
-    except: return None
+    return None
 
-img_data = get_base64_image(IMG_FILENAME)
-bg_style = f"url('data:image/png;base64,{img_data}')" if img_data else "none"
+bg_data = get_base64_image("broiler chicken.png")
+bg_style = f"url('data:image/png;base64,{bg_data}')" if bg_data else "none"
 
-# --- 3. STYLING ---
+# --- 3. STYLING (Visibility & QC Cards) ---
 st.markdown(f"""
 <style>
     .stApp {{
-        background: linear-gradient(rgba(255,255,255,0.88), rgba(255,255,255,0.88)), {bg_style};
+        background: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), {bg_style};
         background-size: cover; background-attachment: fixed;
     }}
     section[data-testid="stSidebar"] {{ background-color: rgba(27, 67, 50, 0.95) !important; }}
     section[data-testid="stSidebar"] * {{ color: white !important; }}
     input {{ color: black !important; background-color: white !important; }}
     
+    .qc-box {{
+        background-color: #fff9e6; border-left: 5px solid #f2a900;
+        padding: 15px; border-radius: 5px; margin-top: 10px;
+    }}
     .market-card {{
         background: white !important; border-radius: 15px; padding: 15px; 
-        border: 1px solid #eee; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border: 1px solid #eee; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }}
-    .ing-img {{ width: 100%; height: 150px; object-fit: cover; border-radius: 10px; }}
+    .share-btn {{
+        display: block; background-color: #25D366; color: white !important;
+        padding: 12px; text-align: center; border-radius: 8px; font-weight: bold;
+        text-decoration: none; margin-top: 20px;
+    }}
     .buy-btn {{
-        display: block; padding: 10px; background-color: #f2a900;
-        color: #1b4332 !important; text-decoration: none; border-radius: 8px; 
+        display: block; padding: 8px; background-color: #f2a900;
+        color: #1b4332 !important; text-decoration: none; border-radius: 5px; 
         font-weight: bold; margin-top: 10px;
     }}
 </style>
 """, unsafe_allow_html=True)
 
-# --- 4. ENHANCED INGREDIENT DATA ---
-# Replace the image URLs below with your own or use these high-quality placeholders
+# --- 4. DATA & QC CHECKLISTS ---
 ING_DATABASE = {
     "Maize": {
-        "img": "https://share.google/p71wOG9Dq0O0lSUj7",
-        "prot": 9.0, "en": 3350,
-        "details": "Maize is the primary energy source. **Aflatoxin Alert:** Never use maize that looks greenish/black or smells musty. Keep moisture below 13%. Use toxin binders if quality is doubtful.",
-        "link": "https://wa.me/255659748732"
+        "file": "maize.jpg", "prot": 9.0, "en": 3350,
+        "details": "Energy source. High risk of Aflatoxins.",
+        "qc": ["Moisture < 13% (Grain cracks when bitten)", "No visible green/black mold", "No musty or fermented smell", "No insect/weevil damage"],
+        "link": "https://wa.me/255XXXXXXXXX"
     },
     "Soya Meal": {
-        "img": "https://share.google/56NKScgAXzyIJqZl6",
-        "prot": 44.0, "en": 2500,
-        "details": "Soya is the main protein builder. Ensure it is well-toasted to remove anti-nutritional factors. It should be light brown and nutty in smell.",
+        "file": "soya.jpg", "prot": 44.0, "en": 2500,
+        "details": "Main protein. Check toasting quality.",
+        "qc": ["Color is light tan/gold (not white/raw)", "Nutty aroma (not beany/raw)", "Texture is flaky, not clumped/damp"],
         "link": "https://wa.me/255XXXXXXXXX"
     },
     "Fish Meal": {
-        "img": "https://share.google/ugs43auRrCLlJCtpO",
-        "prot": 55.0, "en": 2800,
-        "details": "High in amino acids. **Safety:** Ensure it is salt-free and not rancid. Rancid fish meal causes 'black vomit' in chicks.",
+        "file": "fishmeal.jpg", "prot": 55.0, "en": 2800,
+        "details": "Animal protein. Check salt and freshness.",
+        "qc": ["Low salt content (not crusty)", "No 'rotten' or overly 'oily' smell", "Free from sand/grit contamination"],
+        "link": "https://wa.me/255XXXXXXXXX"
+    },
+    "Sunflower Cake": {
+        "file": "sunflower.jpg", "prot": 24.0, "en": 2300,
+        "details": "Fiber source. Watch for excessive hulls.",
+        "qc": ["Minimal black hulls (too much fiber is bad)", "No dampness or caking", "Consistent brown color"],
         "link": "https://wa.me/255XXXXXXXXX"
     }
 }
 
+STANDARDS = {"Starter (Wk 1)": 22.5, "Grower (Wk 2-3)": 20.0, "Finisher (Wk 4+)": 18.5}
+
 # --- 5. SIDEBAR ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
-    menu = st.radio("MENU", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
+    menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
     st.divider()
-    flock_size = st.number_input("Flock Size", value=100)
+    flock_size = st.number_input("Birds", value=100)
+    start_date = st.date_input("Start Date", datetime.date.today() - datetime.timedelta(days=7))
 
-# --- 6. NEW FEATURE: INGREDIENT GUIDE ---
-if menu == "📚 Ingredient Guide":
-    st.title("Poultry Ingredient Library")
-    st.write("Click an ingredient to learn about nutrition and safety.")
+# Calculations
+age_days = (datetime.date.today() - start_date).days
+current_stage = "Starter (Wk 1)" if age_days < 8 else ("Grower (Wk 2-3)" if age_days < 22 else "Finisher (Wk 4+)")
+
+# --- 6. DASHBOARD ---
+if menu == "📊 Dashboard":
+    st.title("Flock Overview")
+    st.metric("Age", f"{age_days} Days")
+    st.info(f"Currently in **{current_stage}** phase.")
+
+# --- 7. NEW: INGREDIENT GUIDE WITH QC CHECKLIST ---
+elif menu == "📚 Ingredient Guide":
+    st.title("Ingredient Knowledge & QC")
+    sel = st.selectbox("Select Ingredient to Inspect:", list(ING_DATABASE.keys()))
+    data = ING_DATABASE[sel]
     
-    selected_ing = st.selectbox("Select Ingredient to Study:", list(ING_DATABASE.keys()))
-    data = ING_DATABASE[selected_ing]
-    
-    col1, col2 = st.columns([1, 2])
+    col1, col2 = st.columns([1, 1.5])
     with col1:
-        st.image(data['img'], use_container_width=True)
-    with col2:
-        st.subheader(f"Nutrition: {selected_ing}")
-        st.write(f"**Protein:** {data['prot']}% | **Energy:** {data['en']} kcal/kg")
-        st.warning(data['details'])
-
-# --- 7. UPDATED FEED SOLVER ---
-elif menu == "🧪 Feed Solver":
-    st.title("Smart Solver")
-    avail = st.multiselect("Choose Ingredients:", list(ING_DATABASE.keys()), default=["Maize", "Soya Meal"])
+        img_b64 = get_base64_image(data['file'])
+        if img_b64:
+            st.markdown(f'<img src="data:image/jpg;base64,{img_b64}" style="width:100%; border-radius:15px;">', unsafe_allow_html=True)
+        else: st.warning(f"Upload {data['file']} to see image.")
     
-    # Simple solve logic (abbreviated for clarity)
-    if st.button("Calculate Mix"):
-        st.success("Balanced Recipe Found!")
-        for i in avail:
-            with st.expander(f"👁️ View {i} Quality Tips"):
-                st.write(ING_DATABASE[i]['details'])
-            st.write(f"**{i}**: 60.50 kg") # Example placeholder
+    with col2:
+        st.subheader(f"🔍 {sel} Quality Checklist")
+        st.write("Before mixing, ensure the following:")
+        for point in data['qc']:
+            st.checkbox(point, key=f"qc_{sel}_{point}")
+        
+        st.markdown(f"""<div class="qc-box"><strong>Nutritional Value:</strong><br>
+                    Protein: {data['prot']}% | Energy: {data['en']} kcal/kg</div>""", unsafe_allow_html=True)
 
-# --- 8. MARKETPLACE WITH REAL IMAGES ---
+# --- 8. FEED SOLVER ---
+elif menu == "🧪 Feed Solver":
+    st.title("Least-Cost Solver")
+    avail = st.multiselect("Active Ingredients:", list(ING_DATABASE.keys()), default=["Maize", "Soya Meal"])
+    prices = {i: st.number_input(f"{i} (TSH/kg)", value=850 if i=="Maize" else 2600) for i in avail}
+    
+    if st.button("Solve Formula"):
+        prob = pulp.LpProblem("Feed", pulp.LpMinimize)
+        vars = pulp.LpVariable.dicts("KG", avail, lowBound=0)
+        prob += pulp.lpSum([vars[i] * prices[i] for i in avail])
+        prob += pulp.lpSum([vars[i] for i in avail]) == 100
+        prob += pulp.lpSum([vars[i] * ING_DATABASE[i]["prot"] for i in avail]) >= STANDARDS[current_stage] * 100
+        prob.solve(pulp.PULP_CBC_CMD(msg=0))
+        
+        if pulp.LpStatus[prob.status] == 'Optimal':
+            recipe = f"FeedConvo Recipe ({current_stage}):\n"
+            for i in avail:
+                if vars[i].varValue > 0:
+                    st.success(f"**{i}**: {vars[i].varValue:.2f} kg")
+                    recipe += f"- {i}: {vars[i].varValue:.2f} kg\n"
+            st.markdown(f'<a href="https://wa.me/?text={urllib.parse.quote(recipe)}" class="share-btn">📲 Share Recipe on WhatsApp</a>', unsafe_allow_html=True)
+
+# --- 9. MARKETPLACE ---
 elif menu == "🛒 Marketplace":
-    st.title("Ingredient Marketplace")
+    st.title("Verified Suppliers")
     cols = st.columns(3)
     for idx, (name, meta) in enumerate(ING_DATABASE.items()):
         with cols[idx % 3]:
-            st.markdown(f"""
-            <div class="market-card">
-                <img src="{meta['img']}" class="ing-img">
-                <h3>{name}</h3>
-                <p>{meta['prot']}% Protein</p>
-                <a href="{meta['link']}" target="_blank" class="buy-btn">Order Now</a>
-            </div>
-            """, unsafe_allow_html=True)
+            img_b64 = get_base64_image(meta['file'])
+            img_tag = f'<img src="data:image/jpg;base64,{img_b64}" style="width:100%; height:120px; object-fit:cover; border-radius:8px;">' if img_b64 else ""
+            st.markdown(f'<div class="market-card">{img_tag}<h3>{name}</h3><a href="{meta["link"]}" class="buy-btn">Order</a></div>', unsafe_allow_html=True)
