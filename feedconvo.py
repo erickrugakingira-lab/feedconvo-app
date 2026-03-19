@@ -26,27 +26,23 @@ st.markdown(f"""
         background: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), {bg_style};
         background-size: cover; background-attachment: fixed;
     }}
-    section[data-testid="stSidebar"] {{ background-color: rgba(27, 67, 50, 0.95) !important; }}
-    section[data-testid="stSidebar"] * {{ color: white !important; }}
-    input {{ color: black !important; background-color: white !important; }}
     
-    .qc-box {{
-        background-color: #fff9e6; border-left: 5px solid #f2a900;
-        padding: 15px; border-radius: 5px; margin-top: 10px;
+    /* Sidebar Text Visibility */
+    section[data-testid="stSidebar"] {{ background-color: rgba(27, 67, 50, 0.95) !important; }}
+    section[data-testid="stSidebar"] .stMarkdown h2, 
+    section[data-testid="stSidebar"] label {{ color: white !important; font-weight: bold; }}
+
+    /* CRITICAL: Fix for Invisible Input Text */
+    input {{ 
+        color: #000000 !important; 
+        background-color: #FFFFFF !important; 
     }}
-    .market-card {{
-        background: white !important; border-radius: 15px; padding: 15px; 
-        border: 1px solid #eee; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }}
-    .share-btn {{
-        display: block; background-color: #25D366; color: white !important;
-        padding: 12px; text-align: center; border-radius: 8px; font-weight: bold;
-        text-decoration: none; margin-top: 20px;
-    }}
-    .buy-btn {{
-        display: block; padding: 8px; background-color: #f2a900;
-        color: #1b4332 !important; text-decoration: none; border-radius: 5px; 
-        font-weight: bold; margin-top: 10px;
+    
+    /* Ensuring the box itself is visible with a border */
+    div[data-baseweb="input"] {{ 
+        background-color: #FFFFFF !important; 
+        border: 2px solid #1b4332 !important; 
+        border-radius: 8px; 
     }}
 </style>
 """, unsafe_allow_html=True)
@@ -95,32 +91,32 @@ current_stage = "Starter (Wk 1)" if age_days < 8 else ("Grower (Wk 2-3)" if age_
 
 # --- 6. DASHBOARD ---
 if menu == "📊 Dashboard":
-    st.title("Flock Overview")
-    st.metric("Age", f"{age_days} Days")
-    st.info(f"Currently in **{current_stage}** phase.")
-
-# --- 7. NEW: INGREDIENT GUIDE WITH QC CHECKLIST ---
-elif menu == "📚 Ingredient Guide":
-    st.title("Ingredient Knowledge & QC")
-    sel = st.selectbox("Select Ingredient to Inspect:", list(ING_DATABASE.keys()))
-    data = ING_DATABASE[sel]
+    st.title(f"📈 Performance Tracking: {age_days} Days")
     
-    col1, col2 = st.columns([1, 1.5])
+    col1, col2 = st.columns(2)
     with col1:
-        img_b64 = get_base64_image(data['file'])
-        if img_b64:
-            st.markdown(f'<img src="data:image/jpg;base64,{img_b64}" style="width:100%; border-radius:15px;">', unsafe_allow_html=True)
-        else: st.warning(f"Upload {data['file']} to see image.")
-    
+        st.metric("Live Flock Size", f"{flock_size} Birds")
     with col2:
-        st.subheader(f"🔍 {sel} Quality Checklist")
-        st.write("Before mixing, ensure the following:")
-        for point in data['qc']:
-            st.checkbox(point, key=f"qc_{sel}_{point}")
-        
-        st.markdown(f"""<div class="qc-box"><strong>Nutritional Value:</strong><br>
-                    Protein: {data['prot']}% | Energy: {data['en']} kcal/kg</div>""", unsafe_allow_html=True)
+        st.metric("Current Phase", current_stage)
 
+    st.subheader("Weight Growth Curve (Standard vs. Target)")
+    
+    # Growth data based on Tanzanian Broiler Standards
+    growth_data = pd.DataFrame({
+        "Day": [0, 7, 14, 21, 28, 35, 42],
+        "Target Weight (g)": [42, 185, 450, 910, 1450, 1980, 2400]
+    })
+    
+    # Create the visual graph
+    fig = px.line(growth_data, x="Day", y="Target Weight (g)", 
+                 title="Standard Broiler Growth Curve",
+                 markers=True, line_shape="spline")
+    fig.update_traces(line_color='#1b4332')
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    st.info(f"💡 At Day {age_days}, your birds should be approaching {growth_data.iloc[min(age_days//7, 6)]['Target Weight (g)']} grams.")
+    
 # --- 8. FEED SOLVER ---
 elif menu == "🧪 Feed Solver":
     st.title("Least-Cost Solver")
