@@ -82,15 +82,20 @@ STANDARDS = {"Starter (Wk 1)": 22.5, "Grower (Wk 2-3)": 20.0, "Finisher (Wk 4+)"
 with st.sidebar:
     st.header("🚜 Farm Manager")
     menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
+    active_birds = flock_size - mortality
+    active_birds = flock_size - mortality
+    age_days = (datetime.date.today() - start_date).days
+
+    # Target weight list for Broilers (Weeks 0 to 6)
+    weights_g = [42, 185, 450, 910, 1450, 1980, 2400]
+
+    # Safety check: ensures age_days doesn't break the list index
+    index = min(max(age_days // 7, 0), 6)
+    target_weight_g = weights_g[index]
+    expected_yield_kg = (active_birds * target_weight_g) / 1000
     st.divider()
     flock_size = st.number_input("Birds", value=100)
     start_date = st.date_input("Start Date", datetime.date.today() - datetime.timedelta(days=7))
-
-active_birds = flock_size - mortality
-age_days = (datetime.date.today() - start_date).days
-weights_g = [42, 185, 450, 910, 1450, 1980, 2400]
-target_weight_g = weights_g[min(max(age_days//7, 0), 6)]
-expected_yield_kg = (active_birds * target_weight_g) / 1000
 
 # --- 6. DASHBOARD ---
 
