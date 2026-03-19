@@ -65,10 +65,10 @@ ING_DATA = {
 }
 
 DEALER_LINKS = {
-    "Maize": "https://wa.me/255XXXXXXXXX?text=Order+Maize",
-    "Soya Meal": "https://wa.me/255XXXXXXXXX?text=Order+Soya",
-    "Fish Meal": "https://wa.me/255XXXXXXXXX?text=Order+FishMeal",
-    "Concentrate": "https://wa.me/255XXXXXXXXX?text=Order+Concentrate"
+    "Maize": "https://wa.me/255777744657?text=Order+Maize",
+    "Soya Meal": "https://wa.me/255659748732?text=Order+Soya",
+    "Fish Meal": "https://wa.me/255766919164?text=Order+FishMeal",
+    "Concentrate": "https://wa.me/255622220589?text=Order+Concentrate"
 }
 
 # --- 5. SIDEBAR CONTROLS ---
