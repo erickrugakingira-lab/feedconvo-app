@@ -54,13 +54,13 @@ st.markdown(f"""
 # --- 4. DATA & QC CHECKLISTS ---
 ING_DATABASE = {
     "Maize": {
-        "file": "maize.jpg", "prot": 9.0, "en": 3350,
+        "file": "maize grain.jpg", "prot": 9.0, "en": 3350,
         "details": "Energy source. High risk of Aflatoxins.",
         "qc": ["Moisture < 13% (Grain cracks when bitten)", "No visible green/black mold", "No musty or fermented smell", "No insect/weevil damage"],
         "link": "https://wa.me/255XXXXXXXXX"
     },
     "Soya Meal": {
-        "file": "soya.jpg", "prot": 44.0, "en": 2500,
+        "file": "soyameal.jpg", "prot": 44.0, "en": 2500,
         "details": "Main protein. Check toasting quality.",
         "qc": ["Color is light tan/gold (not white/raw)", "Nutty aroma (not beany/raw)", "Texture is flaky, not clumped/damp"],
         "link": "https://wa.me/255XXXXXXXXX"
