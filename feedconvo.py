@@ -9,7 +9,7 @@ import base64
 st.set_page_config(page_title="FeedConvo: Poultry Manager", layout="wide", page_icon="🐓")
 
 # --- 2. BACKGROUND IMAGE LOGIC ---
-IMG_FILENAME = "imgbin_5c1e0f1844143bbe86237e6decb92448.jpg"
+IMG_FILENAME = "broiler chicken.png"
 
 def get_base64_image(file):
     try:
