@@ -2,6 +2,7 @@ import streamlit as st
 import pulp
 import pandas as pd
 import datetime
+import plotly.express as px
 import base64
 import urllib.parse
 import os
