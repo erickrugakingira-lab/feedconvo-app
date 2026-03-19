@@ -104,55 +104,48 @@ target_weight_g = weights_g[min(age_days//7, 6)]
 expected_yield_kg = (active_birds * target_weight_g) / 1000
 
 if menu == "📊 Dashboard":
-    st.title(f"📊 Flock Performance: Day {age_days}")
+    st.title(f"📊 Performance & ROI: Day {age_days}")
     
-    # 1. CORE CALCULATIONS
-    # Get target weight in grams (g) based on age
-    weights_g = [42, 185, 450, 910, 1450, 1980, 2400]
-    target_weight_g = weights_g[min(age_days//7, 6)]
-    expected_yield_kg = (active_birds * target_weight_g) / 1000
-
-    # 2. TOP METRICS
+    # TOP METRICS
     c1, c2, c3 = st.columns(3)
     c1.metric("Live Birds", f"{active_birds}")
-    c2.metric("Mortality Rate", f"{(mortality/flock_size)*100:.1f}%", delta_color="inverse")
+    c2.metric("Mortality Rate", f"{(mortality/flock_size)*100:.1f}%")
     c3.metric("Expected Yield", f"{expected_yield_kg:.1f} kg")
 
     st.divider()
 
-    # 3. ROI CALCULATOR SECTION
-    st.subheader("💰 ROI & Profit Calculator")
-    with st.expander("Click to Edit Costs & Prices"):
+    # ROI CALCULATOR
+    st.subheader("💰 Profit & Loss Projection")
+    with st.expander("📝 Edit Costs & Market Prices"):
         col_a, col_b = st.columns(2)
-        chick_cost = col_a.number_input("Cost per Day-Old Chick (TSH)", value=1800)
-        sale_price_kg = col_b.number_input("Selling Price (TSH per kg)", value=8500)
-        other_costs = st.number_input("Other Costs (Medication, Heat, Water) per Bird", value=500)
+        chick_cost = col_a.number_input("Cost per Chick (TSH)", value=1800)
+        sale_price_kg = col_b.number_input("Selling Price per KG (TSH)", value=8500)
+        fixed_costs = st.number_input("Other costs (Medication/Heat) per bird", value=500)
 
-    # Calculate Total Expenses
-    total_chick_investment = flock_size * chick_cost
-    total_other_expenses = active_birds * other_costs
-    # Assuming average feed consumption to date
-    estimated_feed_cost = (active_birds * (age_days * 0.1) * 1200) # Placeholder estimate
-    total_investment = total_chick_investment + total_other_expenses + estimated_feed_cost
-    
-    # Calculate Potential Revenue
+    # Calculations
+    total_investment = (flock_size * chick_cost) + (active_birds * fixed_costs)
     potential_revenue = expected_yield_kg * sale_price_kg
-    profit = potential_revenue - total_investment
-    roi_percent = (profit / total_investment) * 100 if total_investment > 0 else 0
+    net_profit = potential_revenue - total_investment
+    roi_pct = (net_profit / total_investment * 100) if total_investment > 0 else 0
 
-    # Display ROI Cards
+    # Display ROI
     r1, r2, r3 = st.columns(3)
-    r1.metric("Total Investment", f"{int(total_investment):,} TSH")
-    r2.metric("Potential Revenue", f"{int(potential_revenue):,} TSH")
+    r1.write(f"**Total Investment:** {int(total_investment):,} TSH")
+    r2.write(f"**Est. Revenue:** {int(potential_revenue):,} TSH")
     
-    # Color coding profit (Green for +, Red for -)
-    if profit > 0:
-        r3.metric("Estimated Profit", f"{int(profit):,} TSH", f"{roi_percent:.1f}% ROI")
+    if net_profit > 0:
+        r3.success(f"**Profit:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
     else:
-        r3.metric("Estimated Profit", f"{int(profit):,} TSH", f"{roi_percent:.1f}% ROI", delta_color="inverse")
+        r3.error(f"**Loss:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
 
     st.divider()
 
+    # RESTORE GRAPH
+    st.subheader("📈 Growth Curve")
+    df_growth = pd.DataFrame({"Day": [0,7,14,21,28,35,42], "Target (g)": weights_g})
+    fig = px.line(df_growth, x="Day", y="Target (g)", markers=True)
+    fig.update_traces(line_color='#1b4332')
+    st.plotly_chart(fig, use_container_width=True)
     # 4. RESTORE THE GROWTH GRAPH
     st.subheader("📈 Growth Projection")
     df_growth = pd.DataFrame({
