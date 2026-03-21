@@ -147,6 +147,30 @@ if menu == "📊 Dashboard":
         st.success(f"**Projected Profit:** {int(net_profit):,} TSH ({roi_pct:.1f}% ROI)")
     else:
         st.error(f"**Projected Loss:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
+# --- ADD THIS INSIDE THE DASHBOARD BLOCK ---
+st.divider()
+st.subheader("💉 Vaccination & Health Schedule")
+
+# 1. Define the Schedule Data
+vaccine_data = {
+    "Day": [1, 7, 14, 21, 28],
+    "Vaccine": ["Marek's / IB / Newcastle", "Gumboro (1st Dose)", "Newcastle (Lasota)", "Gumboro (2nd Dose)", "Newcastle (Booster)"],
+    "Method": ["Hatchery Spray/Injection", "Drinking Water", "Drinking Water/Eye Drop", "Drinking Water", "Drinking Water"],
+    "Status": ["✅ Completed" if age_days >= d else "⏳ Pending" for d in [1, 7, 14, 21, 28]]
+}
+df_vac = pd.DataFrame(vaccine_data)
+
+# 2. Display as an Interactive Table
+with st.expander("📅 View Full Schedule for this Flock"):
+    st.table(df_vac)
+    st.caption("⚠️ Note: Always consult a local vet. Ensure birds are healthy before vaccinating.")
+
+# 3. Smart Alert: Tells the farmer what is due TODAY
+due_today = df_vac[df_vac['Day'] == (age_days if age_days in [1,7,14,21,28] else None)]
+if not due_today.empty:
+    st.error(f"🚨 **ACTION REQUIRED:** Today is Day {age_days}. Vaccine due: {due_today['Vaccine'].values[0]}")
+else:
+    st.success("✅ No vaccines scheduled for today.")
    
     # RESTORE GRAPH
     st.subheader("📈 Growth Curve")
