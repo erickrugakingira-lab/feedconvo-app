@@ -81,8 +81,21 @@ STANDARDS = {"Starter (Wk 1)": 22.5, "Grower (Wk 2-3)": 20.0, "Finisher (Wk 4+)"
 # --- 5. SIDEBAR ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
+    
+    # FIRST: Get the user inputs (The Ingredients)
+    flock_size = st.number_input("Total Birds Started", min_value=1, value=100)
+    mortality = st.number_input("Mortality (Dead Birds)", min_value=0, value=0)
+    start_date = st.date_input("Hatch Date", datetime.date.today() - datetime.timedelta(days=7))
+    
+    st.divider()
+    
+    # SECOND: The Navigation Menu
     menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
-    active_birds = flock_size - mortality
+    
+    st.divider()
+
+    # THIRD: The Calculations (The Cooking)
+    # These only work because flock_size, mortality, and start_date were defined above
     active_birds = flock_size - mortality
     age_days = (datetime.date.today() - start_date).days
 
@@ -93,9 +106,6 @@ with st.sidebar:
     index = min(max(age_days // 7, 0), 6)
     target_weight_g = weights_g[index]
     expected_yield_kg = (active_birds * target_weight_g) / 1000
-    st.divider()
-    flock_size = st.number_input("Birds", value=100)
-    start_date = st.date_input("Start Date", datetime.date.today() - datetime.timedelta(days=7))
 
 # --- 6. DASHBOARD ---
 
