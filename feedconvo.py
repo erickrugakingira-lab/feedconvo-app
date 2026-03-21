@@ -69,7 +69,7 @@ STANDARDS = {
 st.markdown(f"""
     <style>
     .stApp {{
-        background-image: url("broiler chicken.png");
+        background-image: url("");
         background-attachment: fixed;
         background-size: cover;
     }}
