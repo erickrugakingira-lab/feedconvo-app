@@ -7,36 +7,57 @@ import plotly.express as px
 st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon="🐔")
 
 # --- 2. THE DATABASES (Global Scope) ---
+# --- 2. THE DATABASES (Global Scope) ---
 ING_DATABASE = {
     "Maize": {
-        "img": "maize grain.jpg",
+        "img": "maize_grain.jpg", # Note: Rename your file on GitHub to use an underscore!
         "prot": 9.0, "en": 3350, 
         "details": "Primary energy source. High risk of Aflatoxins in humid areas.",
-        "qc": ["Moisture < 13%", "No visible mold", "No musty smell"],
+        "qc": [
+            "✅ Moisture: Must be below 13% (grains should 'snap' when bitten).",
+            "✅ Color: Uniform yellow/white; no black or greenish-blue dust (mold).",
+            "✅ Smell: No musty or fermented odor (indicates rotting).",
+            "✅ Purity: No weevils, cob pieces, or stones which add weight but no value."
+        ],
         "price_per_kg": 800
     },
     "Soya Meal": {
         "img": "soyameal.jpg",
         "prot": 44.0, "en": 2500, 
         "details": "High-quality vegetable protein. Check toasting to remove anti-nutrients.",
-        "qc": ["Color is light tan", "Nutty aroma", "No clumping"],
+        "qc": [
+            "✅ Color: Should be light tan/golden. If white, it's undercooked; if dark brown, it's burnt.",
+            "✅ Texture: Fine flakes or meal; no large hard clumps.",
+            "✅ Urease Test: Ensure it has been heat-treated to remove growth-inhibitors.",
+            "✅ Smell: Fresh, nutty aroma. No 'beany' or raw smell."
+        ],
         "price_per_kg": 2200
     },
     "Fish Meal": {
         "img": "fishmeal.jpg",
         "prot": 55.0, "en": 2800, 
         "details": "Animal protein with essential amino acids. Watch salt levels.",
-        "qc": ["Low salt content", "No fishy/rotten smell"],
+        "qc": [
+            "✅ Salt Content: Taste a small amount; it should not be extremely salty.",
+            "✅ Sand/Shells: Rub between fingers; shouldn't feel like heavy grit or sand.",
+            "✅ Smell: Strong fish smell is normal, but 'rotten' or 'ammonia' smell is a fail.",
+            "✅ Moisture: Must be very dry; damp fish meal rots instantly."
+        ],
         "price_per_kg": 3500
     },
     "Sunflower Cake": {
+        "img": "sunflower.jpg", # Added this back in!
         "prot": 24.0, "en": 2300, 
         "details": "Fiber source. Good for layers and finishers to reduce cost.",
-        "qc": ["Minimal hulls", "No dampness"],
+        "qc": [
+            "✅ Fiber: Ensure there aren't too many black hulls (too much fiber causes diarrhea).",
+            "✅ Oil: Should not feel 'greasy' or smell rancid.",
+            "✅ Purity: No dust or sand mixed in during the oil extraction process.",
+            "✅ Hardness: Cake should break easily; should not be rock hard."
+        ],
         "price_per_kg": 1100
     }
 }
-
 STANDARDS = {
     "Starter (Wk 1-2)": 22.0, 
     "Grower (Wk 3-4)": 20.0, 
