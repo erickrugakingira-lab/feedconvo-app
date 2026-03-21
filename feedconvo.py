@@ -78,47 +78,57 @@ ING_DATABASE = {
 
 STANDARDS = {"Starter (Wk 1)": 22.5, "Grower (Wk 2-3)": 20.0, "Finisher (Wk 4+)": 18.5}
 
-# --- 5. SIDEBAR ---
+# --- 5. SIDEBAR & LOGIC ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
     
-    # FIRST: Get the user inputs (The Ingredients)
+    # User inputs
     flock_size = st.number_input("Total Birds Started", min_value=1, value=100)
     mortality = st.number_input("Mortality (Dead Birds)", min_value=0, value=0)
+    
+    # NEW: Manual Harvest Target
+    harvest_target = st.number_input("Target Weight at Harvest (kg)", min_value=0.1, value=2.5, step=0.1)
+    
     start_date = st.date_input("Hatch Date", datetime.date.today() - datetime.timedelta(days=7))
     
     st.divider()
-    
-    # SECOND: The Navigation Menu
     menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
     
-    st.divider()
-
-    # THIRD: The Calculations (The Cooking)
-    # These only work because flock_size, mortality, and start_date were defined above
+    # Calculations (Calculated AFTER inputs)
     active_birds = flock_size - mortality
     age_days = (datetime.date.today() - start_date).days
-
-    # Target weight list for Broilers (Weeks 0 to 6)
+    
+    # Current standard weight for the graph/metrics
     weights_g = [42, 185, 450, 910, 1450, 1980, 2400]
-
-    # Safety check: ensures age_days doesn't break the list index
     index = min(max(age_days // 7, 0), 6)
-    target_weight_g = weights_g[index]
-    expected_yield_kg = (active_birds * target_weight_g) / 1000
+    current_std_weight_kg = weights_g[index] / 1000
+    
+    # Harvest Projection Logic
+    total_harvest_yield_kg = active_birds * harvest_target
 
 # --- 6. DASHBOARD ---
-
 if menu == "📊 Dashboard":
-    st.title(f"📊 Performance & ROI: Day {age_days}")
+    st.title(f"📊 Performance & Projections: Day {age_days}")
     
-    # TOP METRICS
+    # Metrics row
     c1, c2, c3 = st.columns(3)
     c1.metric("Live Birds", f"{active_birds}")
-    c2.metric("Mortality Rate", f"{(mortality/flock_size)*100:.1f}%")
-    c3.metric("Expected Yield", f"{expected_yield_kg:.1f} kg")
+    
+    # Shows current meat on the ground vs. the final harvest goal
+    current_meat_kg = active_birds * current_std_weight_kg
+    c2.metric("Current Meat (est.)", f"{current_meat_kg:.1f} kg")
+    
+    # Highlight the Harvest Goal
+    c3.metric("Projected Harvest", f"{total_harvest_yield_kg:.1f} kg", help="Based on your target weight")
 
-    st.divider()
+    st.info(f"🎯 **Harvest Goal:** You are aiming for **{harvest_target} kg** per bird. Total flock target: **{total_harvest_yield_kg:.1f} kg**.")
+
+    # Update ROI Calculation to use the Harvest Target
+    st.subheader("💰 ROI Projection (At Harvest)")
+    # ... [Keep your ROI expander here] ...
+    
+    # Update potential revenue to use the harvest yield
+    # potential_revenue = total_harvest_yield_kg * sale_price_kg
 
     # ROI CALCULATOR
     st.subheader("💰 Profit & Loss Projection")
