@@ -16,14 +16,14 @@ ING_DATABASE = {
         "price_per_kg": 800
     },
     "Soya Meal": {
-        "img": "soyameal.jpg"
+        "img": "soyameal.jpg",
         "prot": 44.0, "en": 2500, 
         "details": "High-quality vegetable protein. Check toasting to remove anti-nutrients.",
         "qc": ["Color is light tan", "Nutty aroma", "No clumping"],
         "price_per_kg": 2200
     },
     "Fish Meal": {
-        "img": "fishmeal.jpg"
+        "img": "fishmeal.jpg",
         "prot": 55.0, "en": 2800, 
         "details": "Animal protein with essential amino acids. Watch salt levels.",
         "qc": ["Low salt content", "No fishy/rotten smell"],
