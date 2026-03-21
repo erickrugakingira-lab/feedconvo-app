@@ -69,7 +69,7 @@ STANDARDS = {
 st.markdown(f"""
     <style>
     .stApp {{
-        background-image: url("");
+        background-image: url("https://github.com/erickrugakingira-lab/feedconvo-app/blob/03aa29d817795584f523f68a97f4c55ce5ef3aa6/broiler_chicken.png");
         background-attachment: fixed;
         background-size: cover;
     }}
