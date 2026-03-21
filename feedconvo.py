@@ -147,7 +147,7 @@ if menu == "📊 Dashboard":
         st.success(f"**Projected Profit:** {int(net_profit):,} TSH ({roi_pct:.1f}% ROI)")
     else:
         st.error(f"**Projected Loss:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
-# --- ADD THIS INSIDE THE DASHBOARD BLOCK ---
+    # --- ADD THIS INSIDE THE DASHBOARD BLOCK ---
 st.divider()
 st.subheader("💉 Vaccination & Health Schedule")
 
