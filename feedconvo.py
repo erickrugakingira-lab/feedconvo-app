@@ -168,8 +168,7 @@ with st.expander("📅 View Full Schedule for this Flock"):
 due_today = df_vac[df_vac['Day'] == (age_days if age_days in [1,7,14,21,28] else None)]
 if not due_today.empty:
     st.error(f"🚨 **ACTION REQUIRED:** Today is Day {age_days}. Vaccine due: {due_today['Vaccine'].values[0]}")
-else:
-    st.success("✅ No vaccines scheduled for today.")
+
    
     # RESTORE GRAPH
     st.subheader("📈 Growth Curve")
