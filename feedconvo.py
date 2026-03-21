@@ -110,52 +110,44 @@ with st.sidebar:
 if menu == "📊 Dashboard":
     st.title(f"📊 Performance & Projections: Day {age_days}")
     
-    # Metrics row
+    # 1. METRICS ROW
     c1, c2, c3 = st.columns(3)
     c1.metric("Live Birds", f"{active_birds}")
     
-    # Shows current meat on the ground vs. the final harvest goal
+    # Current weight estimation based on standard growth
     current_meat_kg = active_birds * current_std_weight_kg
     c2.metric("Current Meat (est.)", f"{current_meat_kg:.1f} kg")
     
-    # Highlight the Harvest Goal
-    c3.metric("Projected Harvest", f"{total_harvest_yield_kg:.1f} kg", help="Based on your target weight")
+    # Harvest target from your sidebar input
+    c3.metric("Projected Harvest", f"{total_harvest_yield_kg:.1f} kg")
 
-    st.info(f"🎯 **Harvest Goal:** You are aiming for **{harvest_target} kg** per bird. Total flock target: **{total_harvest_yield_kg:.1f} kg**.")
+    st.divider()
 
-    # Update ROI Calculation to use the Harvest Target
-    st.subheader("💰 ROI Projection (At Harvest)")
-    # ... [Keep your ROI expander here] ...
-    
-    # Update potential revenue to use the harvest yield
-    # potential_revenue = total_harvest_yield_kg * sale_price_kg
-
-    # ROI CALCULATOR
-    st.subheader("💰 Profit & Loss Projection")
+    # 2. ROI CALCULATOR
+    st.subheader("💰 Profit & Loss Projection (At Harvest)")
     with st.expander("📝 Edit Costs & Market Prices"):
         col_a, col_b = st.columns(2)
         chick_cost = col_a.number_input("Cost per Chick (TSH)", value=1800)
         sale_price_kg = col_b.number_input("Selling Price per KG (TSH)", value=8500)
         fixed_costs = st.number_input("Other costs (Medication/Heat) per bird", value=500)
 
-    # Calculations
+    # UPDATED REVENUE CALCULATION:
+    # We use 'total_harvest_yield_kg' which we defined in the Sidebar logic
     total_investment = (flock_size * chick_cost) + (active_birds * fixed_costs)
-    potential_revenue = expected_yield_kg * sale_price_kg
+    potential_revenue = total_harvest_yield_kg * sale_price_kg
     net_profit = potential_revenue - total_investment
     roi_pct = (net_profit / total_investment * 100) if total_investment > 0 else 0
 
-    # Display ROI
+    # 3. DISPLAY ROI CARDS
     r1, r2, r3 = st.columns(3)
-    r1.write(f"**Total Investment:** {int(total_investment):,} TSH")
-    r2.write(f"**Est. Revenue:** {int(potential_revenue):,} TSH")
+    st.write(f"**Total Investment:** {int(total_investment):,} TSH")
+    st.write(f"**Est. Revenue at Harvest:** {int(potential_revenue):,} TSH")
     
     if net_profit > 0:
-        r3.success(f"**Profit:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
+        st.success(f"**Projected Profit:** {int(net_profit):,} TSH ({roi_pct:.1f}% ROI)")
     else:
-        r3.error(f"**Loss:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
-
-    st.divider()
-
+        st.error(f"**Projected Loss:** {int(net_profit):,} TSH ({roi_pct:.1f}%)")
+   
     # RESTORE GRAPH
     st.subheader("📈 Growth Curve")
     df_growth = pd.DataFrame({"Day": [0,7,14,21,28,35,42], "Target (g)": weights_g})
