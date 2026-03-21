@@ -9,18 +9,21 @@ st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon=
 # --- 2. THE DATABASES (Global Scope) ---
 ING_DATABASE = {
     "Maize": {
+        "img": "maize grain.jpg",
         "prot": 9.0, "en": 3350, 
         "details": "Primary energy source. High risk of Aflatoxins in humid areas.",
         "qc": ["Moisture < 13%", "No visible mold", "No musty smell"],
         "price_per_kg": 800
     },
     "Soya Meal": {
+        "img": "soyameal.jpg"
         "prot": 44.0, "en": 2500, 
         "details": "High-quality vegetable protein. Check toasting to remove anti-nutrients.",
         "qc": ["Color is light tan", "Nutty aroma", "No clumping"],
         "price_per_kg": 2200
     },
     "Fish Meal": {
+        "img": "fishmeal.jpg"
         "prot": 55.0, "en": 2800, 
         "details": "Animal protein with essential amino acids. Watch salt levels.",
         "qc": ["Low salt content", "No fishy/rotten smell"],
@@ -40,16 +43,23 @@ STANDARDS = {
     "Finisher (Wk 5+)": 18.0
 }
 
-# --- 3. CUSTOM STYLING ---
-st.markdown("""
+# --- 3. CUSTOM STYLING (Including Background Image) ---
+# Note: 'background.jpg' must be in your GitHub repo for this to work
+st.markdown(f"""
     <style>
-    .main { background-color: #f8f9fa; }
-    .stMetric { background-color: #ffffff; padding: 15px; border-radius: 10px; border: 1px solid #e0e0e0; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
-    .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #1b4332; color: white; font-weight: bold; }
-    .stAlert { border-radius: 10px; }
+    .stApp {{
+        background-image: url("broiler chicken.png");
+        background-attachment: fixed;
+        background-size: cover;
+    }}
+    .main {{ 
+        background-color: rgba(255, 255, 255, 0.85); 
+        padding: 20px; 
+        border-radius: 15px;
+    }}
+    .stMetric {{ background-color: #ffffff; padding: 15px; border-radius: 10px; border: 1px solid #e0e0e0; }}
     </style>
     """, unsafe_allow_html=True)
-
 # --- 4. SIDEBAR & GLOBAL LOGIC ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
