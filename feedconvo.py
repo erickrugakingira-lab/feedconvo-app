@@ -40,7 +40,7 @@ ING_DATABASE = {
         ]
     },
     "Sunflower Cake": {
-        "img": "sunflower_cake.jpg", "prot": 28.0, "en": 2100, "price_per_kg": 950,
+        "img": "sunflower_cake.jpeg", "prot": 28.0, "en": 2100, "price_per_kg": 950,
         "qc": [
             "✅ Imekauka na kuwa ngumu / Dry and brittle texture",
             "✅ Maganda yamesagwa vizuri / Hulls are finely ground",
