@@ -90,7 +90,7 @@ st.markdown(f"""
 
     /* 3. Main Content Container (Semi-Opaque White) */
     .main {{ 
-        background-color: rgba(255, 255, 255, 0.10); 
+        background-color: rgba(255, 255, 255, 0.94); 
         padding: 30px; 
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.1);
