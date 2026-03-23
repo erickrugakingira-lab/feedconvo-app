@@ -75,7 +75,7 @@ st.markdown(f"""
         
         /* '90% auto' zooms out so the image takes up 90% of the width. 
            Change to 'contain' if you want the ENTIRE photo visible at once. */
-        background-size: 90% auto; 
+        background-size: 80% auto; 
         
         background-repeat: no-repeat;
         background-position: center bottom; /* Moves the zoom-out point to the bottom */
@@ -90,7 +90,7 @@ st.markdown(f"""
 
     /* 3. Main Content Container (Semi-Opaque White) */
     .main {{ 
-        background-color: rgba(255, 255, 255, 0.75); 
+        background-color: rgba(255, 255, 255, 0.50); 
         padding: 30px; 
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.1);
