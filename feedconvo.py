@@ -64,7 +64,7 @@ STANDARDS = {
 
 # --- 3. CUSTOM STYLING & BACKGROUND ---
 # Use your RAW GitHub URL here
-bg_url = "https://images.unsplash.com/photo-1516467508483-a7212febe31a"
+bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
 
 st.markdown(f"""
     <style>
