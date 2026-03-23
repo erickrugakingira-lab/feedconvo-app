@@ -120,27 +120,58 @@ with st.sidebar:
     
     # Text Dictionary for Translation
     t = {
-        "English": {
-        "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Guide", "market": "🛒 Market",
-        "birds": "Live Birds", "age": "Age (Days)", "yield": "Est. Yield (kg)",
-        "fcr_title": "📈 FCR Tracker (Efficiency)", "feed_cons": "Total Feed Consumed (kg)",
-        "avg_wt": "Current Avg. Weight per Bird (kg)", "roi_title": "💵 Profit & ROI Projection",
-        "invest": "Total Investment", "revenue": "Expected Revenue", "profit": "Projected Profit",
-        "edit_fin": "Adjust Costs & Prices", "chick_cost": "Cost per Chick (TSH)",
-        "mkt_price": "Market Price per KG (TSH)", "other_costs": "Other Costs (Meds, Labor)"
-    },
-    "Kiswahili": {
-        "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo", "guide": "📚 Mwongozo", "market": "🛒 Soko",
-        "birds": "Kuku Waliopo", "age": "Umri (Siku)", "yield": "Mavuno (kg)",
-        "fcr_title": "📈 Ufanisi wa Chakula (FCR)", "feed_cons": "Jumla ya Chakula (kg)",
-        "avg_wt": "Wastani wa Uzito wa Kuku (kg)", "roi_title": "💵 Makadirio ya Faida (ROI)",
-        "invest": "Jumla ya Gharama", "revenue": "Mauzo Yanayotarajiwa", "profit": "Faida Inayotarajiwa",
-        "edit_fin": "Badili Gharama na Bei", "chick_cost": "Gharama ya Kifaranga (TSH)",
-        "mkt_price": "Bei ya Soko kwa KG (TSH)", "other_costs": "Gharama Nyingine (Dawa, Mkaa)"
+       "English": {
+            "dash": "📊 Dashboard", 
+            "solver": "🧪 Feed Solver", 
+            "guide": "📚 Guide", 
+            "market": "🛒 Market",
+            "birds": "Live Birds", 
+            "age": "Age (Days)", 
+            "yield": "Est. Yield (kg)",
+            "fcr_title": "📈 FCR Tracker (Efficiency)", 
+            "feed_cons": "Total Feed Consumed (kg)",
+            "avg_wt": "Current Avg. Weight per Bird (kg)", 
+            "roi_title": "💵 Profit & ROI Projection",
+            "solve_title": "🧪 Precision Feed Solver",
+            "stage": "Select Growth Stage:",
+            "total": "Total Feed to Produce (kg)",
+            "download": "📥 Download Recipe", 
+            "mixing": "🥣 Mixing Instructions",
+            "invest": "Total Investment", 
+            "revenue": "Expected Revenue", 
+            "profit": "Projected Profit",
+            "edit_fin": "Adjust Costs & Prices", 
+            "chick_cost": "Cost per Chick (TSH)",
+            "mkt_price": "Market Price per KG (TSH)", 
+            "other_costs": "Other Costs (Meds, Labor)"
+        },
+        "Kiswahili": {
+            "dash": "📊 Dashibodi", 
+            "solver": "🧪 Kikokotoo", 
+            "guide": "📚 Mwongozo", 
+            "market": "🛒 Soko",
+            "birds": "Kuku Waliopo", 
+            "age": "Umri (Siku)", 
+            "yield": "Mavuno (kg)",
+            "fcr_title": "📈 Ufanisi wa Chakula (FCR)", 
+            "feed_cons": "Jumla ya Chakula (kg)",
+            "avg_wt": "Wastani wa Uzito wa Kuku (kg)", 
+            "roi_title": "💵 Makadirio ya Faida (ROI)",
+            "solve_title": "🧪 Kikokotoo cha Chakula", # <--- THE MISSING KEY
+            "stage": "Chagua Hatua ya Ukuaji:",
+            "total": "Jumla ya Chakula (kg)",
+            "download": "📥 Pakua Maelekezo", 
+            "mixing": "🥣 Maelekezo ya Kuchanganya",
+            "invest": "Jumla ya Gharama", 
+            "revenue": "Mauzo Yanayotarajiwa", 
+            "profit": "Faida Inayotarajiwa",
+            "edit_fin": "Badili Gharama na Bei", 
+            "chick_cost": "Gharama ya Kifaranga (TSH)",
+            "mkt_price": "Bei ya Soko kwa KG (TSH)", 
+            "other_costs": "Gharama Nyingine (Dawa, Mkaa)"
+        }
     }
-}
 
-    
     # Current selection labels
     txt = t[lang]
 
