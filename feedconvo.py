@@ -109,7 +109,7 @@ with st.sidebar:
     start_date = st.date_input("Hatch Date", datetime.date.today() - datetime.timedelta(days=14))
     
     st.divider()
-    menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📈 FCR Tracker", "📚 Ingredient Guide", "🛒 Marketplace"])
+    menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
 
     # Global Logic
     active_birds = max(0, flock_size - mortality)
