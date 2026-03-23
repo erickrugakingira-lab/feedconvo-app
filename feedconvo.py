@@ -118,7 +118,7 @@ with st.sidebar:
 
 # --- 5. PAGE LOGIC ---
 
-elif menu == "📊 Dashboard":
+if menu == "📊 Dashboard":
     st.title(f"📊 Dashboard: Day {age_days}")
     
     # 1. Physical Metrics
