@@ -374,7 +374,7 @@ elif menu == txt["guide"]:
         img_url = f"https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/assets/{data['img']}"
         st.image(img_url, caption=selected_ing, use_container_width=True)
         
-   with col_info:
+    with col_info:
     st.subheader(f"🔍 {selected_ing}: Quality Checks")
     
     # We display the Good and the Bad
