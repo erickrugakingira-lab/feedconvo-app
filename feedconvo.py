@@ -46,7 +46,7 @@ ING_DATABASE = {
         "price_per_kg": 3500
     },
     "Sunflower Cake": {
-        "img": "sunflower.jpg", # Added this back in!
+        "img": "sunflower_cake.jpeg", # Added this back in!
         "prot": 24.0, "en": 2300, 
         "details": "Fiber source. Good for layers and finishers to reduce cost.",
         "qc": [
@@ -162,25 +162,63 @@ if menu == "📊 Dashboard":
 # PAGE 2: FEED SOLVER
 elif menu == "🧪 Feed Solver":
     st.title("🧪 Precision Feed Solver")
-    stage = st.selectbox("Select Growth Stage:", list(STANDARDS.keys()))
-    target_prot = STANDARDS[stage]
     
-    st.info(f"Target Protein for {stage}: **{target_prot}%**")
+    # 1. User Inputs for Production
+    col_a, col_b = st.columns(2)
+    with col_a:
+        stage = st.selectbox("Select Growth Stage:", list(STANDARDS.keys()))
+        target_prot = STANDARDS[stage]
+    with col_b:
+        total_to_produce = st.number_input("Total Feed to Produce (kg)", min_value=1.0, value=50.0, step=1.0)
     
-    # Simple Pearson Square logic for Maize & Soya
-    maize_p = ING_DATABASE["Maize"]["prot"]
-    soya_p = ING_DATABASE["Soya Meal"]["prot"]
+    # 2. Premix Toggle
+    use_premix = st.checkbox("Include 5% Premix/Minerals (Recommended)", value=True)
     
-    soya_parts = abs(target_prot - maize_p)
-    maize_parts = abs(soya_p - target_prot)
-    total_parts = soya_parts + maize_parts
-    
-    soya_pct = (soya_parts / total_parts) * 100
-    maize_pct = (maize_parts / total_parts) * 100
-    
-    st.success(f"**Recommended Mix:** {maize_pct:.1f}% Maize and {soya_pct:.1f}% Soya Meal")
-    st.warning("Note: This is a basic 2-ingredient mix. Consider adding 5% premix/minerals.")
+    st.divider()
 
+    # 3. Calculation Logic (Pearson Square Modified)
+    m_prot = ING_DATABASE["Maize"]["prot"]
+    s_prot = ING_DATABASE["Soya Meal"]["prot"]
+    
+    if use_premix:
+        # Reserve 5% for premix, solve for the remaining 95%
+        usable_target = target_prot / 0.95 
+        premix_kg = total_to_produce * 0.05
+        remaining_kg = total_to_produce - premix_kg
+    else:
+        usable_target = target_prot
+        premix_kg = 0
+        remaining_kg = total_to_produce
+
+    # Math for ratios
+    soya_ratio = (usable_target - m_prot) / (s_prot - m_prot)
+    maize_ratio = 1 - soya_ratio
+    
+    # Convert to KG
+    maize_kg = remaining_kg * maize_ratio
+    soya_kg = remaining_kg * soya_ratio
+
+    # 4. Display the Recipe List
+    st.subheader(f"📋 Recipe for {total_to_produce} kg ({stage})")
+    
+    # Create a nice table for the farmer
+    recipe_data = {
+        "Ingredient": ["Maize Grain", "Soya Meal", "Premix/Concentrate" if use_premix else "Others"],
+        "Percentage (%)": [f"{(maize_kg/total_to_produce)*100:.1f}%", 
+                           f"{(soya_kg/total_to_produce)*100:.1f}%", 
+                           "5.0%" if use_premix else "0%"],
+        "Weight to Mix (KG)": [f"{maize_kg:.2f} kg", f"{soya_kg:.2f} kg", f"{premix_kg:.2f} kg"]
+    }
+    st.table(pd.DataFrame(recipe_data))
+
+    # 5. Cost Estimation
+    est_cost = (maize_kg * ING_DATABASE["Maize"]["price_per_kg"]) + \
+               (soya_kg * ING_DATABASE["Soya Meal"]["price_per_kg"])
+    
+    st.info(f"💰 **Estimated Material Cost:** {int(est_cost):,} TSH (Excluding Premix cost)")
+    
+    if use_premix:
+        st.warning("💡 **Mixing Tip:** Mix the Premix with a small amount of Maize first, then blend into the main pile to ensure even distribution.")
 # PAGE 3: INGREDIENT GUIDE
 elif menu == "📚 Ingredient Guide":
     st.title("📚 Quality Control Guide")
