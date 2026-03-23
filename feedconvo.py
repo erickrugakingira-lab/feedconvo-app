@@ -86,16 +86,21 @@ st.markdown(f"""
         box-shadow: 0 10px 15px rgba(0,0,0,0.2); /* Adds a shadow to lift the box off the background */
     }}
 
-    /* 3. The Sidebar (Making it solid so it doesn't clash) */
+   /* 2. The Pale Greenish Sidebar */
     [data-testid="stSidebar"] {{
-        background-color: #f8f9fa;
-        border-right: 1px solid #eee;
+        background-color: #e8f5e9; /* Pale Green / Mint */
+        border-right: 2px solid #c8e6c9;
     }}
 
-    /* 4. Making Text Bold & Dark for readability */
+    /* 3. Sidebar Text and Radio Buttons */
+    [data-testid="stSidebar"] .stRadio > label {{
+        color: #1b5e20; /* Darker green for text readability */
+        font-weight: bold;
+    }}
+
+    /* 5. Custom Green Headers */
     h1, h2, h3 {{
-        color: #1b4332; /* Deep forest green */
-        font-weight: 800;
+        color: #2e7d32;
     }}
     </style>
     """, unsafe_allow_html=True)
