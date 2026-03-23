@@ -81,6 +81,17 @@ st.markdown(f"""
         background-position: center bottom; /* Moves the zoom-out point to the bottom */
         background-color: #f0f4f0; /* Matches the pale green theme if edges show */
     }}
+/* 2. The Content Box - Made more opaque (0.98) and added Blur */
+    .main {{ 
+        background-color: rgba(255, 255, 255, 0.98); /* Almost solid white for focus */
+        backdrop-filter: blur(8px); /* Blurs the photo BEHIND the white box */
+        padding: 40px; 
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        margin-top: 40px;
+        margin-bottom: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }}
 
     /* 2. The Pale Greenish Sidebar */
     [data-testid="stSidebar"] {{
