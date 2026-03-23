@@ -81,9 +81,9 @@ st.markdown(f"""
         background-color: rgba(255, 255, 255, 0.98); /* Increase this to 0.98 for more opaque white */
         padding: 40px; 
         border-radius: 25px;
-        margin-top: 30px;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Adds a shadow to lift the box off the background */
+        margin-top: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 10px 15px rgba(0,0,0,0.2); /* Adds a shadow to lift the box off the background */
     }}
 
     /* 3. The Sidebar (Making it solid so it doesn't clash) */
