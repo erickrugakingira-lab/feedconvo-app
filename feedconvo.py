@@ -49,6 +49,7 @@ ING_DATABASE = {
             "❌ **Red Flag:** Uwepo wa nyuzi za magunia / Presence of gunny bag fibers"
         ]
     }
+}
 
 STANDARDS = {
     "Starter (Wk 1-2)": 22.0, 
