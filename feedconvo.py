@@ -9,52 +9,46 @@ st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon=
 
 # --- 2. THE DATABASES (Global Scope) ---
 ING_DATABASE = {
+   ING_DATABASE = {
     "Maize": {
-        "img": "maize_grain.jpg", 
-        "prot": 9.0, "en": 3350, 
-        "details": "Primary energy source. High risk of Aflatoxins in humid areas.",
+        "img": "maize.jpg", "prot": 9.0, "en": 3350, "price_per_kg": 850,
         "qc": [
-            "✅ Moisture: Must be below 13% (grains should 'snap' when bitten).",
-            "✅ Color: Uniform yellow; no black or greenish-blue dust (mold).",
-            "✅ Smell: No musty or fermented odor.",
-            "✅ Purity: No weevils or stones."
-        ],
-        "price_per_kg": 800
+            "✅ Unyevu < 13% (Usinunue mahindi mabichi) / Moisture < 13%",
+            "✅ Nafaka nzima, zisizo na matundu ya wadudu / Whole grains, no weevil holes",
+            "✅ Harufu nzuri ya shambani / Fresh farm smell",
+            "❌ **Red Flag:** Vumbi la kijani au jeusi (Aflatoxin) / Green or black dust",
+            "❌ **Red Flag:** Harufu ya uvundo/nyevunyevu / Musty or damp smell"
+        ]
     },
     "Soya Meal": {
-        "img": "soyameal.jpg",
-        "prot": 44.0, "en": 2500, 
-        "details": "High-quality vegetable protein. Requires proper toasting.",
+        "img": "soya.jpg", "prot": 44.0, "en": 2500, "price_per_kg": 2300,
         "qc": [
-            "✅ Color: Light tan/golden. White is undercooked; dark brown is burnt.",
-            "✅ Texture: Fine flakes; no large hard clumps.",
-            "✅ Smell: Fresh, nutty aroma. No raw bean smell."
-        ],
-        "price_per_kg": 2200
+            "✅ Rangi ya dhahabu iliyokoza / Deep golden color",
+            "✅ Harufu ya karanga zilizokaangwa / Roasted nutty smell",
+            "✅ Unyevu mdogo, haishikani mkono / Low moisture, doesn't clump",
+            "❌ **Red Flag:** Rangi nyeupe (haijapikwa vizuri) / White color (under-processed)",
+            "❌ **Red Flag:** Harufu ya maharagwe mabichi / Raw bean smell (Toxic to birds)"
+        ]
     },
     "Fish Meal": {
-        "img": "fishmeal.jpg",
-        "prot": 55.0, "en": 2800, 
-        "details": "Animal protein with essential amino acids.",
+        "img": "fish.jpg", "prot": 55.0, "en": 2800, "price_per_kg": 3500,
         "qc": [
-            "✅ Salt: Should not be extremely salty to the taste.",
-            "✅ Texture: No heavy grit or sand when rubbed.",
-            "✅ Smell: Strong fishy smell is okay; 'rotten' is a fail."
-        ],
-        "price_per_kg": 3500
+            "✅ Harufu ya samaki (si ya kioza) / Clean fishy smell",
+            "✅ Rangi ya kahawia iliyokoza / Dark brown color",
+            "✅ Haina mchanga chini ya gunia / No sand grit at bottom",
+            "❌ **Red Flag:** Mabonge makubwa ya chumvi / Large salt clumps",
+            "❌ **Red Flag:** Harufu ya kemikali au kioza / Chemical or rotten smell"
+        ]
     },
     "Sunflower Cake": {
-        "img": "sunflower_cake.jpeg",
-        "prot": 24.0, "en": 2300, 
-        "details": "Fiber source. Good for cost reduction in older birds.",
+        "img": "sunflower.jpg", "prot": 28.0, "en": 2100, "price_per_kg": 950,
         "qc": [
-            "✅ Fiber: No excessive black hulls (causes diarrhea).",
-            "✅ Oil: Should not feel greasy or smell rancid.",
-            "✅ Hardness: Should break easily by hand."
-        ],
-        "price_per_kg": 1100
+            "✅ Imekauka na kuwa ngumu / Dry and brittle texture",
+            "✅ Maganda yamesagwa vizuri / Hulls are finely ground",
+            "❌ **Red Flag:** Mafuta yanayovuja (Inaharibika haraka) / Leaking oil (Goes rancid)",
+            "❌ **Red Flag:** Uwepo wa nyuzi za magunia / Presence of gunny bag fibers"
+        ]
     }
-}
 
 STANDARDS = {
     "Starter (Wk 1-2)": 22.0, 
@@ -366,26 +360,53 @@ elif menu == txt["solver"]:
             st.write("2. **Pre-Mix:** Mix your Premix in a small bucket with 2kg of Maize before adding to the big pile.")
             st.write("3. **The 3-Shovel Rule:** Turn the pile at least 3 times until uniform.")
             
-elif menu == "📚 Ingredient Guide":
-    st.title("📚 Quality Control Guide")
+elif menu == txt["guide"]:
+    st.title(txt["guide"])
+    
+    # Ingredient Selection
+    selected_ing = st.selectbox("Chagua Kiungo / Select Ingredient:", list(ING_DATABASE.keys()))
+    data = ING_DATABASE[selected_ing]
+    
+    col_img, col_info = st.columns([1, 2])
+    
+    with col_img:
+        # Using the GitHub Raw link logic we established
+        img_url = f"https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/assets/{data['img']}"
+        st.image(img_url, caption=selected_ing, use_container_width=True)
+        
+   with col_info:
+    st.subheader(f"🔍 {selected_ing}: Quality Checks")
+    
+    # We display the Good and the Bad
+    for check in data["qc"]:
+        if "✅" in check:
+            st.success(check)
+        else:
+            st.error(check) # This makes Red Flags appear in a red box!
+            
+    st.divider()
+    # Adding the Nutritional Value for the farmer's knowledge
+    st.write(f"📊 **Protein:** {data['prot']}% | **Energy:** {data['en']} kcal/kg")
+               
+elif menu == txt["market"]:
+    st.title(txt["market"])
+    st.write("📢 **Bei za Leo Dar es Salaam**" if lang == "Kiswahili" else "📢 **Current Market Prices (Dar es Salaam)**")
+    
+    # Display Marketplace Cards
     for name, info in ING_DATABASE.items():
-        with st.expander(f"🔍 Inspecting {name}"):
-            c1, c2 = st.columns([1, 2])
-            with c1:
-                if os.path.exists(info["img"]): st.image(info["img"])
-                else: st.warning("Photo missing on GitHub")
-            with c2:
-                for check in info["qc"]: st.write(check)
+        with st.container():
+            c1, c2, c3 = st.columns([1, 2, 1])
+            
+            c1.markdown(f"### {name}")
+            c2.write(f"**Price:** {info['price_per_kg']} TSH/kg")
+            
+            # WhatsApp Order Logic
+            phone = "255700000000" # Replace with real supplier number
+            msg = f"Habari, nahitaji oda ya {name} kutoka FeedConvo App." if lang == "Kiswahili" else f"Hello, I want to order {name} via FeedConvo App."
+            wa_link = f"https://wa.me/{phone}?text={msg.replace(' ', '%20')}"
+            
+            button_label = f"Agiza {name}" if lang == "Kiswahili" else f"Order {name}"
+            c3.link_button(button_label, wa_link, type="primary")
+            st.divider()
 
-elif menu == "🛒 Marketplace":
-    st.title("🛒 Supplier Marketplace")
-    cols = st.columns(2)
-    for i, (name, info) in enumerate(ING_DATABASE.items()):
-        with cols[i % 2]:
-            st.markdown(f"""
-            <div style="border:1px solid #ddd; padding:15px; border-radius:10px; margin-bottom:10px; background:white;">
-                <h4>{name}</h4>
-                <p>Price: <b>{info['price_per_kg']} TSH/kg</b></p>
-                <a href="https://wa.me/255700000000" target="_blank"><button style="width:100%; background:#1b4332; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">Order Now</button></a>
-            </div>
-            """, unsafe_allow_html=True)
+    st.caption("🚀 Powered by FeedConvo Local Logistics" if lang == "Kiswahili" else "🚀 Powered by FeedConvo Local Logistics")
