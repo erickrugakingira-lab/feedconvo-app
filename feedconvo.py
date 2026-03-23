@@ -78,7 +78,7 @@ st.markdown(f"""
 
     /* 2. The Main Content Box (The "Glass" Effect) */
     .main {{ 
-        background-color: rgba(255, 255, 255, 0.98); /* Increase this to 0.98 for more opaque white */
+        background-color: rgba(255, 255, 255, 0.85); /* Increase this to 0.98 for more opaque white */
         padding: 40px; 
         border-radius: 25px;
         margin-top: 15px;
