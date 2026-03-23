@@ -74,7 +74,7 @@ st.markdown(f"""
         background-size: cover;
     }}
     .main {{ 
-        background-color: rgba(255, 255, 255, 0.94); 
+        background-color: rgba(255, 255, 255, 0.75); 
         padding: 30px; 
         border-radius: 20px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.1);
