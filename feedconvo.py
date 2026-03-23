@@ -109,21 +109,48 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
     
-# --- 4. SIDEBAR & GLOBAL CALCULATIONS ---
+# --- 4. SIDEBAR & LANGUAGE LOGIC ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
-    flock_size = st.number_input("Birds Started", min_value=1, value=100)
-    mortality = st.number_input("Mortality (Deaths)", min_value=0, value=0)
-    harvest_target = st.number_input("Target Weight (kg)", min_value=0.1, value=2.5)
-    start_date = st.date_input("Hatch Date", datetime.date.today() - datetime.timedelta(days=14))
+    
+    # --- THE SWAHILI TOGGLE ---
+    lang = st.radio("Chagua Lugha / Select Language:", ["English", "Kiswahili"])
     
     st.divider()
-    menu = st.radio("GO TO:", ["📊 Dashboard", "🧪 Feed Solver", "📚 Ingredient Guide", "🛒 Marketplace"])
+    
+    # Text Dictionary for Translation
+    t = {
+        "English": {
+            "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Ingredient Guide", "market": "🛒 Marketplace",
+            "birds": "Live Birds", "age": "Current Age", "yield": "Est. Harvest Yield", "days": "Days",
+            "fcr_title": "📈 Efficiency: Feed Conversion Ratio (FCR)", "feed_cons": "Total Feed Consumed (kg)",
+            "avg_wt": "Current Avg. Weight per Bird (kg)", "roi_title": "💵 Profit & ROI Projection",
+            "solve_title": "🧪 Precision Feed Solver", "stage": "Select Growth Stage:", "total": "Total Feed to Produce (kg)",
+            "download": "📥 Download Recipe", "mixing": "🥣 Mixing Instructions"
+        },
+        "Kiswahili": {
+            "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo cha Chakula", "guide": "📚 Mwongozo wa Viungo", "market": "🛒 Soko la Viungo",
+            "birds": "Kuku Waliopo", "age": "Umri wa Kuku", "yield": "Mavuno Yanayotarajiwa", "days": "Siku",
+            "fcr_title": "📈 Ufanisi: Uwiano wa Chakula na Nyama (FCR)", "feed_cons": "Jumla ya Chakula Kilicholiwa (kg)",
+            "avg_wt": "Wastani wa Uzito wa Kuku (kg)", "roi_title": "💵 Makadirio ya Faida (ROI)",
+            "solve_title": "🧪 Kikokotoo cha Mchanganyiko", "stage": "Chagua Hatua ya Ukuaji:", "total": "Jumla ya Chakula Unachotaka (kg)",
+            "download": "📥 Pakua Mchanganyiko huu", "mixing": "🥣 Maelekezo ya Kuchanganya"
+        }
+    }
+    
+    # Current selection labels
+    txt = t[lang]
 
-    # Global Logic
+    menu = st.radio("GO TO:", [txt["dash"], txt["solver"], txt["guide"], txt["market"]])
+    
+    st.divider()
+    flock_size = st.number_input("Birds Started / Idadi ya Kuku", min_value=1, value=100)
+    mortality = st.number_input("Mortality / Vifo", min_value=0, value=0)
+    start_date = st.date_input("Hatch Date / Tarehe ya Kutolewa", datetime.date.today() - datetime.timedelta(days=14))
+
     active_birds = max(0, flock_size - mortality)
     age_days = (datetime.date.today() - start_date).days
-    total_potential_yield = active_birds * harvest_target
+    total_potential_yield = active_birds * 2.5 # Using 2.5kg as standard harvest weight
 
 # --- 5. PAGE LOGIC ---
 
@@ -200,69 +227,91 @@ if menu == "📊 Dashboard":
     })
     st.table(vac_df)
 
-elif menu == "🧪 Feed Solver":
-    st.title("🧪 Precision Feed Solver")
+elif menu == txt["solver"]:
+    st.title(txt["solve_title"])
     
     col_a, col_b = st.columns(2)
     with col_a:
-        stage = st.selectbox("Select Growth Stage:", list(STANDARDS.keys()))
+        stage = st.selectbox(txt["stage"], list(STANDARDS.keys()))
         target_prot = STANDARDS[stage]
     with col_b:
-        total_to_produce = st.number_input("Total Feed to Produce (kg)", min_value=1.0, value=100.0)
+        total_to_produce = st.number_input(txt["total"], min_value=1.0, value=100.0)
     
-    use_premix = st.checkbox("Include 5% Premix/Minerals (Recommended)", value=True)
+    # --- THE PREMIX BUTTON (RESTORED) ---
+    premix_label = "Weka Virutubisho 5% (Inashauriwa)" if lang == "Kiswahili" else "Include 5% Premix/Minerals (Recommended)"
+    use_premix = st.checkbox(premix_label, value=True)
     
     # --- CALCULATION LOGIC ---
     m_prot, s_prot = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
-    usable_target = target_prot / 0.95 if use_premix else target_prot
-    premix_kg = total_to_produce * 0.05 if use_premix else 0
-    remaining_kg = total_to_produce - premix_kg
     
+    if use_premix:
+        usable_target = target_prot / 0.95 
+        premix_kg = total_to_produce * 0.05
+        remaining_kg = total_to_produce - premix_kg
+    else:
+        usable_target = target_prot
+        premix_kg = 0
+        remaining_kg = total_to_produce
+
     soya_ratio = (usable_target - m_prot) / (s_prot - m_prot)
     maize_kg, soya_kg = remaining_kg * (1 - soya_ratio), remaining_kg * soya_ratio
 
     # --- DISPLAY TABLE ---
-    st.subheader(f"📋 Recipe for {total_to_produce}kg")
+    st.subheader(f"📋 {txt['download']} ({total_to_produce}kg)")
+    
+    # Localized Table Headers
+    header_ing = "Kiungo / Ingredient" if lang == "Kiswahili" else "Ingredient"
+    header_wt = "Uzito / Weight (kg)" if lang == "Kiswahili" else "Weight (kg)"
+    
     recipe_df = pd.DataFrame({
-        "Ingredient": ["Maize Grain", "Soya Meal", "Premix"],
-        "Weight (kg)": [round(maize_kg, 2), round(soya_kg, 2), round(premix_kg, 2)]
+        header_ing: ["Mahindi / Maize", "Soya / Soya Meal", "Virutubisho / Premix"],
+        header_wt: [f"{maize_kg:.2f} kg", f"{soya_kg:.2f} kg", f"{premix_kg:.2f} kg"]
     })
     st.table(recipe_df)
 
-    # --- THE DOWNLOAD BUTTON ---
-    # Create the text for the download file
-    recipe_text = f"""
-    FEEDCONVO POULTRY RECIPE
-    -----------------------
-    Date: {datetime.date.today()}
-    Stage: {stage}
-    Total Quantity: {total_to_produce} kg
-    
-    INGREDIENTS:
-    1. Maize Grain: {maize_kg:.2f} kg
-    2. Soya Meal: {soya_kg:.2f} kg
-    3. Premix/Minerals: {premix_kg:.2f} kg
-    
-    MIXING INSTRUCTIONS:
-    - Layer Maize first, then Soya.
-    - Mix Premix in a small bucket with 2kg of Maize before adding to the pile.
-    - Shovel the pile at least 3 times until the color is uniform.
-    -----------------------
-    Generated by FeedConvo App
-    """
+    # --- THE DOWNLOAD BUTTON (RESTORED & TRANSLATED) ---
+    # Creating the translated text file content
+    if lang == "Kiswahili":
+        recipe_text = f"""
+        MCHANGANYIKO WA CHAKULA CHA KUKU (FEEDCONVO)
+        ------------------------------------------
+        Tarehe: {datetime.date.today()}
+        Hatua: {stage}
+        Jumla: {total_to_produce} kg
+        
+        MAHITAJI:
+        1. Mahindi: {maize_kg:.2f} kg
+        2. Soya: {soya_kg:.2f} kg
+        3. Premix: {premix_kg:.2f} kg
+        
+        MAELEKEZO YA KUCHANGANYA:
+        - Tandaza Mahindi kwanza, kisha Soya juu yake.
+        - Changanya Premix na 2kg za Mahindi kwanza kwenye ndoo.
+        - Geuza mchanganyiko wote mara 3 kwa jembe/mwiko.
+        ------------------------------------------
+        Imetengenezwa na App ya FeedConvo
+        """
+    else:
+        recipe_text = f"Date: {datetime.date.today()}\nStage: {stage}\nMaize: {maize_kg:.2f}kg\nSoya: {soya_kg:.2f}kg\nPremix: {premix_kg:.2f}kg"
 
     st.download_button(
-        label="📥 Download Recipe as Text File",
+        label=txt["download"],
         data=recipe_text,
-        file_name=f"poultry_recipe_{stage}.txt",
+        file_name=f"recipe_{stage}_{lang}.txt",
         mime="text/plain",
     )
 
-    with st.expander("🥣 Detailed Mixing Instructions"):
-        st.write("1. **Layering:** Spread Maize first, then Soya on top.")
-        st.write("2. **Pre-Mix:** Mix your Premix in a small bucket with 2kg of Maize before adding to the big pile.")
-        st.write("3. **The 3-Shovel Rule:** Turn the pile at least 3 times until the color is uniform.")
-
+    # --- MIXING INSTRUCTIONS (RESTORED) ---
+    with st.expander(txt["mixing"]):
+        if lang == "Kiswahili":
+            st.write("1. **Tabaka:** Tandaza mahindi kwanza, kisha soya juu yake.")
+            st.write("2. **Mchanganyiko Mdogo:** Changanya Premix kwenye ndoo ndogo na 2kg za mahindi kwanza kuzuia mabonge.")
+            st.write("3. **Sheria ya Mihiko 3:** Geuza mchanganyiko mara 3 hadi rangi iwe moja nchi nzima.")
+        else:
+            st.write("1. **Layering:** Spread Maize first, then Soya on top.")
+            st.write("2. **Pre-Mix:** Mix your Premix in a small bucket with 2kg of Maize before adding to the big pile.")
+            st.write("3. **The 3-Shovel Rule:** Turn the pile at least 3 times until uniform.")
+            
 elif menu == "📚 Ingredient Guide":
     st.title("📚 Quality Control Guide")
     for name, info in ING_DATABASE.items():
