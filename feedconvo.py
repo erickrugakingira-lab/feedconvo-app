@@ -62,59 +62,53 @@ STANDARDS = {
     "Finisher (Wk 5+)": 18.0
 }
 
-# --- 3. CUSTOM STYLING & BACKGROUND ---
-# Use your RAW GitHub URL here
-bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
+# --- 3. CUSTOM STYLING (The Faded/Veiled Background Version) ---
+bg_url = "https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/background.jpg"
 
 st.markdown(f"""
     <style>
-    /* 1. Main Background - Zoomed Out Logic */
+    /* 1. The Background with a White 'Veil' Overlay */
     .stApp {{
-        background-image: url("{bg_url}");
+        background: linear-gradient(
+            rgba(255, 255, 255, 0.85), 
+            rgba(255, 255, 255, 0.85)
+        ), 
+        url("{bg_url}");
         background-attachment: fixed;
-        
-        /* '90% auto' zooms out so the image takes up 90% of the width. 
-           Change to 'contain' if you want the ENTIRE photo visible at once. */
-        background-size: 30% auto; 
-        
+        background-size: contain; /* Keeps the zoom-out you liked */
         background-repeat: no-repeat;
-        background-position: center bottom; /* Moves the zoom-out point to the bottom */
-        background-color: #f0f4f0; /* Matches the pale green theme if edges show */
-    }}
-/* 2. The Content Box - Made more opaque (0.98) and added Blur */
-    .main {{ 
-        background-color: rgba(255, 255, 255, 2); /* Almost solid white for focus */
-        backdrop-filter: blur(1000px); /* Blurs the photo BEHIND the white box */
-        padding: 40px; 
-        border-radius: 20px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        margin-top: 40px;
-        margin-bottom: 40px;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        background-position: center bottom;
     }}
 
-    /* 2. The Pale Greenish Sidebar */
+    /* 2. The Main Content Box - Solid White for Maximum Focus */
+    .main {{ 
+        background-color: #ffffff; /* Pure solid white */
+        padding: 40px; 
+        border-radius: 20px;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.1); /* Soft shadow to create depth */
+        margin-top: 30px;
+        border: 1px solid #e0e0e0;
+    }}
+
+    /* 3. Sidebar Styling */
     [data-testid="stSidebar"] {{
         background-color: #e8f5e9; 
         border-right: 2px solid #c8e6c9;
     }}
 
-    /* 3. Main Content Container (Semi-Opaque White) */
-    .main {{ 
-        background-color: rgba(255, 255, 255, 0.94); 
-        padding: 30px; 
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-        margin-top: 50px;
+    /* 4. Table and Text Styling for High Contrast */
+    .stTable {{
+        background-color: white;
+        border-radius: 10px;
     }}
-
-    /* 4. Text Contrast */
-    h1, h2, h3, p {{
+    
+    h1, h2, h3 {{
         color: #1b5e20;
+        text-shadow: none; /* Removes any glow that might make it blurry */
     }}
     </style>
     """, unsafe_allow_html=True)
-
+    
 # --- 4. SIDEBAR & GLOBAL CALCULATIONS ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
