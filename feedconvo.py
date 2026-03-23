@@ -371,7 +371,7 @@ elif menu == txt["guide"]:
     
     with col_img:
         # Using the GitHub Raw link logic we established
-        img_url = f"https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/assets/{data['img']}"
+        img_url = f"https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/{data['img']}"
         st.image(img_url, caption=selected_ing, use_container_width=True)
         
     with col_info:
