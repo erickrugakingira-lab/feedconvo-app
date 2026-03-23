@@ -8,7 +8,7 @@ import os
 st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon="🐔")
 
 # --- 2. THE DATABASES (Global Scope) ---
-   ING_DATABASE = {
+ING_DATABASE = {
     "Maize": {
         "img": "maize.jpg", "prot": 9.0, "en": 3350, "price_per_kg": 850,
         "qc": [
