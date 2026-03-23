@@ -64,7 +64,7 @@ STANDARDS = {
 
 # --- 3. CUSTOM STYLING & BACKGROUND ---
 # Use your RAW GitHub URL here
-bg_url = "https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/background.jpg"
+bg_url = "https://images.unsplash.com/photo-1516467508483-a7212febe31a""
 
 st.markdown(f"""
     <style>
