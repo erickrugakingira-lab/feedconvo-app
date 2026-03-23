@@ -369,11 +369,24 @@ elif menu == txt["guide"]:
     
     col_img, col_info = st.columns([1, 2])
     
-    with col_img:
-        # Using the GitHub Raw link logic we established
-        img_url = f"https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/{data['img']}"
-        st.image(img_url, caption=selected_ing, use_container_width=True)
-        
+   with col_img:
+    # 1. SETUP YOUR REPO DETAILS
+    github_user = "erickrugakingira-lab"  # <--- Change this
+    repo_name = "feedconvo-app"          # <--- Change this
+    branch = "main"                       # or "master"
+    
+    # 2. CONSTRUCT THE RAW URL
+    # We use .replace(" ", "%20") in case your filenames have spaces
+    file_name = data['img'].replace(" ", "%20")
+    raw_url = f"https://raw.githubusercontent.com/{github_user}/{repo_name}/{branch}/assets/{file_name}"
+    
+    # 3. DISPLAY WITH ERROR HANDLING
+    try:
+        st.image(raw_url, caption=f"Picha ya {selected_ing}" if lang == "Kiswahili" else f"Photo of {selected_ing}", use_container_width=True)
+    except Exception as e:
+        st.error("⚠️ Picha haijapatikana. Hakikisha jina la faili ni sahihi GitHub." if lang == "Kiswahili" 
+                 else "⚠️ Image not found. Check if the filename is correct on GitHub.")
+        st.caption(f"URL Attempted: {raw_url}") # Helps you debug the link
     with col_info:
      st.subheader(f"🔍 {selected_ing}: Quality Checks")
     
