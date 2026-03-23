@@ -371,9 +371,9 @@ elif menu == txt["guide"]:
     
     with col_img:
     # 1. SETUP YOUR REPO DETAILS
-    github_user = "erickrugakingira-lab"  # <--- Change this
-    repo_name = "feedconvo-app"          # <--- Change this
-    branch = "main"                       # or "master"
+        github_user = "erickrugakingira-lab"  # <--- Change this
+        repo_name = "feedconvo-app"          # <--- Change this
+        branch = "main"                       # or "master"
     
     # 2. CONSTRUCT THE RAW URL
     # We use .replace(" ", "%20") in case your filenames have spaces
