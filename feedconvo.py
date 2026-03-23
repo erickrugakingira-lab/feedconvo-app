@@ -83,8 +83,8 @@ st.markdown(f"""
     }}
 /* 2. The Content Box - Made more opaque (0.98) and added Blur */
     .main {{ 
-        background-color: rgba(255, 255, 255, 0.2); /* Almost solid white for focus */
-        backdrop-filter: blur(100px); /* Blurs the photo BEHIND the white box */
+        background-color: rgba(255, 255, 255, 2); /* Almost solid white for focus */
+        backdrop-filter: blur(1000px); /* Blurs the photo BEHIND the white box */
         padding: 40px; 
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.2);
