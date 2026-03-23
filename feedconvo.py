@@ -375,7 +375,7 @@ elif menu == txt["guide"]:
         st.image(img_url, caption=selected_ing, use_container_width=True)
         
     with col_info:
-    st.subheader(f"🔍 {selected_ing}: Quality Checks")
+     st.subheader(f"🔍 {selected_ing}: Quality Checks")
     
     # We display the Good and the Bad
     for check in data["qc"]:
