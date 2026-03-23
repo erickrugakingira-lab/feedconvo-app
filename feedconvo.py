@@ -369,7 +369,7 @@ elif menu == txt["guide"]:
     
     col_img, col_info = st.columns([1, 2])
     
-   with col_img:
+    with col_img:
     # 1. SETUP YOUR REPO DETAILS
     github_user = "erickrugakingira-lab"  # <--- Change this
     repo_name = "feedconvo-app"          # <--- Change this
