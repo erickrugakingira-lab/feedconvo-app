@@ -68,39 +68,38 @@ bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/m
 
 st.markdown(f"""
     <style>
-    /* 1. The Background Photo */
+    /* 1. Main Background - Zoomed Out Logic */
     .stApp {{
         background-image: url("{bg_url}");
         background-attachment: fixed;
-        background-size: cover;
-        background-position: center;
+        
+        /* '90% auto' zooms out so the image takes up 90% of the width. 
+           Change to 'contain' if you want the ENTIRE photo visible at once. */
+        background-size: 90% auto; 
+        
+        background-repeat: no-repeat;
+        background-position: center bottom; /* Moves the zoom-out point to the bottom */
+        background-color: #f0f4f0; /* Matches the pale green theme if edges show */
     }}
 
-    /* 2. The Main Content Box (The "Glass" Effect) */
-    .main {{ 
-        background-color: rgba(255, 255, 255, 0.85); /* Increase this to 0.98 for more opaque white */
-        padding: 40px; 
-        border-radius: 25px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-        box-shadow: 0 10px 15px rgba(0,0,0,0.2); /* Adds a shadow to lift the box off the background */
-    }}
-
-   /* 2. The Pale Greenish Sidebar */
+    /* 2. The Pale Greenish Sidebar */
     [data-testid="stSidebar"] {{
-        background-color: #e8f5e9; /* Pale Green / Mint */
+        background-color: #e8f5e9; 
         border-right: 2px solid #c8e6c9;
     }}
 
-    /* 3. Sidebar Text and Radio Buttons */
-    [data-testid="stSidebar"] .stRadio > label {{
-        color: #1b5e20; /* Darker green for text readability */
-        font-weight: bold;
+    /* 3. Main Content Container (Semi-Opaque White) */
+    .main {{ 
+        background-color: rgba(255, 255, 255, 0.75); 
+        padding: 30px; 
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        margin-top: 50px;
     }}
 
-    /* 5. Custom Green Headers */
-    h1, h2, h3 {{
-        color: #2e7d32;
+    /* 4. Text Contrast */
+    h1, h2, h3, p {{
+        color: #1b5e20;
     }}
     </style>
     """, unsafe_allow_html=True)
