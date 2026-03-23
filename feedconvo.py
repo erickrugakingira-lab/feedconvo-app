@@ -10,7 +10,7 @@ st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon=
 # --- 2. THE DATABASES (Global Scope) ---
 ING_DATABASE = {
     "Maize": {
-        "img": "maize.jpg", "prot": 9.0, "en": 3350, "price_per_kg": 850,
+        "img": "maize_grain.jpg", "prot": 9.0, "en": 3350, "price_per_kg": 850,
         "qc": [
             "✅ Unyevu < 13% (Usinunue mahindi mabichi) / Moisture < 13%",
             "✅ Nafaka nzima, zisizo na matundu ya wadudu / Whole grains, no weevil holes",
@@ -20,7 +20,7 @@ ING_DATABASE = {
         ]
     },
     "Soya Meal": {
-        "img": "soya.jpg", "prot": 44.0, "en": 2500, "price_per_kg": 2300,
+        "img": "soyameal.jpg", "prot": 44.0, "en": 2500, "price_per_kg": 2300,
         "qc": [
             "✅ Rangi ya dhahabu iliyokoza / Deep golden color",
             "✅ Harufu ya karanga zilizokaangwa / Roasted nutty smell",
@@ -30,7 +30,7 @@ ING_DATABASE = {
         ]
     },
     "Fish Meal": {
-        "img": "fish.jpg", "prot": 55.0, "en": 2800, "price_per_kg": 3500,
+        "img": "fishmeal.jpg", "prot": 55.0, "en": 2800, "price_per_kg": 3500,
         "qc": [
             "✅ Harufu ya samaki (si ya kioza) / Clean fishy smell",
             "✅ Rangi ya kahawia iliyokoza / Dark brown color",
@@ -40,7 +40,7 @@ ING_DATABASE = {
         ]
     },
     "Sunflower Cake": {
-        "img": "sunflower.jpg", "prot": 28.0, "en": 2100, "price_per_kg": 950,
+        "img": "sunflower_cake.jpg", "prot": 28.0, "en": 2100, "price_per_kg": 950,
         "qc": [
             "✅ Imekauka na kuwa ngumu / Dry and brittle texture",
             "✅ Maganda yamesagwa vizuri / Hulls are finely ground",
