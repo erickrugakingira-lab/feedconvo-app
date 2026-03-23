@@ -118,15 +118,55 @@ with st.sidebar:
 
 # --- 5. PAGE LOGIC ---
 
-if menu == "📊 Dashboard":
+elif menu == "📊 Dashboard":
     st.title(f"📊 Dashboard: Day {age_days}")
     
+    # 1. Physical Metrics
     m1, m2, m3 = st.columns(3)
     m1.metric("Live Birds", f"{active_birds}")
     m2.metric("Current Age", f"{age_days} Days")
     m3.metric("Est. Harvest Yield", f"{total_potential_yield:.1f} kg")
 
     st.divider()
+
+    # --- THE RESTORED ROI CALCULATOR ---
+    st.subheader("💵 Profit & ROI Projection")
+    
+    with st.expander("🛠️ Edit Costs & Market Prices"):
+        col_x, col_y = st.columns(2)
+        doc_cost = col_x.number_input("Cost per Chick (TSH)", value=1500)
+        market_price_per_kg = col_y.number_input("Market Price per KG (TSH)", value=8500)
+        other_costs = st.number_input("Other Costs (Labor, Meds, Charcoal)", value=50000)
+        # Average feed intake for a broiler is ~4.5kg to reach harvest
+        avg_total_feed_kg = st.number_input("Estimated Feed per Bird (kg)", value=4.5)
+
+    # 2. Logic for ROI
+    # We use a weighted average price from your ING_DATABASE for feed cost
+    avg_feed_price = (ING_DATABASE["Maize"]["price_per_kg"] * 0.65) + \
+                     (ING_DATABASE["Soya Meal"]["price_per_kg"] * 0.35)
+    
+    total_feed_cost = active_birds * avg_total_feed_kg * avg_feed_price
+    total_bird_cost = flock_size * doc_cost
+    total_investment = total_bird_cost + total_feed_cost + other_costs
+    
+    total_revenue = total_potential_yield * market_price_per_kg
+    net_profit = total_revenue - total_investment
+    roi_percent = (net_profit / total_investment) * 100 if total_investment > 0 else 0
+
+    # 3. Display ROI Results
+    r1, r2, r3 = st.columns(3)
+    r1.metric("Total Investment", f"{int(total_investment):,} TSH")
+    r2.metric("Expected Revenue", f"{int(total_revenue):,} TSH")
+    
+    if net_profit > 0:
+        r3.metric("Projected Profit", f"{int(net_profit):,} TSH", f"{roi_percent:.1f}% ROI")
+    else:
+        r3.metric("Projected Loss", f"{int(net_profit):,} TSH", f"{roi_percent:.1f}% ROI", delta_color="inverse")
+
+    st.progress(min(max(roi_percent/100, 0.0), 1.0), text=f"Profitability Margin: {roi_percent:.1f}%")
+
+    st.divider()
+    # Vaccination table remains below
     st.subheader("💉 Vaccination Schedule")
     vac_df = pd.DataFrame({
         "Day": [1, 7, 14, 21, 28, 35],
