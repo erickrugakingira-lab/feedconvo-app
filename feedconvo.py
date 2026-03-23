@@ -63,7 +63,7 @@ STANDARDS = {
 }
 
 # --- 3. CUSTOM STYLING (The Faded/Veiled Background Version) ---
-bg_url = "https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/background.jpg"
+bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
 
 st.markdown(f"""
     <style>
