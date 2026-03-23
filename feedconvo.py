@@ -70,8 +70,8 @@ st.markdown(f"""
     /* 1. The Background with a White 'Veil' Overlay */
     .stApp {{
         background: linear-gradient(
-            rgba(255, 255, 255, 0.85), 
-            rgba(255, 255, 255, 0.85)
+            rgba(255, 255, 255, 0.70), 
+            rgba(255, 255, 255, 0.70)
         ), 
         url("{bg_url}");
         background-attachment: fixed;
