@@ -68,18 +68,35 @@ bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/m
 
 st.markdown(f"""
     <style>
+    /* 1. The Background Photo */
     .stApp {{
         background-image: url("{bg_url}");
         background-attachment: fixed;
         background-size: cover;
+        background-position: center;
     }}
+
+    /* 2. The Main Content Box (The "Glass" Effect) */
     .main {{ 
-        background-color: rgba(255, 255, 255, 0.75); 
-        padding: 30px; 
-        border-radius: 20px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        background-color: rgba(255, 255, 255, 0.98); /* Increase this to 0.98 for more opaque white */
+        padding: 40px; 
+        border-radius: 25px;
+        margin-top: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2); /* Adds a shadow to lift the box off the background */
     }}
-    .stMetric {{ background-color: white; padding: 20px; border-radius: 12px; border: 1px solid #eee; }}
+
+    /* 3. The Sidebar (Making it solid so it doesn't clash) */
+    [data-testid="stSidebar"] {{
+        background-color: #f8f9fa;
+        border-right: 1px solid #eee;
+    }}
+
+    /* 4. Making Text Bold & Dark for readability */
+    h1, h2, h3 {{
+        color: #1b4332; /* Deep forest green */
+        font-weight: 800;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
