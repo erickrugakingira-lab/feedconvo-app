@@ -75,7 +75,7 @@ st.markdown(f"""
         
         /* '90% auto' zooms out so the image takes up 90% of the width. 
            Change to 'contain' if you want the ENTIRE photo visible at once. */
-        background-size: 50% auto; 
+        background-size: 10% auto; 
         
         background-repeat: no-repeat;
         background-position: center bottom; /* Moves the zoom-out point to the bottom */
