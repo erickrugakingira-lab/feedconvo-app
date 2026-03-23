@@ -226,28 +226,6 @@ elif menu == "🧪 Feed Solver":
         3. **The 3-Shovel Rule:** Turn the pile at least 3 times until the color is uniform.
         """)
 
-elif menu == "📈 FCR Tracker":
-    st.title("📈 Feed Conversion Ratio (FCR) Tracker")
-    st.info("FCR measures how efficiently your birds turn feed into meat. Lower is better!")
-    
-    col1, col2 = st.columns(2)
-    total_feed_consumed = col1.number_input("Total Feed Consumed to Date (kg)", min_value=0.1, value=10.0)
-    current_avg_weight = col2.number_input("Current Average Bird Weight (kg)", min_value=0.01, value=0.5)
-    
-    total_biomass = active_birds * current_avg_weight
-    fcr = total_feed_consumed / total_biomass if total_biomass > 0 else 0
-    
-    st.divider()
-    res1, res2 = st.columns(2)
-    res1.metric("Current FCR", f"{fcr:.2f}")
-    
-    if fcr <= 1.6:
-        res2.success("Excellent Efficiency! 🏆")
-    elif fcr <= 1.9:
-        res2.warning("Good, but check for feed waste. ⚠️")
-    else:
-        res2.error("High FCR! Check for disease or poor feed quality. 🚨")
-
 elif menu == "📚 Ingredient Guide":
     st.title("📚 Quality Control Guide")
     for name, info in ING_DATABASE.items():
