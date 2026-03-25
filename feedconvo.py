@@ -337,7 +337,7 @@ else:
         msg = f"⚠️ Chanjo inayofuata ni baada ya siku {days_left}" if lang == "Kiswahili" else f"⚠️ Next vaccine is in {days_left} days"
         st.info(msg)
         
-elif menu == txt["solver"]:
+    elif menu == txt["solver"]:
     st.title(txt["solve_title"])
     
     col_a, col_b = st.columns(2)
