@@ -266,11 +266,11 @@ c1.metric(txt["invest"], f"{total_investment:,.0f} TSH")
 c2.metric(txt["revenue"], f"{expected_revenue:,.0f} TSH")
 c3.metric(txt["profit"], f"{projected_profit:,.0f} TSH", delta=f"{roi_pct:.1f}% ROI")
     
-    if net_profit > 0:
-        r3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
-    else:
-        r3.metric("Hasara Inayotarajiwa", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
-        st.divider()
+if net_profit > 0:
+    r3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
+else:
+    r3.metric("Hasara Inayotarajiwa", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
+    st.divider()
         # --- SECTION 5: FLOCK PERFORMANCE CARD ---
     perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
     st.subheader(perf_title)
