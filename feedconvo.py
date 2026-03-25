@@ -172,6 +172,8 @@ with st.sidebar:
     menu = st.radio("GO TO:", [txt["dash"], txt["solver"], txt["guide"], txt["market"]])
     
     st.divider()
+    flock_label = "Jina la Kundi (Flock ID)" if lang == "Kiswahili" else "Flock ID / Name"
+    flock_id = st.text_input(flock_label, value="Batch-001")
     flock_size = st.number_input("Birds Started / Idadi ya Kuku", min_value=1, value=100)
     mortality = st.number_input("Mortality / Vifo", min_value=0, value=0)
     start_date = st.date_input("Hatch Date / Tarehe ya Kutolewa", datetime.date.today() - datetime.timedelta(days=14))
@@ -235,6 +237,32 @@ if menu == txt["dash"]:
     else:
         r3.metric("Hasara Inayotarajiwa", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
         st.divider()
+        # --- SECTION 5: FLOCK PERFORMANCE CARD ---
+    perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
+    st.subheader(perf_title)
+    
+    # Logic for performance rating
+    survival_rate = ((flock_size - mortality) / flock_size) * 100
+    
+    col_p1, col_p2, col_p3 = st.columns(3)
+    
+    with col_p1:
+        s_label = "Kiwango cha Kuishi" if lang == "Kiswahili" else "Survival Rate"
+        st.metric(s_label, f"{survival_rate:.1f}%")
+        
+    with col_p2:
+        f_label = "Ufanisi (FCR)" if lang == "Kiswahili" else "Efficiency (FCR)"
+        st.metric(f_label, f"{fcr:.2f}")
+        
+    with col_p3:
+        r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
+        st.metric(r_label, f"{roi_pct:.1f}%")
+
+    # Comparison Tip
+    if lang == "Kiswahili":
+        st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
+    else:
+        st.info(f"💡 Compare {flock_id} with previous batches to track profit trends.")
 
     # --- SECTION 4: VACCINATION (RESTORED & TRANSLATED) ---
     vac_title = "💉 Ratiba ya Chanjo" if lang == "Kiswahili" else "💉 Vaccination Schedule"
