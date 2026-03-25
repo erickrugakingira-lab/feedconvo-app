@@ -411,6 +411,8 @@ else:
     )
 
     # --- MIXING INSTRUCTIONS (RESTORED) ---
+    if menu == txt["dash"]:
+    st.subheader(f"Muhtasari wa {flock_id}")
     with st.expander(txt["mixing"]):
         if lang == "Kiswahili":
             st.write("1. **Tabaka:** Tandaza mahindi kwanza, kisha soya juu yake.")
