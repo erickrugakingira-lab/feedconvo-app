@@ -172,15 +172,42 @@ with st.sidebar:
     menu = st.radio("GO TO:", [txt["dash"], txt["solver"], txt["guide"], txt["market"]])
     
     st.divider()
-    flock_label = "Jina la Kundi (Flock ID)" if lang == "Kiswahili" else "Flock ID / Name"
-    flock_id = st.text_input(flock_label, value="Batch-001")
-    flock_size = st.number_input("Birds Started / Idadi ya Kuku", min_value=1, value=100)
-    mortality = st.number_input("Mortality / Vifo", min_value=0, value=0)
-    start_date = st.date_input("Hatch Date / Tarehe ya Kutolewa", datetime.date.today() - datetime.timedelta(days=14))
-
-    active_birds = max(0, flock_size - mortality)
-    age_days = (datetime.date.today() - start_date).days
-    total_potential_yield = active_birds * 2.5 # Using 2.5kg as standard harvest weight
+    st.subheader("🆔 Flock Identity")
+    flock_id = st.text_input(
+        "Jina la Kundi (Flock ID)" if lang == "Kiswahili" else "Flock ID / Name", 
+        value="Batch-001"
+    )
+    
+    # --- GROUP 2: BIRD DATA ---
+    st.subheader("🐣 Bird Data")
+    flock_size = st.number_input(
+        "Jumla ya Kuku / Total Birds", 
+        min_value=1, value=100
+    )
+    mortality = st.number_input(
+        "Vifo / Mortality (Deaths)", 
+        min_value=0, value=0
+    )
+    
+    # --- GROUP 3: FINANCE (The Per-Bird Update) ---
+    st.divider()
+    st.subheader("💰 " + txt["edit_fin"]) # Adjust Costs & Prices
+    
+    chick_cost = st.number_input(
+        "Gharama ya Kifaranga / Chick Cost", 
+        min_value=0, value=1500
+    )
+    
+    # This replaces the Price per KG logic
+    price_per_bird = st.number_input(
+        "Bei ya Kuuza Kuku 1 / Price per Bird", 
+        min_value=0, value=7500
+    )
+    
+    other_costs = st.number_input(
+        "Gharama Nyingine / Other Costs (Meds/Labor)", 
+        min_value=0, value=500
+    )
 
 # --- 5. PAGE LOGIC ---
 
