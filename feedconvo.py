@@ -413,7 +413,7 @@ else:
     # --- MIXING INSTRUCTIONS (RESTORED) ---
     if menu == txt["dash"]:
         st.subheader(f"Muhtasari wa {flock_id}")
-    with st.expander(txt["mixing"]):
+        with st.expander(txt["mixing"]):
         if lang == "Kiswahili":
             st.write("1. **Tabaka:** Tandaza mahindi kwanza, kisha soya juu yake.")
             st.write("2. **Mchanganyiko Mdogo:** Changanya Premix kwenye ndoo ndogo na 2kg za mahindi kwanza kuzuia mabonge.")
