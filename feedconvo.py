@@ -249,15 +249,22 @@ if menu == txt["dash"]:
         o_costs = st.number_input(txt["other_costs"], value=50000)
 
     # Mahesabu ya Faida
-    avg_feed_price = (ING_DATABASE["Maize"]["price_per_kg"] * 0.65) + (ING_DATABASE["Soya Meal"]["price_per_kg"] * 0.35)
-    total_invest = (flock_size * c_cost) + (feed_in * avg_feed_price) + o_costs
-    total_rev = total_potential_yield * m_price
-    net_profit = total_rev - total_invest
-    roi_pct = (net_profit / total_invest) * 100 if total_invest > 0 else 0
+   # Inside your Dashboard / ROI Section:
+live_birds = flock_size - mortality
+total_investment = (flock_size * chick_cost) + (feed_consumed * avg_feed_cost) + (flock_size * other_costs)
 
-    r1, r2, r3 = st.columns(3)
-    r1.metric(txt["invest"], f"{int(total_invest):,} TSH")
-    r2.metric(txt["revenue"], f"{int(total_rev):,} TSH")
+# NEW REVENUE LOGIC: Price per Bird * Living Birds
+expected_revenue = live_birds * price_per_bird
+projected_profit = expected_revenue - total_investment
+
+# Calculate ROI Percentage
+roi_pct = (projected_profit / total_investment) * 100 if total_investment > 0 else 0
+
+# Display the Results
+c1, c2, c3 = st.columns(3)
+c1.metric(txt["invest"], f"{total_investment:,.0f} TSH")
+c2.metric(txt["revenue"], f"{expected_revenue:,.0f} TSH")
+c3.metric(txt["profit"], f"{projected_profit:,.0f} TSH", delta=f"{roi_pct:.1f}% ROI")
     
     if net_profit > 0:
         r3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
