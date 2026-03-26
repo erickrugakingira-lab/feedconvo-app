@@ -241,36 +241,44 @@ if menu == txt["dash"]:
     st.divider()
 
     # Sehemu ya 3: ROI (Financials)
-    st.subheader(txt["roi_title"])
-    with st.expander(txt["edit_fin"]):
-        cx, cy = st.columns(2)
-        c_cost = cx.number_input(txt["chick_cost"], value=1500)
-        m_price = cy.number_input(txt["mkt_price"], value=8500)
-        o_costs = st.number_input(txt["other_costs"], value=50000)
+  st.subheader(txt["roi_title"])
 
-    # Mahesabu ya Faida
-   # Inside your Dashboard / ROI Section:
+# 1. Inputs for the specific flock
+with st.expander(txt["edit_fin"]):
+    cx, cy = st.columns(2)
+    # Ensure these variable names match your math below!
+    c_cost = cx.number_input(txt["chick_cost"], value=1500)
+    # Using the 'price_per_bird' logic we discussed
+    p_per_bird = cy.number_input("Selling Price per Bird (TSH)", value=8500)
+    o_costs = st.number_input(txt["other_costs"], value=50000)
+
+# 2. Revenue & Profit Calculations
+# We use the variables defined above (c_cost, p_per_bird, o_costs)
 live_birds = flock_size - mortality
-total_investment = (flock_size * chick_cost) + (feed_consumed * avg_feed_cost) + (flock_size * other_costs)
+total_investment = (flock_size * c_cost) + (feed_consumed * avg_feed_cost) + o_costs
 
-# NEW REVENUE LOGIC: Price per Bird * Living Birds
-expected_revenue = live_birds * price_per_bird
-projected_profit = expected_revenue - total_investment
+expected_revenue = live_birds * p_per_bird
+net_profit = expected_revenue - total_investment
 
 # Calculate ROI Percentage
-roi_pct = (projected_profit / total_investment) * 100 if total_investment > 0 else 0
+roi_pct = (net_profit / total_investment) * 100 if total_investment > 0 else 0
 
-# Display the Results
+# 3. Display the Results
+st.divider()
 c1, c2, c3 = st.columns(3)
+
 c1.metric(txt["invest"], f"{total_investment:,.0f} TSH")
 c2.metric(txt["revenue"], f"{expected_revenue:,.0f} TSH")
-c3.metric(txt["profit"], f"{projected_profit:,.0f} TSH", delta=f"{roi_pct:.1f}% ROI")
-    
+
+# Logic to show Green for Profit and Red for Loss
 if net_profit > 0:
-    r3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
+    c3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
 else:
-    r3.metric("Hasara Inayotarajiwa", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
-    st.divider()
+    # 'inverse' makes the delta red when it's a negative number
+    c3.metric("Hasara / Loss", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
+
+st.divider()
+
         # --- SECTION 5: FLOCK PERFORMANCE CARD ---
     perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
     st.subheader(perf_title)
