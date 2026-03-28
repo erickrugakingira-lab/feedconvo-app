@@ -2,6 +2,33 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
+from stickers.gsheets import GSheetsConnection # You will need to pip install streamlit-gsheets
+
+# --- 1. CONNECT TO THE PERMANENT DATABASE ---
+# In your Streamlit Cloud Secrets, you will put your Sheet URL
+conn = st.connection("gsheets", type=GSheetsConnection)
+
+# --- 2. FUNCTION TO SAVE DATA PERMANENTLY ---
+def save_to_google_sheets(flock_name, age, birds, fcr_val, profit_val):
+    # Create a small dataframe for the new row
+    new_entry = pd.DataFrame([{
+        "Date": datetime.date.today(),
+        "Flock_ID": flock_name,
+        "Age": age,
+        "Birds": birds,
+        "FCR": fcr_val,
+        "Profit_TSH": profit_val
+    }])
+    
+    # Fetch existing data
+    existing_data = conn.read(worksheet="Sheet1")
+    
+    # Add the new row
+    updated_table = pd.concat([existing_data, new_entry], ignore_index=True)
+    
+    # Write back to Google Sheets
+    conn.update(worksheet="Sheet1", data=updated_table)
+    st.success(f"✅ Data for {flock_name} saved to the Cloud!")
 
 # --- NEW: INITIALIZE DATABASE IN MEMORY ---
 if "flock_db" not in st.session_state:
@@ -166,21 +193,27 @@ if menu == txt["dash"]:
     r2.metric(txt["revenue"], f"{revenue:,.0f} TSH")
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI", delta_color="normal" if profit > 0 else "inverse")
     st.divider()
-    
-    st.subheader("🔄 Compare with Previous Batches")  
-    # Button to save the current inputs
-    if st.button("💾 Save Current Batch Data"):
-        save_flock()
-    if st.session_state.flock_db:
-        # Convert the memory database into a viewable table
-        comparison_df = pd.DataFrame(st.session_state.flock_db).T
-        st.dataframe(comparison_df, use_container_width=True)   
-        # Performance Chart
-        st.bar_chart(comparison_df['fcr'])
-        st.caption("Lower FCR means better feed efficiency!")
-    else:
-        st.info("No batches saved yet. Enter data and click 'Save' to start comparing.")
+    st.subheader("📋 Batch History & Progress")
 
+    # Button to Save to Google Sheets
+    if st.button("🚀 Save This Batch to History"):
+        save_to_google_sheets(flock_id, age_days, active_birds, fcr, profit)
+
+    # View History
+    try:
+        history_df = conn.read(worksheet="Sheet1")
+        if not history_df.empty:
+            # Show the table
+            st.dataframe(history_df, use_container_width=True)
+            
+            # Show a Progress Chart: Profit over time/batches
+            st.line_chart(data=history_df, x="Flock_ID", y="Profit_TSH")
+            st.caption("This chart shows how your profit is changing with each new batch.")
+        else:
+            st.info("No history found yet. Save your first batch!")
+    except:
+        st.warning("Connect your Google Sheet in 'Settings' to see history.")
+    
     # VACCINATION TABLE
     st.divider()
     st.subheader("💉 Vaccination Schedule")
