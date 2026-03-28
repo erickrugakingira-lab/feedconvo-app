@@ -193,13 +193,17 @@ elif menu == txt["solver"]:
     
     with st.expander(txt["mixing"]):
         if lang == "Kiswahili":
-            st.write(f"1. **Mafuta:** Sugua {oil_kg:.1f}kg za mafuta kwenye kiasi kidogo cha mahindi.")
-            st.write("2. **Mchanganyiko:** Tandaza mahindi, kisha soya, kisha premix.")
-            st.write("3. **Geuza:** Tumia jembe kugeuza rundo mara 3.")
+            st.markdown("### 🥣 Maelekezo ya Kitaalamu ya Kuchanganya")
+            st.write(f"1. **Hatua ya Mafuta:** Chukua kilo chache za Mahindi na uchanganye na {oil_kg:.1f}kg za mafuta. Sugua kwa mikono mpaka mafuta yote yaingie kwenye mahindi na kusiwe na mabonge.")
+            st.write("2. **Hatua ya Virutubisho:** Changanya Premix yako na kiasi kidogo cha Soya kwenye ndoo kwanza.")
+            st.write("3. **Kutandaza (Layering):** Tandaza mahindi yaliyobaki chini, kisha mwaga soya juu yake, kufuatiwa na mchanganyiko wa mafuta na kisha premix.")
+            st.write("4. **Sheria ya Mihiko 3:** Geuza rundo lote kutoka upande mmoja kwenda mwingine mara tatu (3) mpaka rangi iwe moja.")
         else:
-            st.write(f"1. **Oil Rub:** Rub {oil_kg:.1f}kg of oil into a small batch of maize first.")
-            st.write("2. **Layering:** Layer Maize, then Soya, then Premix.")
-            st.write("3. **Turn:** Turn 3 times with a shovel.")
+            st.markdown("### 🥣 Professional Mixing Protocol")
+            st.write(f"1. **The Oil Rub:** Rub {oil_kg:.1f}kg of oil into a small portion of Maize first. Ensure there are no wet clumps.")
+            st.write("2. **Premix Dilution:** Mix the Premix with a few kgs of Soya in a bucket before adding to the main pile.")
+            st.write("3. **Sandwich Layering:** Spread remaining Maize on a clean floor, layer Soya on top, then add the Oil-Maize and Premix blends.")
+            st.write("4. **The 3-Shovel Rule:** Move the entire pile to a new spot, then back, then once more until the color is perfectly uniform.")
 
 # 📚 GUIDE
 elif menu == txt["guide"]:
