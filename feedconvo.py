@@ -3,6 +3,22 @@ import pandas as pd
 import datetime
 import os
 
+# --- NEW: INITIALIZE DATABASE IN MEMORY ---
+if "flock_db" not in st.session_state:
+    st.session_state.flock_db = {}
+
+# --- NEW: FUNCTION TO SAVE CURRENT FLOCK ---
+def save_flock():
+    current_data = {
+        "active_birds": active_birds,
+        "age": age_days,
+        "fcr": fcr,
+        "roi": roi_pct,
+        "profit": profit
+    }
+    st.session_state.flock_db[flock_id] = current_data
+    st.success(f"✅ {flock_id} saved successfully!")
+    
 # --- 1. GLOBAL CONFIGURATION ---
 st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon="🐔")
 
@@ -144,6 +160,21 @@ if menu == txt["dash"]:
     r1.metric(txt["invest"], f"{total_invest:,.0f} TSH")
     r2.metric(txt["revenue"], f"{revenue:,.0f} TSH")
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI", delta_color="normal" if profit > 0 else "inverse")
+    st.divider()
+    
+    st.subheader("🔄 Compare with Previous Batches")  
+    # Button to save the current inputs
+    if st.button("💾 Save Current Batch Data"):
+        save_flock()
+    if st.session_state.flock_db:
+        # Convert the memory database into a viewable table
+        comparison_df = pd.DataFrame(st.session_state.flock_db).T
+        st.dataframe(comparison_df, use_container_width=True)   
+        # Performance Chart
+        st.bar_chart(comparison_df['fcr'])
+        st.caption("Lower FCR means better feed efficiency!")
+    else:
+        st.info("No batches saved yet. Enter data and click 'Save' to start comparing.")
 
     # VACCINATION TABLE
     st.divider()
