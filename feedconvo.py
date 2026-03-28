@@ -20,7 +20,12 @@ def save_flock():
     st.success(f"✅ {flock_id} saved successfully!")
     
 # --- 1. GLOBAL CONFIGURATION ---
-st.set_page_config(page_title="FeedConvo Poultry Pro", layout="wide", page_icon="🐔")
+st.set_page_config(
+    page_title="FeedConvo Pro", 
+    layout="wide", # Allows columns to stack vertically on phones
+    initial_sidebar_state="collapsed", # Hides the menu so the farmer sees the Dashboard first
+    page_icon="🐔"
+)
 
 # --- 2. THE DATABASES ---
 ING_DATABASE = {
