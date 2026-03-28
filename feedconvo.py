@@ -294,10 +294,10 @@ with col_p2:
         f_label = "Ufanisi (FCR)" if lang == "Kiswahili" else "Efficiency (FCR)"
         # Note: Ensure 'fcr' variable is calculated before this line!
         st.metric(f_label, f"{fcr:.2f}")
-    with col_p3:
+with col_p3:
         r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
         st.metric(r_label, f"{roi_pct:.1f}%")
-    with col_p3:
+with col_p3:
         r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
         st.metric(r_label, f"{roi_pct:.1f}%")
     # Comparison Tip
