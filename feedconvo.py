@@ -272,14 +272,14 @@ c2.metric(txt["revenue"], f"{expected_revenue:,.0f} TSH")
 
 # Logic to show Green for Profit and Red for Loss
 if net_profit > 0:
-    c3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
-else:
-    # 'inverse' makes the delta red when it's a negative number
-    c3.metric("Hasara / Loss", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
+        c3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
+    else:
+        # 'inverse' makes the delta red when it's a negative number
+        c3.metric("Hasara / Loss", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
 
-st.divider()
+    st.divider()
 
-        # --- SECTION 5: FLOCK PERFORMANCE CARD ---
+    # 2. SECTION 5: FLOCK PERFORMANCE CARD
     perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
     st.subheader(perf_title)
     
@@ -294,12 +294,15 @@ st.divider()
         
     with col_p2:
         f_label = "Ufanisi (FCR)" if lang == "Kiswahili" else "Efficiency (FCR)"
+        # Note: Ensure 'fcr' variable is calculated before this line!
         st.metric(f_label, f"{fcr:.2f}")
-        
+
     with col_p3:
         r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
         st.metric(r_label, f"{roi_pct:.1f}%")
-
+    with col_p3:
+        r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
+        st.metric(r_label, f"{roi_pct:.1f}%")
     # Comparison Tip
     if lang == "Kiswahili":
         st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
