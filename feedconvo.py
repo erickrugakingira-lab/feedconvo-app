@@ -302,9 +302,9 @@ with col_p3:
         st.metric(r_label, f"{roi_pct:.1f}%")
     # Comparison Tip
     if lang == "Kiswahili":
-        st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
+    st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
     else:
-        st.info(f"💡 Compare {flock_id} with previous batches to track profit trends.")
+    st.info(f"💡 Compare {flock_id} with previous batches to track profit trends.")
     # --- SECTION 4: VACCINATION (RESTORED & TRANSLATED) ---
     vac_title = "💉 Ratiba ya Chanjo" if lang == "Kiswahili" else "💉 Vaccination Schedule"
     st.subheader(vac_title)
