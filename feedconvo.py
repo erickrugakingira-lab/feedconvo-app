@@ -290,25 +290,30 @@ with col_p1:
     st.metric(s_label, f"{survival_rate:.1f}%")
 
 with col_p2:
-    # Add your FCR logic here
+        # FIXED: Indented to be inside 'with'
         f_label = "Ufanisi (FCR)" if lang == "Kiswahili" else "Efficiency (FCR)"
-        # Note: Ensure 'fcr' variable is calculated before this line!
+        # Calculate FCR if not already done: Feed Consumed / Total Weight
+        # fcr = total_feed / total_weight if total_weight > 0 else 0
         st.metric(f_label, f"{fcr:.2f}")
-with col_p3:
+
+    with col_p3:
+        # FIXED: Indented to be inside 'with'
         r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
         st.metric(r_label, f"{roi_pct:.1f}%")
-with col_p3:
-        r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
-        st.metric(r_label, f"{roi_pct:.1f}%")
-    # Comparison Tip
+
+    # --- Comparison Tip ---
     if lang == "Kiswahili":
-    st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
+        # FIXED: Indented to be inside 'if'
+        st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
     else:
-    st.info(f"💡 Compare {flock_id} with previous batches to track profit trends.")
-    # --- SECTION 4: VACCINATION (RESTORED & TRANSLATED) ---
+        # FIXED: Indented to be inside 'else'
+        st.info(f"💡 Compare {flock_id} with previous batches to track profit trends.")
+
+    # --- SECTION 4: VACCINATION ---
     vac_title = "💉 Ratiba ya Chanjo" if lang == "Kiswahili" else "💉 Vaccination Schedule"
     st.subheader(vac_title)
-    # Translation for Table Headers
+
+    # Table Headers
     h_day = "Siku / Day" if lang == "Kiswahili" else "Day"
     h_vac = "Chanjo / Vaccine" if lang == "Kiswahili" else "Vaccine"
     h_stat = "Hali / Status" if lang == "Kiswahili" else "Status"
