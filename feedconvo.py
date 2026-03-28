@@ -259,35 +259,38 @@ total_investment = (flock_size * c_cost) + (feed_consumed * avg_feed_cost) + o_c
 
 expected_revenue = live_birds * p_per_bird
 net_profit = expected_revenue - total_investment
-
-# Calculate ROI Percentage
 roi_pct = (net_profit / total_investment) * 100 if total_investment > 0 else 0
 
-# 3. Display the Results
+# --- 2. Display Results ---
 st.divider()
 c1, c2, c3 = st.columns(3)
 
 c1.metric(txt["invest"], f"{total_investment:,.0f} TSH")
 c2.metric(txt["revenue"], f"{expected_revenue:,.0f} TSH")
 
-# Logic to show Green for Profit and Red for Loss
+# FIXED: 'if' and 'else' now line up vertically
 if net_profit > 0:
-        c3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
-    else:
-        # 'inverse' makes the delta red when it's a negative number
-        c3.metric("Hasara / Loss", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
-    st.divider()
-    
-    # 2. SECTION 5: FLOCK PERFORMANCE CARD
-    perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
-    st.subheader(perf_title)
-    # Logic for performance rating
-    survival_rate = ((flock_size - mortality) / flock_size) * 100
-    col_p1, col_p2, col_p3 = st.columns(3)
-    with col_p1:
-        s_label = "Kiwango cha Kuishi" if lang == "Kiswahili" else "Survival Rate"
-        st.metric(s_label, f"{survival_rate:.1f}%")
-    with col_p2:
+    c3.metric(txt["profit"], f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI")
+else:
+    # FIXED: 'c3' now lines up inside the 'else'
+    c3.metric("Hasara / Loss", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
+
+# FIXED: This divider is now back on the main level
+st.divider()
+
+# --- 3. SECTION 5: FLOCK PERFORMANCE CARD ---
+perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
+st.subheader(perf_title)
+
+survival_rate = ((flock_size - mortality) / flock_size) * 100
+col_p1, col_p2, col_p3 = st.columns(3)
+
+with col_p1:
+    s_label = "Kiwango cha Kuishi" if lang == "Kiswahili" else "Survival Rate"
+    st.metric(s_label, f"{survival_rate:.1f}%")
+
+with col_p2:
+    # Add your FCR logic here
         f_label = "Ufanisi (FCR)" if lang == "Kiswahili" else "Efficiency (FCR)"
         # Note: Ensure 'fcr' variable is calculated before this line!
         st.metric(f_label, f"{fcr:.2f}")
