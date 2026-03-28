@@ -296,7 +296,7 @@ with col_p2:
         # fcr = total_feed / total_weight if total_weight > 0 else 0
         st.metric(f_label, f"{fcr:.2f}")
 
-    with col_p3:
+with col_p3:
         # FIXED: Indented to be inside 'with'
         r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
         st.metric(r_label, f"{roi_pct:.1f}%")
