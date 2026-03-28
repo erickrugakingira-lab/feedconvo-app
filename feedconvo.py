@@ -276,27 +276,21 @@ if net_profit > 0:
     else:
         # 'inverse' makes the delta red when it's a negative number
         c3.metric("Hasara / Loss", f"{int(net_profit):,} TSH", f"{roi_pct:.1f}% ROI", delta_color="inverse")
-
     st.divider()
-
+    
     # 2. SECTION 5: FLOCK PERFORMANCE CARD
     perf_title = f"📊 Muhtasari wa: {flock_id}" if lang == "Kiswahili" else f"📊 Summary for: {flock_id}"
     st.subheader(perf_title)
-    
     # Logic for performance rating
     survival_rate = ((flock_size - mortality) / flock_size) * 100
-    
     col_p1, col_p2, col_p3 = st.columns(3)
-    
     with col_p1:
         s_label = "Kiwango cha Kuishi" if lang == "Kiswahili" else "Survival Rate"
         st.metric(s_label, f"{survival_rate:.1f}%")
-        
     with col_p2:
         f_label = "Ufanisi (FCR)" if lang == "Kiswahili" else "Efficiency (FCR)"
         # Note: Ensure 'fcr' variable is calculated before this line!
         st.metric(f_label, f"{fcr:.2f}")
-
     with col_p3:
         r_label = "ROI ya Kundi" if lang == "Kiswahili" else "Flock ROI"
         st.metric(r_label, f"{roi_pct:.1f}%")
@@ -308,16 +302,13 @@ if net_profit > 0:
         st.info(f"💡 Linganisha {flock_id} na makundi yaliyopita ili kuona mabadiliko ya faida.")
     else:
         st.info(f"💡 Compare {flock_id} with previous batches to track profit trends.")
-
     # --- SECTION 4: VACCINATION (RESTORED & TRANSLATED) ---
     vac_title = "💉 Ratiba ya Chanjo" if lang == "Kiswahili" else "💉 Vaccination Schedule"
     st.subheader(vac_title)
-    
     # Translation for Table Headers
     h_day = "Siku / Day" if lang == "Kiswahili" else "Day"
     h_vac = "Chanjo / Vaccine" if lang == "Kiswahili" else "Vaccine"
     h_stat = "Hali / Status" if lang == "Kiswahili" else "Status"
-
     # Vaccination Logic based on age_days
     done_txt = "✅ Imekamilika" if lang == "Kiswahili" else "✅ Done"
     pending_txt = "⏳ Inasubiri" if lang == "Kiswahili" else "⏳ Pending"
