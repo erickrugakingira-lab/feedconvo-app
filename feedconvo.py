@@ -25,7 +25,7 @@ ING_DATABASE = {
         ]
     },
     "Vegetable Oil": {
-        "img": "vegetable_oil.jpg", "prot": 0.0, "en": 8800, "price_per_kg": 3500,
+        "img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "price_per_kg": 3500,
         "qc": [
             "✅ Rangi angavu, haina vumbi / Clear color, no sediment",
             "✅ Harufu nzuri / Fresh smell",
