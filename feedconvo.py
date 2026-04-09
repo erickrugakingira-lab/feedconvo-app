@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
-from stickers.gsheets import GSheetsConnection # You will need to pip install streamlit-gsheets
+from streamlit_gsheets import GSheetsConnection # You will need to pip install streamlit-gsheets
 
 # --- 1. CONNECT TO THE PERMANENT DATABASE ---
 # In your Streamlit Cloud Secrets, you will put your Sheet URL
