@@ -193,7 +193,7 @@ if menu == txt["dash"]:
     r2.metric(txt["revenue"], f"{revenue:,.0f} TSH")
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI")
     
-    # BATCH HISTORY
+  # BATCH HISTORY SECTION
     st.divider()
     st.subheader(txt["hist_title"])
     if st.button(txt["save_btn"]):
@@ -201,8 +201,21 @@ if menu == txt["dash"]:
 
     if os.path.isfile('flock_data.csv'):
         history_df = pd.read_csv('flock_data.csv')
-        st.dataframe(history_df[history_df['Type'] == flock_type], use_container_width=True)
-
+        
+        # Check if 'Type' column exists to avoid the KeyError
+        if 'Type' in history_df.columns:
+            filtered_df = history_df[history_df['Type'] == flock_type]
+            if not filtered_df.empty:
+                st.dataframe(filtered_df, use_container_width=True)
+            else:
+                st.info(txt["no_hist"])
+        else:
+            # If the file is old, just show the whole thing or tell user to reset
+            st.warning("Old data format detected. Please delete 'flock_data.csv' to reset.")
+            st.dataframe(history_df, use_container_width=True)
+    else:
+        st.info(txt["no_hist"])
+        
 # 🧪 FEED SOLVER (Dynamic)
 elif menu == txt["solver"]:
     st.title(f"{txt['solve_title']} ({flock_type})")
