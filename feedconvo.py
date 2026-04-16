@@ -2,39 +2,33 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
-from streamlit_gsheets import GSheetsConnection # You will need to pip install streamlit-gsheets
 
-# --- 1. CONNECT TO THE PERMANENT DATABASE ---
-# In your Streamlit Cloud Secrets, you will put your Sheet URL
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-# --- 2. FUNCTION TO SAVE DATA PERMANENTLY ---
-def save_to_google_sheets(flock_name, age, birds, fcr_val, profit_val):
+# --- 1. LOCAL DATABASE LOGIC ---
+def save_to_local_csv(flock_name, age, birds, fcr_val, profit_val):
+    file_name = 'flock_data.csv'
     # Create a small dataframe for the new row
     new_entry = pd.DataFrame([{
-        "Date": datetime.date.today(),
+        "Date": datetime.date.today().strftime('%Y-%m-%d'),
         "Flock_ID": flock_name,
         "Age": age,
         "Birds": birds,
-        "FCR": fcr_val,
-        "Profit_TSH": profit_val
+        "FCR": round(fcr_val, 2),
+        "Profit_TSH": round(profit_val, 2)
     }])
     
-    # Fetch existing data
-    existing_data = conn.read(worksheet="Sheet1")
+    # Check if file exists to decide on header
+    if os.path.isfile(file_name):
+        new_entry.to_csv(file_name, mode='a', index=False, header=False)
+    else:
+        new_entry.to_csv(file_name, index=False)
     
-    # Add the new row
-    updated_table = pd.concat([existing_data, new_entry], ignore_index=True)
-    
-    # Write back to Google Sheets
-    conn.update(worksheet="Sheet1", data=updated_table)
-    st.success(f"✅ Data for {flock_name} saved to the Cloud!")
+    st.success(f"✅ Data for {flock_name} saved locally!")
 
-# --- NEW: INITIALIZE DATABASE IN MEMORY ---
+# --- INITIALIZE DATABASE IN MEMORY ---
 if "flock_db" not in st.session_state:
     st.session_state.flock_db = {}
 
-# --- NEW: FUNCTION TO SAVE CURRENT FLOCK ---
+# --- FUNCTION TO SAVE CURRENT FLOCK ---
 def save_flock():
     current_data = {
         "active_birds": active_birds,
@@ -49,8 +43,8 @@ def save_flock():
 # --- 1. GLOBAL CONFIGURATION ---
 st.set_page_config(
     page_title="FeedConvo Pro", 
-    layout="wide", # Allows columns to stack vertically on phones
-    initial_sidebar_state="collapsed", # Hides the menu so the farmer sees the Dashboard first
+    layout="wide", 
+    initial_sidebar_state="collapsed", 
     page_icon="🐔"
 )
 
@@ -192,27 +186,28 @@ if menu == txt["dash"]:
     r1.metric(txt["invest"], f"{total_invest:,.0f} TSH")
     r2.metric(txt["revenue"], f"{revenue:,.0f} TSH")
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI", delta_color="normal" if profit > 0 else "inverse")
+    
     st.divider()
     st.subheader("📋 Batch History & Progress")
 
-    # Button to Save to Google Sheets
+    # Button to Save Locally
     if st.button("🚀 Save This Batch to History"):
-        save_to_google_sheets(flock_id, age_days, active_birds, fcr, profit)
+        save_to_local_csv(flock_id, age_days, active_birds, fcr, profit)
 
-    # View History
-    try:
-        history_df = conn.read(worksheet="Sheet1")
+    # View History from CSV
+    if os.path.isfile('flock_data.csv'):
+        history_df = pd.read_csv('flock_data.csv')
         if not history_df.empty:
-            # Show the table
             st.dataframe(history_df, use_container_width=True)
-            
-            # Show a Progress Chart: Profit over time/batches
             st.line_chart(data=history_df, x="Flock_ID", y="Profit_TSH")
-            st.caption("This chart shows how your profit is changing with each new batch.")
+            
+            # Add Download Button for Safety
+            with open('flock_data.csv', 'rb') as f:
+                st.download_button('📥 Download Records as CSV', f, file_name='feedconvo_history.csv')
         else:
             st.info("No history found yet. Save your first batch!")
-    except:
-        st.warning("Connect your Google Sheet in 'Settings' to see history.")
+    else:
+        st.info("No records found. Data will appear here once you save your first batch.")
     
     # VACCINATION TABLE
     st.divider()
@@ -302,4 +297,3 @@ elif menu == txt["market"]:
         st.divider()
 
 st.caption("🚀 Powered by FeedConvo Local Logistics")
-           
