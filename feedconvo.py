@@ -102,7 +102,11 @@ with st.sidebar:
             "mixing": "🥣 Mixing Instructions", "invest": "Total Investment", 
             "revenue": "Expected Revenue", "profit": "Projected Profit",
             "edit_fin": "Adjust Costs & Prices", "chick_cost": "Cost per Chick (TSH)",
-            "mkt_price": "Selling Price per Bird (TSH)", "other_costs": "Meds/Labor per Bird (TSH)"
+            "mkt_price": "Selling Price per Bird (TSH)", "other_costs": "Meds/Labor per Bird (TSH)""hist_title": "📋 Batch History & Progress",
+            "save_btn": "🚀 Save This Batch to History",
+            "dl_btn": "📥 Download Full Harvest Report",
+            "no_hist": "No history found yet.",
+            "hist_info": "💡 Data is saved daily. Download below at the end of the batch."
         },
         "Kiswahili": {
             "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo", "guide": "📚 Mwongozo", "market": "🛒 Soko",
@@ -115,7 +119,11 @@ with st.sidebar:
             "invest": "Gharama", "revenue": "Mauzo", 
             "profit": "Faida", "edit_fin": "Badili Bei", 
             "chick_cost": "Gharama ya Kifaranga", "mkt_price": "Bei ya Kuuza Kuku 1", 
-            "other_costs": "Dawa/Wafanyakazi kwa kila Kuku"
+            "other_costs": "Dawa/Wafanyakazi kwa kila Kuku""hist_title": "📋 Kumbukumbu za Batichi",
+            "save_btn": "🚀 Hifadhi Taarifa za Leo",
+            "dl_btn": "📥 Pakua Ripoti Kamili ya Mavuno",
+            "no_hist": "Hakuna kumbukumbu bado.",
+            "hist_info": "💡 Taarifa huhifadhiwa kila siku. Pakua ripoti mwisho wa msimu."
         }
     }
     txt = t[lang]
