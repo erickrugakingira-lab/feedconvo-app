@@ -4,4 +4,3 @@ pandas
 pulp
 plotly
 Pillow
-st-gsheets-connection
