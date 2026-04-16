@@ -3,7 +3,7 @@ import pandas as pd
 import datetime
 import os
 
-# --- 1. LOCAL DATABASE LOGIC ---
+# --- 1. THE FUNCTION (Keep this at the top level) ---
 def save_to_local_csv(flock_name, age, birds, fcr_val, profit_val):
     file_name = 'flock_data.csv'
     # Create a small dataframe for the new row
@@ -24,21 +24,50 @@ def save_to_local_csv(flock_name, age, birds, fcr_val, profit_val):
     
     st.success(f"✅ Data for {flock_name} saved locally!")
 
-# --- INITIALIZE DATABASE IN MEMORY ---
-if "flock_db" not in st.session_state:
-    st.session_state.flock_db = {}
+# --- 2. THE UI SECTION (Ensure this is aligned to the left/correct block) ---
+st.divider()
+st.subheader("📋 Batch History & Progress")
 
-# --- FUNCTION TO SAVE CURRENT FLOCK ---
-def save_flock():
+# 1. BUTTON TO SAVE LOCALLY
+if st.button("🚀 Save This Batch to History"):
+    # Ensure these variables (flock_id, age_days, etc.) are defined above this line in your script
+    save_to_local_csv(flock_id, age_days, active_birds, fcr, profit)
+    
+    # Update session state as well so the UI reflects changes immediately
     current_data = {
         "active_birds": active_birds,
         "age": age_days,
         "fcr": fcr,
-        "roi": roi_pct,
         "profit": profit
     }
     st.session_state.flock_db[flock_id] = current_data
-    st.success(f"✅ {flock_id} saved successfully!")
+
+# 2. VIEW HISTORY FROM CSV
+if os.path.isfile('flock_data.csv'):
+    history_df = pd.read_csv('flock_data.csv')
+    
+    if not history_df.empty:
+        # Display the data table
+        st.dataframe(history_df, use_container_width=True)
+        
+        # Show the visual trend
+        st.line_chart(data=history_df, x="Flock_ID", y="Profit_TSH")
+        
+        st.info("💡 You can save data daily. Use the button below only when you are ready to keep a permanent copy.")
+        
+        # 3. THE UPDATED DOWNLOAD BUTTON
+        with open('flock_data.csv', 'rb') as f:
+            st.download_button(
+                label="📥 Download Full Harvest Report",
+                data=f, 
+                file_name=f'Harvest_Report_{flock_id}_{datetime.date.today()}.csv',
+                mime='text/csv',
+                help="Click here at the end of the batch to save your full records to your phone."
+            )
+    else:
+        st.info("No history found yet. Save your first batch!")
+else:
+    st.info("No records found. Data will appear here once you save your first batch.")
     
 # --- 1. GLOBAL CONFIGURATION ---
 st.set_page_config(
