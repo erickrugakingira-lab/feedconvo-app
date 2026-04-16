@@ -171,33 +171,30 @@ if menu == txt["dash"]:
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI", delta_color="normal" if profit > 0 else "inverse")
     
     # BATCH HISTORY SECTION (Moved inside Dashboard)
-    st.divider()
-    st.subheader("📋 Batch History & Progress")
+  st.divider()
+    st.subheader(txt["hist_title"]) # Translated Title
 
-    if st.button("🚀 Save This Batch to History"):
+    if st.button(txt["save_btn"]): # Translated Button
         save_to_local_csv(flock_id, age_days, active_birds, fcr, profit)
-        st.session_state.flock_db[flock_id] = {
-            "active_birds": active_birds, "age": age_days, "fcr": fcr, "profit": profit
-        }
 
     if os.path.isfile('flock_data.csv'):
         history_df = pd.read_csv('flock_data.csv')
         if not history_df.empty:
             st.dataframe(history_df, use_container_width=True)
             st.line_chart(data=history_df, x="Flock_ID", y="Profit_TSH")
-            st.info("💡 Data is saved daily. Download below at the end of the batch.")
+            st.info(txt["hist_info"]) # Translated Info Text
             with open('flock_data.csv', 'rb') as f:
                 st.download_button(
-                    label="📥 Download Full Harvest Report",
+                    label=txt["dl_btn"], # Translated Download Button
                     data=f, 
                     file_name=f'Harvest_Report_{flock_id}.csv',
                     mime='text/csv'
                 )
         else:
-            st.info("No history found yet.")
+            st.info(txt["no_hist"])
     else:
-        st.info("No records found.")
-    
+        st.info(txt["no_hist"])
+        
     # VACCINATION TABLE
     st.divider()
     st.subheader("💉 Vaccination Schedule")
