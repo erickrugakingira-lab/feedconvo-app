@@ -171,8 +171,8 @@ if menu == txt["dash"]:
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI", delta_color="normal" if profit > 0 else "inverse")
     
     # BATCH HISTORY SECTION (Moved inside Dashboard)
-   st.divider()
-   st.subheader(txt["hist_title"]) # Translated Title
+    st.divider()
+    st.subheader(txt["hist_title"]) # Translated Title
 
     if st.button(txt["save_btn"]): # Translated Button
         save_to_local_csv(flock_id, age_days, active_birds, fcr, profit)
