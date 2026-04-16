@@ -52,7 +52,28 @@ STANDARDS = {
     "Finisher (Wk 5+)": 18.0
 }
 
-# --- 3. CUSTOM STYLING ---
+# --- 3. HELPER FUNCTIONS ---
+def save_to_local_csv(flock_name, age, birds, fcr_val, profit_val):
+    file_name = 'flock_data.csv'
+    new_entry = pd.DataFrame([{
+        "Date": datetime.date.today().strftime('%Y-%m-%d'),
+        "Flock_ID": flock_name,
+        "Age": age,
+        "Birds": birds,
+        "FCR": round(fcr_val, 2),
+        "Profit_TSH": round(profit_val, 2)
+    }])
+    if os.path.isfile(file_name):
+        new_entry.to_csv(file_name, mode='a', index=False, header=False)
+    else:
+        new_entry.to_csv(file_name, index=False)
+    st.success(f"✅ Data for {flock_name} saved locally!")
+
+# Initialize session state for DB
+if "flock_db" not in st.session_state:
+    st.session_state.flock_db = {}
+
+# --- 4. CUSTOM STYLING ---
 bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
 st.markdown(f"""
     <style>
@@ -65,7 +86,7 @@ st.markdown(f"""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. SIDEBAR & NAVIGATION ---
+# --- 5. SIDEBAR & NAVIGATION ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
     lang = st.radio("Lugha / Language:", ["English", "Kiswahili"])
@@ -106,11 +127,10 @@ with st.sidebar:
     mortality = st.number_input("Mortality", min_value=0, value=0)
     start_date = st.date_input("Hatch Date", datetime.date.today() - datetime.timedelta(days=14))
     
-    # Global Calculations
     active_birds = max(0, flock_size - mortality)
     age_days = (datetime.date.today() - start_date).days
 
-# --- 5. PAGE LOGIC ---
+# --- 6. PAGE LOGIC ---
 
 # 📊 DASHBOARD
 if menu == txt["dash"]:
@@ -150,27 +170,33 @@ if menu == txt["dash"]:
     r2.metric(txt["revenue"], f"{revenue:,.0f} TSH")
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI", delta_color="normal" if profit > 0 else "inverse")
     
+    # BATCH HISTORY SECTION (Moved inside Dashboard)
     st.divider()
     st.subheader("📋 Batch History & Progress")
 
-    # Button to Save Locally
     if st.button("🚀 Save This Batch to History"):
         save_to_local_csv(flock_id, age_days, active_birds, fcr, profit)
+        st.session_state.flock_db[flock_id] = {
+            "active_birds": active_birds, "age": age_days, "fcr": fcr, "profit": profit
+        }
 
-    # View History from CSV
     if os.path.isfile('flock_data.csv'):
         history_df = pd.read_csv('flock_data.csv')
         if not history_df.empty:
             st.dataframe(history_df, use_container_width=True)
             st.line_chart(data=history_df, x="Flock_ID", y="Profit_TSH")
-            
-            # Add Download Button for Safety
+            st.info("💡 Data is saved daily. Download below at the end of the batch.")
             with open('flock_data.csv', 'rb') as f:
-                st.download_button('📥 Download Records as CSV', f, file_name='feedconvo_history.csv')
+                st.download_button(
+                    label="📥 Download Full Harvest Report",
+                    data=f, 
+                    file_name=f'Harvest_Report_{flock_id}.csv',
+                    mime='text/csv'
+                )
         else:
-            st.info("No history found yet. Save your first batch!")
+            st.info("No history found yet.")
     else:
-        st.info("No records found. Data will appear here once you save your first batch.")
+        st.info("No records found.")
     
     # VACCINATION TABLE
     st.divider()
@@ -200,7 +226,6 @@ elif menu == txt["solver"]:
     use_premix = st.checkbox("Include 5% Premix", value=True)
     premix_pct = 0.05 if use_premix else 0.0
     
-    # Pearson Square Math
     remaining_pct = 1.0 - oil_pct - premix_pct
     usable_target = target_prot / remaining_pct
     m_prot, s_prot = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
@@ -221,82 +246,13 @@ elif menu == txt["solver"]:
     with st.expander(txt["mixing"]):
         if lang == "Kiswahili":
             st.markdown("### 🥣 Maelekezo ya Kitaalamu ya Kuchanganya")
-            st.write(f"1. **Hatua ya Mafuta:** Chukua kilo chache za Mahindi na uchanganye na {oil_kg:.1f}kg za mafuta. Sugua kwa mikono mpaka mafuta yote yaingie kwenye mahindi na kusiwe na mabonge.")
-            st.write("2. **Hatua ya Virutubisho:** Changanya Premix yako na kiasi kidogo cha Soya kwenye ndoo kwanza.")
-            st.write("3. **Kutandaza (Layering):** Tandaza mahindi yaliyobaki chini, kisha mwaga soya juu yake, kufuatiwa na mchanganyiko wa mafuta na kisha premix.")
-            st.write("4. **Sheria ya Mihiko 3:** Geuza rundo lote kutoka upande mmoja kwenda mwingine mara tatu (3) mpaka rangi iwe moja.")
+            st.write(f"1. **Hatua ya Mafuta:** Chukua kilo chache za Mahindi na uchanganye na {oil_kg:.1f}kg za mafuta...")
+            st.write("2. **Hatua ya Virutubisho:** Changanya Premix na kiasi kidogo cha Soya...")
         else:
             st.markdown("### 🥣 Professional Mixing Protocol")
-            st.write(f"1. **The Oil Rub:** Rub {oil_kg:.1f}kg of oil into a small portion of Maize first. Ensure there are no wet clumps.")
-            st.write("2. **Premix Dilution:** Mix the Premix with a few kgs of Soya in a bucket before adding to the main pile.")
-            st.write("3. **Sandwich Layering:** Spread remaining Maize on a clean floor, layer Soya on top, then add the Oil-Maize and Premix blends.")
-            st.write("4. **The 3-Shovel Rule:** Move the entire pile to a new spot, then back, then once more until the color is perfectly uniform.")
-            
-def save_to_local_csv(flock_name, age, birds, fcr_val, profit_val):
-    file_name = 'flock_data.csv'
-    # Create a small dataframe for the new row
-    new_entry = pd.DataFrame([{
-        "Date": datetime.date.today().strftime('%Y-%m-%d'),
-        "Flock_ID": flock_name,
-        "Age": age,
-        "Birds": birds,
-        "FCR": round(fcr_val, 2),
-        "Profit_TSH": round(profit_val, 2)
-    }])
-    
-    # Check if file exists to decide on header
-    if os.path.isfile(file_name):
-        new_entry.to_csv(file_name, mode='a', index=False, header=False)
-    else:
-        new_entry.to_csv(file_name, index=False)
-    
-    st.success(f"✅ Data for {flock_name} saved locally!")
+            st.write(f"1. **The Oil Rub:** Rub {oil_kg:.1f}kg of oil into a small portion of Maize first...")
+            st.write("2. **Premix Dilution:** Mix the Premix with a few kgs of Soya...")
 
-# --- 2. THE UI SECTION (Ensure this is aligned to the left/correct block) ---
-st.divider()
-st.subheader("📋 Batch History & Progress")
-
-# 1. BUTTON TO SAVE LOCALLY
-if st.button("🚀 Save This Batch to History"):
-    # Ensure these variables (flock_id, age_days, etc.) are defined above this line in your script
-    save_to_local_csv(flock_id, age_days, active_birds, fcr, profit)
-    
-    # Update session state as well so the UI reflects changes immediately
-    current_data = {
-        "active_birds": active_birds,
-        "age": age_days,
-        "fcr": fcr,
-        "profit": profit
-    }
-    st.session_state.flock_db[flock_id] = current_data
-
-# 2. VIEW HISTORY FROM CSV
-if os.path.isfile('flock_data.csv'):
-    history_df = pd.read_csv('flock_data.csv')
-    
-    if not history_df.empty:
-        # Display the data table
-        st.dataframe(history_df, use_container_width=True)
-        
-        # Show the visual trend
-        st.line_chart(data=history_df, x="Flock_ID", y="Profit_TSH")
-        
-        st.info("💡 You can save data daily. Use the button below only when you are ready to keep a permanent copy.")
-        
-        # 3. THE UPDATED DOWNLOAD BUTTON
-        with open('flock_data.csv', 'rb') as f:
-            st.download_button(
-                label="📥 Download Full Harvest Report",
-                data=f, 
-                file_name=f'Harvest_Report_{flock_id}_{datetime.date.today()}.csv',
-                mime='text/csv',
-                help="Click here at the end of the batch to save your full records to your phone."
-            )
-    else:
-        st.info("No history found yet. Save your first batch!")
-else:
-    st.info("No records found. Data will appear here once you save your first batch.")
-    
 # 📚 GUIDE
 elif menu == txt["guide"]:
     st.title(txt["guide"])
