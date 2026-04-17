@@ -238,4 +238,70 @@ elif menu == txt["solver"]:
     st.subheader(f"📋 Recipe: {stage}")
     st.table(pd.DataFrame({"Ingredient": ["Maize", "Soya Meal"], "Weight (kg)": [f"{maize_kg:.2f}", f"{soya_kg:.2f}"]}))
 
-# 📚 GUIDE & 🛒 MARKET sections remain functional as per previous structure...
+# 📚 GUIDE & 🛒 MARKET 
+elif menu == txt["guide"]:
+    st.title(txt["guide"])
+    
+    # Select Ingredient to see Quality Control tips
+    sel_ing = st.selectbox("Select Ingredient / Chagua Kiambata:", list(ING_DATABASE.keys()))
+    data = ING_DATABASE[sel_ing]
+    
+    c_img, c_info = st.columns([1, 2])
+    
+    with c_img:
+        # Note: Ensure these images exist in your GitHub assets folder
+        img_url = f"https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/{data['img'].replace(' ', '%20')}"
+        st.image(img_url, use_container_width=True, caption=sel_ing)
+        
+    with c_info:
+        st.subheader(f"🔍 {sel_ing}: Quality Checks")
+        for check in data["qc"]:
+            if "✅" in check:
+                st.success(check)
+            else:
+                st.error(check)
+        
+        # Display Nutritional Values
+        st.info(f"**Protein:** {data['prot']}% | **Energy:** {data['en']} kcal/kg")
+
+    # NEW: Layer vs Broiler Specific Management Tips
+    st.divider()
+    st.subheader("💡 Pro Management Tips")
+    if flock_type == "Broiler":
+        st.write("• **Lighting:** 23 hours of light for the first 7 days to encourage feeding.")
+        st.write("• **Temperature:** Keep brooder at 32°C-35°C in week 1.")
+    else:
+        st.write("• **Calcium:** Layers need high calcium (Oyster shells) once they start laying.")
+        st.write("• **Nests:** Provide 1 nesting box for every 5 hens to prevent floor eggs.")
+
+# --- 8. RESTORED: MARKET SECTION ---
+elif menu == txt["market"]:
+    st.title(txt["market"])
+    st.markdown(f"### 🛒 Connect with Suppliers for {flock_type} Farming")
+    
+    # Display ingredients with order buttons
+    for name, info in ING_DATABASE.items():
+        with st.container():
+            c1, c2, c3 = st.columns([1, 2, 1])
+            c1.subheader(name)
+            c2.write(f"**Current Price:** {info['price_per_kg']} TSH/kg")
+            
+            # Dynamic WhatsApp Link
+            message = f"Hello, I am using FeedConvo Pro. I would like to order {name} for my {flock_type} batch."
+            wa_link = f"https://wa.me/255700000000?text={message.replace(' ', '%20')}"
+            
+            c3.link_button(f"Order {name}", wa_link, type="primary")
+            st.divider()
+
+    # Add a section for selling the end product
+    st.subheader("🏁 Market Your Harvest")
+    if flock_type == "Broiler":
+        st.write("Connect with chicken wholesalers and hotels in Tanzania.")
+        st.button("List my Broilers for Sale")
+    else:
+        st.write("Sell your egg trays to local retailers and supermarkets.")
+        st.button("List my Egg Trays for Sale")
+
+# --- FOOTER ---
+st.divider()
+st.caption(f"🚀 FeedConvo Pro | {flock_type} Management Mode | Dar es Salaam, TZ")
