@@ -62,25 +62,44 @@ def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
 
 # --- 4. CUSTOM STYLING ---
 # Using the official logo in the sidebar and background
-logo_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png"
+
+# --- 4. DYNAMIC CUSTOM STYLING ---
+# Define your background URLs
+broiler_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
+layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/layer_chicken_bg.jpg" # Ensure this exists in your repo
+
+# Determine which background to show based on the sidebar selection
+# We use st.session_state to track this before the full page renders
+bg_url = broiler_bg if st.sidebar.get("flock_selector") == "Broiler" else layer_bg
+
 st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("{logo_url}");
-        background-attachment: fixed; background-size: 400px; background-repeat: no-repeat; background-position: right bottom;
+        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url("{bg_url}");
+        background-attachment: fixed; 
+        background-size: cover; 
+        background-repeat: no-repeat; 
+        background-position: center;
     }}
-    [data-testid="stSidebar"] {{ background-color: #e8f5e9; border-right: 2px solid #c8e6c9; }}
-    h1, h2, h3 {{ color: #1b5e20; }}
+    /* Clean Sidebar - No Photo */
+    [data-testid="stSidebar"] {{ 
+        background-color: #f1f8e9; 
+        border-right: 2px solid #c8e6c9; 
+    }}
+    h1, h2, h3 {{ color: #1b5e20; font-weight: bold; }}
     </style>
     """, unsafe_allow_html=True)
-
+    
 # --- 5. SIDEBAR & NAVIGATION ---
 with st.sidebar:
-    st.image(logo_url, width=150) # Official Logo at the top
     st.header("🚜 Farm Manager")
     lang = st.radio("Lugha / Language:", ["English", "Kiswahili"])
-    flock_type = st.radio("Select Type / Chagua Aina:", ["Broiler", "Layer"])
     
+    # We add a key here so the CSS above can "see" the choice immediately
+    flock_type = st.radio(
+        "Select Type / Chagua Aina:", 
+        ["Broiler", "Layer"], 
+        key="flock_selector"
     t = {
        "English": {
             "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Guide", "market": "🛒 Market",
