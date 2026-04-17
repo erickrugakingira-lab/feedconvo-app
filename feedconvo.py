@@ -100,6 +100,7 @@ with st.sidebar:
         "Select Type / Chagua Aina:", 
         ["Broiler", "Layer"], 
         key="flock_selector"
+        )
     t = {
        "English": {
             "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Guide", "market": "🛒 Market",
