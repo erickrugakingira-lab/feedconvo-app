@@ -73,7 +73,7 @@ st.markdown(f"""
     .stApp {{
         background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.58), url("{bg_url}");
         background-attachment: fixed; 
-        background-size: cover; 
+        background-size: contain; 
         background-repeat: no-repeat; 
         background-position: center;
     }}
