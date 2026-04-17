@@ -61,16 +61,12 @@ def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
     st.success(f"✅ Data for {flock_name} ({flock_type}) saved!")
 
 # --- 4. CUSTOM STYLING ---
-# Using the official logo in the sidebar and background
-
-# --- 4. DYNAMIC CUSTOM STYLING ---
-# Define your background URLs
 broiler_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
-layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp" # Ensure this exists in your repo
+layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
 
-# Determine which background to show based on the sidebar selection
-# We use st.session_state to track this before the full page renders
-bg_url = broiler_bg if st.sidebar.get("flock_selector") == "Broiler" else layer_bg
+# 1. Check session state Safely. If it's the first run, default to Broiler.
+selected_type = st.session_state.get("flock_selector", "Broiler")
+bg_url = broiler_bg if selected_type == "Broiler" else layer_bg
 
 st.markdown(f"""
     <style>
@@ -81,7 +77,6 @@ st.markdown(f"""
         background-repeat: no-repeat; 
         background-position: center;
     }}
-    /* Clean Sidebar - No Photo */
     [data-testid="stSidebar"] {{ 
         background-color: #f1f8e9; 
         border-right: 2px solid #c8e6c9; 
@@ -95,12 +90,13 @@ with st.sidebar:
     st.header("🚜 Farm Manager")
     lang = st.radio("Lugha / Language:", ["English", "Kiswahili"])
     
-    # We add a key here so the CSS above can "see" the choice immediately
+    # 2. Add the radio button with the key "flock_selector"
+    # We add on_change to force the app to rerun and apply the new CSS immediately
     flock_type = st.radio(
         "Select Type / Chagua Aina:", 
         ["Broiler", "Layer"], 
         key="flock_selector"
-        )
+    )
     t = {
        "English": {
             "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Guide", "market": "🛒 Market",
