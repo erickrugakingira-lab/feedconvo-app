@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="FeedConvo Pro", 
     layout="wide", 
     initial_sidebar_state="expanded", 
-    page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/logo.png" # Updated to your logo
+    page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png" # Updated to your logo
 )
 
 # --- 2. THE DATABASES ---
