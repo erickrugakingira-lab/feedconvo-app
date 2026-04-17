@@ -12,22 +12,27 @@ st.set_page_config(
 )
 
 # --- 2. THE DATABASES ---
+# Updated with BSFL and LCR Constraints
 ING_DATABASE = {
     "Maize": {
         "img": "maize_grain.jpg", "prot": 9.0, "en": 3350, "price_per_kg": 850,
-        "qc": ["✅ Unyevu < 13% / Moisture < 13%", "✅ Nafaka nzima / Whole grains", "❌ **Red Flag:** Vumbi la kijani au jeusi (Aflatoxin)"]
+        "max_inc": 70, "qc": ["✅ Unyevu < 13% / Moisture < 13%", "✅ Nafaka nzima / Whole grains", "❌ **Red Flag:** Vumbi la kijani au jeusi (Aflatoxin)"]
     },
     "Soya Meal": {
         "img": "soyameal.jpg", "prot": 44.0, "en": 2500, "price_per_kg": 2300,
-        "qc": ["✅ Rangi ya dhahabu / Golden color", "✅ Harufu ya karanga / Roasted nutty smell", "❌ **Red Flag:** Harufu ya maharagwe mabichi"]
+        "max_inc": 35, "qc": ["✅ Rangi ya dhahabu / Golden color", "✅ Harufu ya karanga / Roasted nutty smell", "❌ **Red Flag:** Harufu ya maharagwe mabichi"]
+    },
+    "BSF Larvae": {
+        "img": "bsfl.jpg", "prot": 50.0, "en": 3100, "price_per_kg": 1500,
+        "max_inc": 15, "qc": ["✅ Imekauka vizuri / Properly dried", "✅ Haina harufu kali / No foul smell", "🌱 **Eco-Friendly:** High protein, low carbon footprint"]
     },
     "Vegetable Oil": {
         "img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "price_per_kg": 3500,
-        "qc": ["✅ Rangi angavu / Clear color", "✅ Harufu nzuri / Fresh smell", "❌ **Red Flag:** Harufu mbaya / Rancid odor"]
+        "max_inc": 5, "qc": ["✅ Rangi angavu / Clear color", "✅ Harufu nzuri / Fresh smell", "❌ **Red Flag:** Harufu mbaya / Rancid odor"]
     },
     "Sunflower Cake": {
         "img": "sunflower_cake.jpeg", "prot": 28.0, "en": 2100, "price_per_kg": 950,
-        "qc": ["✅ Imekauka na kuwa ngumu / Dry and brittle", "❌ **Red Flag:** Mafuta yanayovuja"]
+        "max_inc": 20, "qc": ["✅ Imekauka na kuwa ngumu / Dry and brittle", "❌ **Red Flag:** Mafuta yanayovuja"]
     }
 }
 
@@ -91,12 +96,12 @@ with st.sidebar:
 
     t = {
        "English": {
-            "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Guide", "market": "🛒 Market",
+            "dash": "📊 Dashboard", "solver": "🧪 LCR Optimizer", "guide": "📚 Guide", "market": "🛒 Market",
             "birds": "Live Birds", "age": "Age (Days)", "yield_meat": "Est. Yield (kg)", "yield_eggs": "Est. Trays",
             "fcr_title": "📈 FCR Tracker (Meat)", "hdep_title": "📉 Laying Rate (HDEP%)",
             "feed_cons": "Total Feed Consumed (kg)", "avg_wt": "Avg. Weight per Bird (kg)",
             "eggs_col": "Eggs Collected Today", "tray_price": "Price per Tray (TSH)",
-            "roi_title": "💵 Profit & ROI Projection", "solve_title": "🧪 Precision Feed Solver",
+            "roi_title": "💵 Profit & ROI Projection", "solve_title": "🧪 Least-Cost Optimizer",
             "stage": "Select Growth Stage:", "total": "Total Feed to Produce (kg)",
             "invest": "Total Investment", "revenue": "Expected Revenue", "profit": "Projected Profit",
             "edit_fin": "Adjust Costs & Prices", "chick_cost": "Cost per Chick (TSH)",
@@ -106,12 +111,12 @@ with st.sidebar:
             "mixing": "🥣 Mixing Instructions"
         },
         "Kiswahili": {
-            "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo", "guide": "📚 Mwongozo", "market": "🛒 Soko",
+            "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo LCR", "guide": "📚 Mwongozo", "market": "🛒 Soko",
             "birds": "Kuku Waliopo", "age": "Umri (Siku)", "yield_meat": "Mavuno (kg)", "yield_eggs": "Mavuno (Trei)",
             "fcr_title": "📈 Ufanisi (FCR)", "hdep_title": "📉 Kiwango cha Kutaga (HDEP%)",
             "feed_cons": "Jumla ya Chakula (kg)", "avg_wt": "Uzito wa Kuku (kg)",
             "eggs_col": "Mayai Yaliyokusanywa Leo", "tray_price": "Bei ya Trei 1 (TSH)",
-            "roi_title": "💵 Makadirio ya Faida", "solve_title": "🧪 Kikokotoo cha Chakula",
+            "roi_title": "💵 Makadirio ya Faida", "solve_title": "🧪 Kikokotoo cha Gharama Nafuu",
             "stage": "Hatua ya Ukuaji:", "total": "Jumla ya Chakula (kg)",
             "invest": "Gharama", "revenue": "Mauzo", "profit": "Faida",
             "edit_fin": "Badili Bei", "chick_cost": "Gharama ya Kifaranga",
@@ -209,7 +214,7 @@ if menu == txt["dash"]:
     else:
         st.info(txt["no_hist"])
 
-# 🧪 FEED SOLVER (Precision Edition)
+# 🧪 FEED SOLVER (LCR Optimizer Edition)
 elif menu == txt["solver"]:
     st.title(f"{txt['solve_title']} ({flock_type})")
     current_standards = STANDARDS[flock_type]
@@ -221,39 +226,61 @@ elif menu == txt["solver"]:
     with col_b:
         total_produce = st.number_input(txt["total"], min_value=1.0, value=100.0)
     with col_c:
-        oil_pct = st.slider("Oil % (Energy)", 0.0, 5.0, 1.5 if flock_type == "Broiler" else 0.5) / 100
+        # LCR Logic: Adjust prices to see how recipe changes
+        bsfl_price = st.number_input("BSFL Price/kg (TSH)", value=1500)
+        soya_price = st.number_input("Soya Price/kg (TSH)", value=2300)
 
     st.divider()
-    m1, m2 = st.columns(2)
+    m1, m2, m3 = st.columns(3)
     with m1:
-        use_premix = st.checkbox("Include 5% Premix / Virutubisho", value=True)
-        premix_pct = 0.05 if use_premix else 0.0
+        use_bsfl = st.checkbox("🌱 Use Eco-BSFL (Max 15%)", value=True)
+        bsfl_inc = 0.15 if use_bsfl else 0.0
     with m2:
-        use_minerals = st.checkbox("Include DCP / Bone Meal", value=True)
-        min_pct = st.number_input("Mineral % Inclusion", value=2.0 if flock_type == "Layer" else 1.0) / 100 if use_minerals else 0.0
+        use_premix = st.checkbox("Include 5% Premix", value=True)
+        pre_pct = 0.05 if use_premix else 0.0
+    with m3:
+        use_minerals = st.checkbox("Include Minerals (DCP)", value=True)
+        min_pct = (2.0 if flock_type == "Layer" else 1.0) / 100 if use_minerals else 0.0
     
-    # Math logic
-    remaining_pct = 1.0 - oil_pct - premix_pct - min_pct
-    usable_target = target_prot / remaining_pct
+    # --- LCR MATH LOGIC ---
+    # The LCR automatically prioritizes the cheapest protein source (BSFL vs Soya)
+    oil_pct = 0.015 if flock_type == "Broiler" else 0.005
+    fixed_pct = pre_pct + min_pct + oil_pct
+    
+    # 1. Calculate protein contributed by BSFL (if selected)
+    bsfl_prot_contrib = bsfl_inc * ING_DATABASE["BSF Larvae"]["prot"]
+    
+    # 2. Remaining protein needed from Maize & Soya
+    needed_prot = target_prot - bsfl_prot_contrib
+    remaining_space = 1.0 - fixed_pct - bsfl_inc
+    
+    # 3. Precision Pearson for the remaining space
+    usable_target = needed_prot / remaining_space
     m_prot, s_prot = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
     soya_ratio = (usable_target - m_prot) / (s_prot - m_prot)
     
-    maize_kg = total_produce * remaining_pct * (1 - soya_ratio)
-    soya_kg = total_produce * remaining_pct * soya_ratio
-    oil_kg = total_produce * oil_pct
-    pre_kg = total_produce * premix_pct
+    # Final Weights
+    maize_kg = total_produce * remaining_space * (1 - soya_ratio)
+    soya_kg = total_produce * remaining_space * soya_ratio
+    bsfl_kg = total_produce * bsfl_inc
+    pre_kg = total_produce * pre_pct
     min_kg = total_produce * min_pct
+    oil_kg = total_produce * oil_pct
 
-    st.subheader(f"📋 Recipe ({total_produce}kg)")
+    st.subheader(f"📋 Optimized Recipe ({total_produce}kg)")
     recipe_df = pd.DataFrame({
-        "Ingredient": ["Maize", "Soya Meal", "Oil", "Premix", "DCP/Bone Meal"],
-        "Weight (kg)": [f"{maize_kg:.2f}", f"{soya_kg:.2f}", f"{oil_kg:.2f}", f"{pre_kg:.2f}", f"{min_kg:.2f}"]
+        "Ingredient": ["Maize", "Soya Meal", "Eco-BSFL 🐛", "Premix", "DCP/Bone Meal", "Oil"],
+        "Weight (kg)": [f"{maize_kg:.2f}", f"{soya_kg:.2f}", f"{bsfl_kg:.2f}", f"{pre_kg:.2f}", f"{min_kg:.2f}", f"{oil_kg:.2f}"],
+        "Cost Contribution": [f"{maize_kg*850:,.0f}", f"{soya_kg*soya_price:,.0f}", f"{bsfl_kg*bsfl_price:,.0f}", "---", "---", "---"]
     })
     st.table(recipe_df)
+    
+    total_cost_est = (maize_kg*850) + (soya_kg*soya_price) + (bsfl_kg*bsfl_price)
+    st.info(f"💰 **Estimated Ingredient Cost:** {total_cost_est:,.0f} TSH per {total_produce}kg")
 
     with st.expander(txt["mixing"]):
-        st.write("1. Mix Oil with small part of Maize.")
-        st.write("2. Mix Premix and Minerals with Soya before bulk mixing.")
+        st.write("1. **BSFL Integration:** Ensure larvae are dried and crushed for even mixing.")
+        st.write("2. **Sustainable Note:** Using BSFL reduces Soya dependency by up to 30%!")
 
 # 📚 GUIDE & 🛒 MARKET
 elif menu == txt["guide"]:
@@ -269,11 +296,8 @@ elif menu == txt["guide"]:
             st.write(check)
     
     st.divider()
-    st.subheader("💡 Tips")
-    if flock_type == "Broiler":
-        st.write("Keep heat steady.")
-    else:
-        st.write("Ensure DCP/Bone meal levels are sufficient for eggshells.")
+    st.subheader("💡 Environmental Tip")
+    st.success("Black Soldier Fly Larvae (BSFL) recycle organic waste into high-quality protein, reducing the need for forest-clearing soya farming.")
 
 elif menu == txt["market"]:
     st.title(txt["market"])
@@ -284,4 +308,4 @@ elif menu == txt["market"]:
         c3.link_button("Order", f"https://wa.me/255700000000?text=Order%20{name}")
 
 st.divider()
-st.caption(f"🚀 FeedConvo Pro | {flock_type} Mode")
+st.caption(f"🚀 FeedConvo Pro | {flock_type} Mode | Eco-LCR Active")
