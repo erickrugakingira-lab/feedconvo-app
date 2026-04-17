@@ -71,7 +71,7 @@ bg_url = broiler_bg if selected_type == "Broiler" else layer_bg
 st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url("{bg_url}");
+        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.58), url("{bg_url}");
         background-attachment: fixed; 
         background-size: cover; 
         background-repeat: no-repeat; 
