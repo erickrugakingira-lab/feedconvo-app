@@ -62,7 +62,7 @@ def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
 
 # --- 4. CUSTOM STYLING ---
 # Using the official logo in the sidebar and background
-logo_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/logo.png"
+logo_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
 st.markdown(f"""
     <style>
     .stApp {{
