@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="FeedConvo Pro", 
     layout="wide", 
     initial_sidebar_state="expanded", 
-    page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png" # Updated to your logo
+    page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png"
 )
 
 # --- 2. THE DATABASES ---
@@ -31,7 +31,6 @@ ING_DATABASE = {
     }
 }
 
-# STANDARDS (Now Split by Flock Type)
 STANDARDS = {
     "Broiler": {
         "Starter (Wk 1-2)": 22.0, "Grower (Wk 3-4)": 20.0, "Finisher (Wk 5+)": 18.0
@@ -44,14 +43,14 @@ STANDARDS = {
 
 # --- 3. HELPER FUNCTIONS ---
 def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
-    file_name = f'flock_data.csv'
+    file_name = 'flock_data.csv'
     new_entry = pd.DataFrame([{
         "Date": datetime.date.today().strftime('%Y-%m-%d'),
         "Type": flock_type,
         "Flock_ID": flock_name,
         "Age": age,
         "Birds": birds,
-        "KPI_Value": round(kpi_val, 2), # FCR for Broilers, HDEP for Layers
+        "KPI_Value": round(kpi_val, 2),
         "Profit_TSH": round(profit_val, 2)
     }])
     if os.path.isfile(file_name):
@@ -64,14 +63,13 @@ def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
 broiler_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
 layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
 
-# 1. Check session state Safely. If it's the first run, default to Broiler.
 selected_type = st.session_state.get("flock_selector", "Broiler")
 bg_url = broiler_bg if selected_type == "Broiler" else layer_bg
 
 st.markdown(f"""
     <style>
     .stApp {{
-        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8), url("{bg_url}");
+        background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.8)), url("{bg_url}");
         background-attachment: fixed; 
         background-size: 50%; 
         background-repeat: no-repeat; 
@@ -84,19 +82,13 @@ st.markdown(f"""
     h1, h2, h3 {{ color: #1b5e20; font-weight: bold; }}
     </style>
     """, unsafe_allow_html=True)
-    
+
 # --- 5. SIDEBAR & NAVIGATION ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
     lang = st.radio("Lugha / Language:", ["English", "Kiswahili"])
-    
-    # 2. Add the radio button with the key "flock_selector"
-    # We add on_change to force the app to rerun and apply the new CSS immediately
-    flock_type = st.radio(
-        "Select Type / Chagua Aina:", 
-        ["Broiler", "Layer"], 
-        key="flock_selector"
-    )
+    flock_type = st.radio("Select Type / Chagua Aina:", ["Broiler", "Layer"], key="flock_selector")
+
     t = {
        "English": {
             "dash": "📊 Dashboard", "solver": "🧪 Feed Solver", "guide": "📚 Guide", "market": "🛒 Market",
@@ -110,7 +102,8 @@ with st.sidebar:
             "edit_fin": "Adjust Costs & Prices", "chick_cost": "Cost per Chick (TSH)",
             "mkt_price": "Selling Price per Bird (TSH)", "other_costs": "Meds/Labor/Bird",
             "hist_title": "📋 Batch History", "save_btn": "🚀 Save Today's Progress",
-            "dl_btn": "📥 Download Report", "no_hist": "No history found.", "hist_info": "💡 Data saved daily."
+            "dl_btn": "📥 Download Report", "no_hist": "No history found.", "hist_info": "💡 Data saved daily.",
+            "mixing": "🥣 Mixing Instructions"
         },
         "Kiswahili": {
             "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo", "guide": "📚 Mwongozo", "market": "🛒 Soko",
@@ -124,7 +117,8 @@ with st.sidebar:
             "edit_fin": "Badili Bei", "chick_cost": "Gharama ya Kifaranga",
             "mkt_price": "Bei ya Kuuza Kuku 1", "other_costs": "Dawa/Wafanyakazi/Kuku",
             "hist_title": "📋 Kumbukumbu", "save_btn": "🚀 Hifadhi Taarifa za Leo",
-            "dl_btn": "📥 Pakua Ripoti", "no_hist": "Hakuna kumbukumbu.", "hist_info": "💡 Taarifa huhifadhiwa kila siku."
+            "dl_btn": "📥 Pakua Ripoti", "no_hist": "Hakuna kumbukumbu.", "hist_info": "💡 Taarifa huhifadhiwa kila siku.",
+            "mixing": "🥣 Maelekezo ya Kuchanganya"
         }
     }
     txt = t[lang]
@@ -149,7 +143,6 @@ if menu == txt["dash"]:
     m1.metric(txt["birds"], f"{active_birds}", delta=f"-{mortality}")
     m2.metric(txt["age"], f"{age_days} Siku")
     
-    # Logic for Yield Display
     if flock_type == "Broiler":
         m3.metric(txt["yield_meat"], f"{active_birds * 2.2:.1f} kg")
     else:
@@ -157,7 +150,6 @@ if menu == txt["dash"]:
 
     st.divider()
     
-    # Logic for Performance Tracking
     if flock_type == "Broiler":
         st.subheader(txt["fcr_title"])
         c_f1, c_f2 = st.columns([2, 1])
@@ -176,28 +168,20 @@ if menu == txt["dash"]:
         with c_l2:
             st.metric("HDEP%", f"{kpi_val:.1f}%")
 
-    # ROI Calculation
     st.divider()
     st.subheader(txt["roi_title"])
     with st.expander(txt["edit_fin"]):
         cx, cy, cz = st.columns(3)
         c_cost = cx.number_input(txt["chick_cost"], value=1500)
-        
-        if flock_type == "Broiler":
-            p_revenue_unit = cy.number_input(txt["mkt_price"], value=8500)
-        else:
-            p_revenue_unit = cy.number_input(txt["tray_price"], value=7500)
-            
+        p_revenue_unit = cy.number_input(txt["mkt_price"] if flock_type == "Broiler" else txt["tray_price"], value=8500 if flock_type == "Broiler" else 7500)
         o_costs = cz.number_input(txt["other_costs"], value=1500)
         feed_price_kg = st.number_input("Feed Price/KG", value=1200)
 
-    # Financial Math
     if flock_type == "Broiler":
         total_invest = (flock_size * c_cost) + (feed_in * feed_price_kg) + (active_birds * o_costs)
         revenue = active_birds * p_revenue_unit
     else:
-        # Layer assumption: Daily feed cost vs daily egg revenue
-        daily_feed = 0.12 * active_birds # 120g per bird
+        daily_feed = 0.12 * active_birds 
         total_invest = (flock_size * c_cost / 365) + (daily_feed * feed_price_kg) + (active_birds * o_costs / 30)
         revenue = (eggs_collected / 30) * p_revenue_unit
         
@@ -209,7 +193,6 @@ if menu == txt["dash"]:
     r2.metric(txt["revenue"], f"{revenue:,.0f} TSH")
     r3.metric(txt["profit"], f"{profit:,.0f} TSH", f"{roi_pct:.1f}% ROI")
     
-  # BATCH HISTORY SECTION
     st.divider()
     st.subheader(txt["hist_title"])
     if st.button(txt["save_btn"]):
@@ -217,107 +200,88 @@ if menu == txt["dash"]:
 
     if os.path.isfile('flock_data.csv'):
         history_df = pd.read_csv('flock_data.csv')
-        
-        # Check if 'Type' column exists to avoid the KeyError
         if 'Type' in history_df.columns:
             filtered_df = history_df[history_df['Type'] == flock_type]
-            if not filtered_df.empty:
-                st.dataframe(filtered_df, use_container_width=True)
-            else:
-                st.info(txt["no_hist"])
+            st.dataframe(filtered_df, use_container_width=True)
         else:
-            # If the file is old, just show the whole thing or tell user to reset
-            st.warning("Old data format detected. Please delete 'flock_data.csv' to reset.")
+            st.warning("Old data format. Delete 'flock_data.csv' to reset.")
             st.dataframe(history_df, use_container_width=True)
     else:
         st.info(txt["no_hist"])
-        
-# 🧪 FEED SOLVER (Dynamic)
+
+# 🧪 FEED SOLVER (Precision Edition)
 elif menu == txt["solver"]:
     st.title(f"{txt['solve_title']} ({flock_type})")
     current_standards = STANDARDS[flock_type]
     
-    col_a, col_b = st.columns(2)
+    col_a, col_b, col_c = st.columns(3)
     with col_a:
         stage = st.selectbox(txt["stage"], list(current_standards.keys()))
         target_prot = current_standards[stage]
     with col_b:
         total_produce = st.number_input(txt["total"], min_value=1.0, value=100.0)
+    with col_c:
+        oil_pct = st.slider("Oil % (Energy)", 0.0, 5.0, 1.5 if flock_type == "Broiler" else 0.5) / 100
 
-    # Pearson Square Math (Simplified)
-    m_prot, s_prot = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
-    soya_ratio = (target_prot - m_prot) / (s_prot - m_prot)
+    st.divider()
+    m1, m2 = st.columns(2)
+    with m1:
+        use_premix = st.checkbox("Include 5% Premix / Virutubisho", value=True)
+        premix_pct = 0.05 if use_premix else 0.0
+    with m2:
+        use_minerals = st.checkbox("Include DCP / Bone Meal", value=True)
+        min_pct = st.number_input("Mineral % Inclusion", value=2.0 if flock_type == "Layer" else 1.0) / 100 if use_minerals else 0.0
     
-    maize_kg = total_produce * (1 - soya_ratio)
-    soya_kg = total_produce * soya_ratio
+    # Math logic
+    remaining_pct = 1.0 - oil_pct - premix_pct - min_pct
+    usable_target = target_prot / remaining_pct
+    m_prot, s_prot = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
+    soya_ratio = (usable_target - m_prot) / (s_prot - m_prot)
+    
+    maize_kg = total_produce * remaining_pct * (1 - soya_ratio)
+    soya_kg = total_produce * remaining_pct * soya_ratio
+    oil_kg = total_produce * oil_pct
+    pre_kg = total_produce * premix_pct
+    min_kg = total_produce * min_pct
 
-    st.subheader(f"📋 Recipe: {stage}")
-    st.table(pd.DataFrame({"Ingredient": ["Maize", "Soya Meal"], "Weight (kg)": [f"{maize_kg:.2f}", f"{soya_kg:.2f}"]}))
+    st.subheader(f"📋 Recipe ({total_produce}kg)")
+    recipe_df = pd.DataFrame({
+        "Ingredient": ["Maize", "Soya Meal", "Oil", "Premix", "DCP/Bone Meal"],
+        "Weight (kg)": [f"{maize_kg:.2f}", f"{soya_kg:.2f}", f"{oil_kg:.2f}", f"{pre_kg:.2f}", f"{min_kg:.2f}"]
+    })
+    st.table(recipe_df)
 
-# 📚 GUIDE & 🛒 MARKET 
+    with st.expander(txt["mixing"]):
+        st.write("1. Mix Oil with small part of Maize.")
+        st.write("2. Mix Premix and Minerals with Soya before bulk mixing.")
+
+# 📚 GUIDE & 🛒 MARKET
 elif menu == txt["guide"]:
     st.title(txt["guide"])
-    
-    # Select Ingredient to see Quality Control tips
-    sel_ing = st.selectbox("Select Ingredient / Chagua Kiambata:", list(ING_DATABASE.keys()))
+    sel_ing = st.selectbox("Select Ingredient:", list(ING_DATABASE.keys()))
     data = ING_DATABASE[sel_ing]
-    
     c_img, c_info = st.columns([1, 2])
-    
     with c_img:
-        # Note: Ensure these images exist in your GitHub assets folder
         img_url = f"https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/{data['img'].replace(' ', '%20')}"
-        st.image(img_url, use_container_width=True, caption=sel_ing)
-        
+        st.image(img_url, use_container_width=True)
     with c_info:
-        st.subheader(f"🔍 {sel_ing}: Quality Checks")
         for check in data["qc"]:
-            if "✅" in check:
-                st.success(check)
-            else:
-                st.error(check)
-        
-        # Display Nutritional Values
-        st.info(f"**Protein:** {data['prot']}% | **Energy:** {data['en']} kcal/kg")
-
-    # NEW: Layer vs Broiler Specific Management Tips
+            st.write(check)
+    
     st.divider()
-    st.subheader("💡 Pro Management Tips")
+    st.subheader("💡 Tips")
     if flock_type == "Broiler":
-        st.write("• **Lighting:** 23 hours of light for the first 7 days to encourage feeding.")
-        st.write("• **Temperature:** Keep brooder at 32°C-35°C in week 1.")
+        st.write("Keep heat steady.")
     else:
-        st.write("• **Calcium:** Layers need high calcium (Oyster shells) once they start laying.")
-        st.write("• **Nests:** Provide 1 nesting box for every 5 hens to prevent floor eggs.")
+        st.write("Ensure DCP/Bone meal levels are sufficient for eggshells.")
 
-# --- 8. RESTORED: MARKET SECTION ---
 elif menu == txt["market"]:
     st.title(txt["market"])
-    st.markdown(f"### 🛒 Connect with Suppliers for {flock_type} Farming")
-    
-    # Display ingredients with order buttons
     for name, info in ING_DATABASE.items():
-        with st.container():
-            c1, c2, c3 = st.columns([1, 2, 1])
-            c1.subheader(name)
-            c2.write(f"**Current Price:** {info['price_per_kg']} TSH/kg")
-            
-            # Dynamic WhatsApp Link
-            message = f"Hello, I am using FeedConvo Pro. I would like to order {name} for my {flock_type} batch."
-            wa_link = f"https://wa.me/255700000000?text={message.replace(' ', '%20')}"
-            
-            c3.link_button(f"Order {name}", wa_link, type="primary")
-            st.divider()
+        c1, c2, c3 = st.columns([1, 2, 1])
+        c1.write(name)
+        c2.write(f"{info['price_per_kg']} TSH/kg")
+        c3.link_button("Order", f"https://wa.me/255700000000?text=Order%20{name}")
 
-    # Add a section for selling the end product
-    st.subheader("🏁 Market Your Harvest")
-    if flock_type == "Broiler":
-        st.write("Connect with chicken wholesalers and hotels in Tanzania.")
-        st.button("List my Broilers for Sale")
-    else:
-        st.write("Sell your egg trays to local retailers and supermarkets.")
-        st.button("List my Egg Trays for Sale")
-
-# --- FOOTER ---
 st.divider()
-st.caption(f"🚀 FeedConvo Pro | {flock_type} Management Mode | Dar es Salaam, TZ")
+st.caption(f"🚀 FeedConvo Pro | {flock_type} Mode")
