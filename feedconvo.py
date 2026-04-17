@@ -66,7 +66,7 @@ def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
 # --- 4. DYNAMIC CUSTOM STYLING ---
 # Define your background URLs
 broiler_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
-layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/layer_chicken_bg.jpg" # Ensure this exists in your repo
+layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp" # Ensure this exists in your repo
 
 # Determine which background to show based on the sidebar selection
 # We use st.session_state to track this before the full page renders
