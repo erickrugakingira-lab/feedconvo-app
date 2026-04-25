@@ -56,7 +56,7 @@ try:
     conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception:
     st.error(f"Actual Connection Error: {e}")
-
+    st.info("Check your Streamlit Secrets for [connections.gsheets] header.")
 def save_to_google_sheets(flock_type, flock_name, age, birds, kpi_val, profit_val):
     try:
         existing_data = conn.read(ttl=0) 
