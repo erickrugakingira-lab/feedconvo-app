@@ -59,7 +59,7 @@ except Exception:
 
 def save_to_google_sheets(flock_type, flock_name, age, birds, kpi_val, profit_val):
     try:
-        existing_data = conn.read(worksheet="Sheet1", usecols=list(range(7)))
+        existing_data = conn.read(ttl=0) 
         existing_data = existing_data.dropna(how="all")
         new_entry = pd.DataFrame([{
             "Date": datetime.date.today().strftime('%Y-%m-%d'),
@@ -67,7 +67,9 @@ def save_to_google_sheets(flock_type, flock_name, age, birds, kpi_val, profit_va
             "Birds": birds, "KPI_Value": round(kpi_val, 2), "Profit_TSH": round(profit_val, 2)
         }])
         updated_df = pd.concat([existing_data, new_entry], ignore_index=True)
-        conn.update(worksheet="Sheet1", data=updated_df)
+        
+        # Update the sheet
+        conn.update(data=updated_df)
         st.success(f"☁️ Cloud Sync Successful for {flock_name}!")
     except Exception as e:
         st.error(f"Cloud Sync Failed: {e}")
