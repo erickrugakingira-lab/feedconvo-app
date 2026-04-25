@@ -55,7 +55,7 @@ STANDARDS = {
 try:
     conn = st.connection("gsheets", type=GSheetsConnection)
 except Exception:
-    st.error("Google Sheets Connection Not Configured in Secrets.")
+    st.error(f"Actual Connection Error: {e}")
 
 def save_to_google_sheets(flock_type, flock_name, age, birds, kpi_val, profit_val):
     try:
