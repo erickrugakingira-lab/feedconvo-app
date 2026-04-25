@@ -1,7 +1,6 @@
-
 streamlit
+streamlit-gsheets
 pandas
 pulp
 plotly
 Pillow
-streamlit-gsheets
