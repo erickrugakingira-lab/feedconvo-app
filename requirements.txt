@@ -4,3 +4,4 @@ pandas
 pulp
 plotly
 Pillow
+streamlit-gsheets
