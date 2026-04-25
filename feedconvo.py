@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection # New Cloud Library
 import pandas as pd
 import datetime
 import os
@@ -46,24 +47,35 @@ STANDARDS = {
     }
 }
 
-# --- 3. HELPER FUNCTIONS ---
-def save_to_local_csv(flock_type, flock_name, age, birds, kpi_val, profit_val):
-    file_name = 'flock_data.csv'
-    new_entry = pd.DataFrame([{
-        "Date": datetime.date.today().strftime('%Y-%m-%d'),
-        "Type": flock_type,
-        "Flock_ID": flock_name,
-        "Age": age,
-        "Birds": birds,
-        "KPI_Value": round(kpi_val, 2),
-        "Profit_TSH": round(profit_val, 2)
-    }])
-    if os.path.isfile(file_name):
-        new_entry.to_csv(file_name, mode='a', index=False, header=False)
-    else:
-        new_entry.to_csv(file_name, index=False)
-    st.success(f"✅ Data for {flock_name} ({flock_type}) saved!")
+# --- 2. THE CLOUD CONNECTION ---
+# This replaces the local CSV logic
+conn = st.connection("gsheets", type=GSheetsConnection)
 
+def save_to_google_sheets(flock_type, flock_name, age, birds, kpi_val, profit_val):
+    try:
+        # 1. Fetch existing data from the cloud
+        existing_data = conn.read(worksheet="Sheet1", usecols=list(range(7)))
+        existing_data = existing_data.dropna(how="all")
+
+        # 2. Prepare new row
+        new_entry = pd.DataFrame([{
+            "Date": datetime.date.today().strftime('%Y-%m-%d'),
+            "Type": flock_type,
+            "Flock_ID": flock_name,
+            "Age": age,
+            "Birds": birds,
+            "KPI_Value": round(kpi_val, 2),
+            "Profit_TSH": round(profit_val, 2)
+        }])
+
+        # 3. Combine and Update
+        updated_df = pd.concat([existing_data, new_entry], ignore_index=True)
+        conn.update(worksheet="Sheet1", data=updated_df)
+        
+        st.success(f"☁️ Data for {flock_name} synced to Google Cloud!")
+    except Exception as e:
+        st.error(f"Cloud Sync Failed: {e}")
+        
 # --- 4. CUSTOM STYLING ---
 broiler_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png"
 layer_bg = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
@@ -281,6 +293,29 @@ elif menu == txt["solver"]:
     with st.expander(txt["mixing"]):
         st.write("1. **BSFL Integration:** Ensure larvae are dried and crushed for even mixing.")
         st.write("2. **Sustainable Note:** Using BSFL reduces Soya dependency by up to 30%!")
+
+     # --- 4. DATA HISTORY SECTION (Cloud Version) ---
+    if menu == txt["dash"]:
+    # ... (Your metrics code) ...
+
+    st.subheader(txt["hist_title"])
+    if st.button(txt["save_btn"]):
+        # Call the new Cloud Function instead of CSV
+        save_to_google_sheets(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
+
+    # Display data directly from Google Sheets
+    try:
+        cloud_df = conn.read(worksheet="Sheet1")
+        cloud_df = cloud_df.dropna(how="all")
+        
+        if not cloud_df.empty:
+            # Filter by the currently selected flock type
+            filtered_df = cloud_df[cloud_df['Type'] == flock_type]
+            st.dataframe(filtered_df, use_container_width=True)
+        else:
+            st.info("No cloud data found.")
+    except:
+        st.warning("Connect your Google Sheets Secrets to see history.") 
 
 # 📚 GUIDE & 🛒 MARKET
 elif menu == txt["guide"]:
