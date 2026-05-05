@@ -1,8 +1,9 @@
 import streamlit as st
-from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 import datetime
 import os
+from google.cloud import firestore
+from google.oauth2 import service_account
 
 # --- 1. GLOBAL CONFIGURATION ---
 st.set_page_config(
@@ -12,32 +13,63 @@ st.set_page_config(
     page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png"
 )
 
-# --- 2. THE DATABASES (UPGRADED FOR PERFORMANCE) ---
-# Added: en (Energy), lys (Lysine), met (Methionine)
+# --- 2. FIREBASE CONNECTION ---
+@st.cache_resource
+def get_db():
+    try:
+        # Load credentials from Streamlit Secrets
+        key_dict = st.secrets["firebase"]
+        creds = service_account.Credentials.from_service_account_info(key_dict)
+        return firestore.Client(credentials=creds, project=key_dict["project_id"])
+    except Exception as e:
+        st.error(f"❌ Firebase Connection Error: {e}")
+        return None
+
+db = get_db()
+
+def save_to_firebase(flock_type, flock_name, age, birds, kpi_val, profit_val):
+    if db:
+        try:
+            # Creating a record entry
+            record_ref = db.collection("farm_records").document() # Auto-generates unique ID
+            record_ref.set({
+                "Date": datetime.date.today().strftime('%Y-%m-%d'),
+                "Type": flock_type,
+                "Flock_ID": flock_name,
+                "Age": age,
+                "Birds": birds,
+                "KPI_Value": round(kpi_val, 2),
+                "Profit_TSH": round(profit_val, 2),
+                "timestamp": firestore.SERVER_TIMESTAMP
+            })
+            st.success(f"🔥 Firebase Sync Successful for {flock_name}!")
+        except Exception as e:
+            st.error(f"🔥 Firebase Sync Failed: {e}")
+
+# --- 3. THE DATABASES ---
 ING_DATABASE = {
     "Maize": {
         "img": "maize_grain.jpg", "prot": 9.0, "en": 3350, "lys": 0.24, "met": 0.18, "price_per_kg": 850,
-        "qc": ["✅ Unyevu < 13% / Moisture < 13%", "✅ Nafaka nzima / Whole grains", "❌ **Red Flag:** Vumbi la kijani au jeusi (Aflatoxin)"]
+        "qc": ["✅ Unyevu < 13%", "✅ Nafaka nzima", "❌ Red Flag: Aflatoxin"]
     },
     "Soya Meal": {
         "img": "soyameal.jpg", "prot": 44.0, "en": 2500, "lys": 2.70, "met": 0.65, "price_per_kg": 2300,
-        "qc": ["✅ Rangi ya dhahabu / Golden color", "✅ Harufu ya karanga / Roasted nutty smell", "❌ **Red Flag:** Harufu ya maharagwe mabichi"]
+        "qc": ["✅ Rangi ya dhahabu", "✅ Harufu ya karanga", "❌ Red Flag: Harufu ya maharagwe mabichi"]
     },
     "BSF Larvae": {
         "img": "bsfl.jpg", "prot": 50.0, "en": 3100, "lys": 3.10, "met": 0.90, "price_per_kg": 1500,
-        "qc": ["✅ Imekauka vizuri / Properly dried", "✅ Haina harufu kali / No foul smell", "🌱 **Eco-Friendly:** High protein"]
+        "qc": ["✅ Imekauka vizuri", "✅ Haina harufu kali", "🌱 Eco-Friendly"]
     },
     "Vegetable Oil": {
         "img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "lys": 0.0, "met": 0.0, "price_per_kg": 3500,
-        "qc": ["✅ Rangi angavu / Clear color", "❌ **Red Flag:** Harufu mbaya"]
+        "qc": ["✅ Rangi angavu", "❌ Red Flag: Harufu mbaya"]
     },
     "Sunflower Cake": {
         "img": "sunflower_cake.jpeg", "prot": 28.0, "en": 2100, "lys": 0.90, "met": 0.50, "price_per_kg": 950,
-        "qc": ["✅ Imekauka / Dry", "❌ **Red Flag:** Mafuta yanayovuja"]
+        "qc": ["✅ Imekauka", "❌ Red Flag: Mafuta yanayovuja"]
     }
 }
 
-# Advanced Targets (Energy & Amino Acids)
 STANDARDS = {
     "Broiler": {
         "Starter (Wk 1-2)": {"prot": 22.0, "en": 3000, "lys": 1.20, "bsf_max": 0.05},
@@ -51,34 +83,11 @@ STANDARDS = {
     }
 }
 
-# --- 3. CLOUD CONNECTION ---
-try:
-    conn = st.connection("gsheets", type=GSheetsConnection)
-except Exception:
-    st.error(f"Actual Connection Error: {e}")
-    st.info("Check your Streamlit Secrets for [connections.gsheets] header.")
-def save_to_google_sheets(flock_type, flock_name, age, birds, kpi_val, profit_val):
-    try:
-        existing_data = conn.read(ttl=0) 
-        existing_data = existing_data.dropna(how="all")
-        new_entry = pd.DataFrame([{
-            "Date": datetime.date.today().strftime('%Y-%m-%d'),
-            "Type": flock_type, "Flock_ID": flock_name, "Age": age,
-            "Birds": birds, "KPI_Value": round(kpi_val, 2), "Profit_TSH": round(profit_val, 2)
-        }])
-        updated_df = pd.concat([existing_data, new_entry], ignore_index=True)
-        
-        # Update the sheet
-        conn.update(data=updated_df)
-        st.success(f"☁️ Cloud Sync Successful for {flock_name}!")
-    except Exception as e:
-        st.error(f"Cloud Sync Failed: {e}")
-
 # --- 4. STYLING & SIDEBAR ---
 selected_type = st.session_state.get("flock_selector", "Broiler")
 bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png" if selected_type == "Broiler" else "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
 
-st.markdown(f"""<style>.stApp {{ background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("{bg_url}"); background-attachment: fixed; background-size: 40%; background-repeat: no-repeat; background-position: center bottom; }} h1, h2, h3 {{ color: #1b5e20; }}</style>""", unsafe_allow_html=True)
+st.markdown(f"""<style>.stApp {{ background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("{bg_url}"); background-attachment: fixed; background-size: 40%; background-repeat: no-repeat; background-position: center bottom; }}</style>""", unsafe_allow_html=True)
 
 with st.sidebar:
     st.header("🚜 Farm Manager")
@@ -89,12 +98,12 @@ with st.sidebar:
         "English": {
             "dash": "📊 Dashboard", "solver": "🧪 LCR Optimizer", "guide": "📚 Guide", "market": "🛒 Market",
             "birds": "Live Birds", "age": "Age (Days)", "yield_meat": "Est. Yield (kg)", "roi_title": "💵 Profit Projection",
-            "save_btn": "🚀 Save Today's Progress", "hist_title": "📋 Batch History", "mixing": "🥣 Instructions"
+            "save_btn": "🚀 Save Today's Progress", "hist_title": "📋 Batch History"
         },
         "Kiswahili": {
             "dash": "📊 Dashibodi", "solver": "🧪 Kikokotoo LCR", "guide": "📚 Mwongozo", "market": "🛒 Soko",
             "birds": "Kuku Waliopo", "age": "Umri (Siku)", "yield_meat": "Mavuno (kg)", "roi_title": "💵 Makadirio ya Faida",
-            "save_btn": "🚀 Hifadhi Taarifa", "hist_title": "📋 Kumbukumbu", "mixing": "🥣 Maelekezo"
+            "save_btn": "🚀 Hifadhi Taarifa", "hist_title": "📋 Kumbukumbu"
         }
     }
     txt = t[lang]
@@ -116,7 +125,6 @@ if menu == txt["dash"]:
     m3.metric(txt["yield_meat"] if flock_type == "Broiler" else "Status", f"{active_birds * 2.2:.1f} kg" if flock_type == "Broiler" else "Active")
 
     st.divider()
-    # Simplified KPI Logic
     if flock_type == "Broiler":
         f_in = st.number_input("Total Feed Used (kg)", value=10.0)
         a_wt = st.number_input("Avg Weight (kg)", value=0.5)
@@ -127,23 +135,27 @@ if menu == txt["dash"]:
         kpi_val = (eggs / active_birds * 100) if active_birds > 0 else 0
         st.metric("Laying Rate (HDEP%)", f"{kpi_val:.1f}%")
 
-    # Financials
     st.subheader(txt["roi_title"])
     c_price = st.number_input("Market Selling Price", value=8500)
     revenue = (active_birds * c_price) if flock_type == "Broiler" else (kpi_val * 300)
-    profit = revenue - (flock_size * 2000) # Simple estimation
-    
+    profit = revenue - (flock_size * 2000) 
     st.metric("Projected Profit", f"{profit:,.0f} TSH")
     
     if st.button(txt["save_btn"]):
-        save_to_google_sheets(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
+        save_to_firebase(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
 
     st.subheader(txt["hist_title"])
-    try:
-        df = conn.read(worksheet="Sheet1").dropna(how="all")
-        st.dataframe(df[df['Type'] == flock_type], use_container_width=True)
-    except:
-        st.info("History will appear after your first save.")
+    if db:
+        try:
+            # Query Firebase for recent logs
+            docs = db.collection("farm_records").where("Flock_ID", "==", flock_id).order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10).stream()
+            hist_data = [d.to_dict() for d in docs]
+            if hist_data:
+                st.dataframe(pd.DataFrame(hist_data), use_container_width=True)
+            else:
+                st.info("No records found for this flock yet.")
+        except Exception as e:
+            st.info("Record log will appear here after your first save.")
 
 # --- 6. PERFORMANCE FEED SOLVER ---
 elif menu == txt["solver"]:
@@ -152,30 +164,21 @@ elif menu == txt["solver"]:
     t_data = STANDARDS[flock_type][stage]
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
-    # 1. Performance Logic: Automatic Energy Boost
     oil_pct = 0.02 if flock_type == "Broiler" else 0.01 
-    premix_min_pct = 0.07 # Premix + DCP
-    
-    # 2. BSFL Safety Guardrail
-    use_bsf = st.checkbox(f"Use BSFL (Auto-capped at {t_data['bsf_max']*100}% for this age)", value=True)
+    premix_min_pct = 0.07 
+    use_bsf = st.checkbox(f"Use BSFL (Auto-capped at {t_data['bsf_max']*100}%)", value=True)
     bsf_pct = t_data["bsf_max"] if use_bsf else 0.0
     
-    # 3. Solver Math
     rem_space = 1.0 - oil_pct - premix_min_pct - bsf_pct
     target_p = t_data["prot"] - (bsf_pct * ING_DATABASE["BSF Larvae"]["prot"])
-    
     m_p, s_p = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
     soya_ratio = ((target_p / rem_space) - m_p) / (s_p - m_p)
     
-    # Weights
     w_maize = total_kg * rem_space * (1 - soya_ratio)
     w_soya = total_kg * rem_space * soya_ratio
     w_bsf = total_kg * bsf_pct
     w_oil = total_kg * oil_pct
     w_other = total_kg * premix_min_pct
-
-    # Amino Acid Check
-    calc_lys = ((w_maize/total_kg)*ING_DATABASE["Maize"]["lys"] + (w_soya/total_kg)*ING_DATABASE["Soya Meal"]["lys"] + (w_bsf/total_kg)*ING_DATABASE["BSF Larvae"]["lys"]) * 100
 
     st.subheader("🥣 Mixing Table")
     recipe_df = pd.DataFrame({
@@ -183,14 +186,6 @@ elif menu == txt["solver"]:
         "Amount (kg)": [round(w_maize, 1), round(w_soya, 1), round(w_bsf, 1), round(w_oil, 1), round(w_other, 1)]
     })
     st.table(recipe_df)
-    
-    # Performance Insight
-    c1, c2 = st.columns(2)
-    c1.metric("Target Energy", f"{t_data['en']} kcal")
-    c2.metric("Lysine Content", f"{calc_lys:.2f}%", delta="Optimal" if calc_lys >= t_data["lys"] else "Low")
-    
-    if calc_lys < t_data["lys"]:
-        st.warning("⚠️ For maximum growth, consider adding 200g of Lysine powder to this mix.")
 
 # --- 7. GUIDE & MARKET ---
 elif menu == txt["guide"]:
@@ -208,4 +203,4 @@ elif menu == txt["market"]:
         c3.link_button("Order", f"https://wa.me/255700000000?text=I%20want%20to%20order%20{name}")
 
 st.divider()
-st.caption("🚀 FeedConvo Pro | Performance Mode Active | Cloud Synced")
+st.caption("🚀 FeedConvo Pro | Powered by Firebase Firestore")
