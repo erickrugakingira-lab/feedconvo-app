@@ -17,13 +17,27 @@ st.set_page_config(
 @st.cache_resource
 def get_db():
     try:
-        # This looks for the [firebase] section in your secrets
-        key_dict = st.secrets["firebase"]
+        # 1. Pull the secrets
+        key_dict = dict(st.secrets["firebase"])
+        
+        # 2. THE CLEANER: This removes "extra data" causing the ASN.1 error
+        raw_key = key_dict["private_key"]
+        
+        # Fix: Remove literal '\n' strings if they exist
+        clean_key = raw_key.replace("\\n", "\n")
+        
+        # Fix: Strip any invisible spaces/newlines from the start and end
+        clean_key = clean_key.strip()
+        
+        # Re-insert the cleaned key into the dictionary
+        key_dict["private_key"] = clean_key
+        
+        # 3. Connect
         creds = service_account.Credentials.from_service_account_info(key_dict)
         return firestore.Client(credentials=creds, project=key_dict["project_id"])
     except Exception as e:
-        # We define 'e' here so the error message actually works
-        st.error(f"❌ Firebase Connection Error: {e}")
+        st.error("🔒 Security Key Handshake Failed")
+        st.exception(e)
         return None
 
 db = get_db()
