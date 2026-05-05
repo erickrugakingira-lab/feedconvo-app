@@ -1,1 +1,4 @@
+import streamlit as st
 
+key = st.secrets["google"]["private_key"]
+st.write(len(key))
