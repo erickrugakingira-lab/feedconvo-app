@@ -17,19 +17,25 @@ st.set_page_config(
 @st.cache_resource
 def get_db():
     try:
-        # 1. Pull the secrets
+        # 1. Pull the secrets as a dictionary
         key_dict = dict(st.secrets["firebase"])
         
-        # 2. THE CLEANER: This removes "extra data" causing the ASN.1 error
+        # 2. THE ULTIMATE SCRUBBER
+        # This removes everything except the actual key content
         raw_key = key_dict["private_key"]
         
-        # Fix: Remove literal '\n' strings if they exist
+        # Remove literal '\n' characters if they exist as text
         clean_key = raw_key.replace("\\n", "\n")
         
-        # Fix: Strip any invisible spaces/newlines from the start and end
+        # Remove any leading/trailing spaces or invisible tabs
         clean_key = clean_key.strip()
         
-        # Re-insert the cleaned key into the dictionary
+        # Remove any spaces that might have sneaked into the middle of the key lines
+        # (This is often what causes the 'ASN.1 extra data' error)
+        lines = clean_key.split('\n')
+        clean_key = '\n'.join([line.strip() for line in lines])
+        
+        # Re-insert the cleaned key
         key_dict["private_key"] = clean_key
         
         # 3. Connect
@@ -41,7 +47,6 @@ def get_db():
         return None
 
 db = get_db()
-
 def save_to_firebase(flock_type, flock_name, age, birds, kpi_val, profit_val):
     if db:
         try:
