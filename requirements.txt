@@ -1,5 +1,5 @@
 streamlit
-st-gsheets-connection
+google-cloud-firestore.
 pandas
 pulp
 plotly
