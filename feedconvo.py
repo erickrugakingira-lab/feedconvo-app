@@ -13,15 +13,16 @@ st.set_page_config(
     page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png"
 )
 
-# --- 2. FIREBASE CONNECTION ---
+# --- 3. FIREBASE CONNECTION ---
 @st.cache_resource
 def get_db():
     try:
-        # Load credentials from Streamlit Secrets
+        # This looks for the [firebase] section in your secrets
         key_dict = st.secrets["firebase"]
         creds = service_account.Credentials.from_service_account_info(key_dict)
         return firestore.Client(credentials=creds, project=key_dict["project_id"])
     except Exception as e:
+        # We define 'e' here so the error message actually works
         st.error(f"❌ Firebase Connection Error: {e}")
         return None
 
