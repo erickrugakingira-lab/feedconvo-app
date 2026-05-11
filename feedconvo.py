@@ -2,9 +2,7 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
-from google.cloud import firestore
-from google.oauth2 import service_account
-
+from supabase import create_client, Client
 # --- 1. GLOBAL CONFIGURATION ---
 st.set_page_config(
     page_title="FeedConvo Pro", 
@@ -13,67 +11,35 @@ st.set_page_config(
     page_icon="https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/Main_logo.png"
 )
 
-# --- 3. FIREBASE CONNECTION ---
+# --- 2. SUPABASE CONNECTION ---
 @st.cache_resource
-def get_db():
+def get_supabase() -> Client:
     try:
-        # 1. Pull the secrets as a dictionary
-        if "firebase" not in st.secrets:
-            st.error("❌ 'firebase' section missing from Streamlit Secrets!")
-            return None
-            
-        key_dict = dict(st.secrets["firebase"])
-        
-        # 2. THE BULLETPROOF SCRUBBER
-        # This addresses the "ASN.1 parsing error: extra data" by re-formatting the key
-        raw_key = key_dict["private_key"]
-        
-        # Replace literal backslash-n with actual newlines if they exist
-        clean_key = raw_key.replace("\\n", "\n")
-        
-        # Strip invisible spaces/tabs from every single line and remove empty lines
-        lines = [line.strip() for line in clean_key.split('\n') if line.strip()]
-        
-        # Reconstruct the key with standard line breaks
-        final_key = "\n".join(lines)
-        
-        # Ensure standard PEM headers are present
-        if "-----BEGIN PRIVATE KEY-----" not in final_key:
-            final_key = "-----BEGIN PRIVATE KEY-----\n" + final_key
-        if "-----END PRIVATE KEY-----" not in final_key:
-            final_key = final_key + "\n-----END PRIVATE KEY-----"
-            
-        key_dict["private_key"] = final_key
-        
-        # 3. Connect using the cleaned dictionary
-        creds = service_account.Credentials.from_service_account_info(key_dict)
-        return firestore.Client(credentials=creds, project=key_dict["project_id"])
-        
+        url = st.secrets["SUPABASE_URL"]
+        key = st.secrets["SUPABASE_KEY"]
+        return create_client(url, key)
     except Exception as e:
-        st.error("🔒 Security Key Handshake Failed")
-        st.exception(e)  # This shows the full technical error for debugging
+        st.error(f"❌ Connection Error: {e}")
         return None
 
-db = get_db()
+supabase = get_supabase()
 
-def save_to_firebase(flock_type, flock_name, age, birds, kpi_val, profit_val):
-    if db:
+def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
+    if supabase:
+        data = {
+            "flock_type": flock_type,
+            "flock_id": flock_id,
+            "age_days": age,
+            "active_birds": birds,
+            "kpi_value": float(kpi_val),
+            "profit_tsh": float(profit_val),
+            "created_at": datetime.datetime.now().isoformat()
+        }
         try:
-            # Creating a record entry
-            record_ref = db.collection("farm_records").document() # Auto-generates unique ID
-            record_ref.set({
-                "Date": datetime.date.today().strftime('%Y-%m-%d'),
-                "Type": flock_type,
-                "Flock_ID": flock_name,
-                "Age": age,
-                "Birds": birds,
-                "KPI_Value": round(kpi_val, 2),
-                "Profit_TSH": round(profit_val, 2),
-                "timestamp": firestore.SERVER_TIMESTAMP
-            })
-            st.success(f"🔥 Firebase Sync Successful for {flock_name}!")
+            supabase.table("farm_records").insert(data).execute()
+            st.success(f"✅ Data Synced to Supabase for {flock_id}!")
         except Exception as e:
-            st.error(f"🔥 Firebase Sync Failed: {e}")
+            st.error(f"❌ Supabase Insert Failed: {e}")
 
 # --- 3. THE DATABASES ---
 ING_DATABASE = {
