@@ -18,35 +18,44 @@ st.set_page_config(
 def get_db():
     try:
         # 1. Pull the secrets as a dictionary
+        if "firebase" not in st.secrets:
+            st.error("❌ 'firebase' section missing from Streamlit Secrets!")
+            return None
+            
         key_dict = dict(st.secrets["firebase"])
         
-        # 2. THE ULTIMATE SCRUBBER
-        # This removes everything except the actual key content
+        # 2. THE BULLETPROOF SCRUBBER
+        # This addresses the "ASN.1 parsing error: extra data" by re-formatting the key
         raw_key = key_dict["private_key"]
         
-        # Remove literal '\n' characters if they exist as text
+        # Replace literal backslash-n with actual newlines if they exist
         clean_key = raw_key.replace("\\n", "\n")
         
-        # Remove any leading/trailing spaces or invisible tabs
-        clean_key = clean_key.strip()
+        # Strip invisible spaces/tabs from every single line and remove empty lines
+        lines = [line.strip() for line in clean_key.split('\n') if line.strip()]
         
-        # Remove any spaces that might have sneaked into the middle of the key lines
-        # (This is often what causes the 'ASN.1 extra data' error)
-        lines = clean_key.split('\n')
-        clean_key = '\n'.join([line.strip() for line in lines])
+        # Reconstruct the key with standard line breaks
+        final_key = "\n".join(lines)
         
-        # Re-insert the cleaned key
-        key_dict["private_key"] = clean_key
+        # Ensure standard PEM headers are present
+        if "-----BEGIN PRIVATE KEY-----" not in final_key:
+            final_key = "-----BEGIN PRIVATE KEY-----\n" + final_key
+        if "-----END PRIVATE KEY-----" not in final_key:
+            final_key = final_key + "\n-----END PRIVATE KEY-----"
+            
+        key_dict["private_key"] = final_key
         
-        # 3. Connect
+        # 3. Connect using the cleaned dictionary
         creds = service_account.Credentials.from_service_account_info(key_dict)
         return firestore.Client(credentials=creds, project=key_dict["project_id"])
+        
     except Exception as e:
         st.error("🔒 Security Key Handshake Failed")
-        st.exception(e)
+        st.exception(e)  # This shows the full technical error for debugging
         return None
 
 db = get_db()
+
 def save_to_firebase(flock_type, flock_name, age, birds, kpi_val, profit_val):
     if db:
         try:
