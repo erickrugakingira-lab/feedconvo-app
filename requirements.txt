@@ -1,5 +1,5 @@
 streamlit
-google-cloud-firestore
+supabase
 pandas
 pulp
 plotly
