@@ -81,7 +81,7 @@ STANDARDS = {
 
 # --- 4. STYLING & SIDEBAR ---
 selected_type = st.session_state.get("flock_selector", "Broiler")
-bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/broiler_chicken.png" if selected_type == "Broiler" else "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
+bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/broiler_chicken.jpg" if selected_type == "Broiler" else "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
 
 st.markdown(f"""<style>.stApp {{ background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("{bg_url}"); background-attachment: fixed; background-size: 40%; background-repeat: no-repeat; background-position: center bottom; }}</style>""", unsafe_allow_html=True)
 
