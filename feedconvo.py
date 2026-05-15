@@ -3,6 +3,7 @@ import pandas as pd
 import datetime
 import os
 from supabase import create_client, Client
+
 # --- 1. GLOBAL CONFIGURATION ---
 st.set_page_config(
     page_title="FeedConvo Pro", 
@@ -29,8 +30,8 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
         data = {
             "flock_type": flock_type,
             "flock_id": flock_id,
-            "age_days": age,
-            "active_birds": birds,
+            "age_days": int(age),
+            "active_birds": int(birds),
             "kpi_value": float(kpi_val),
             "profit_tsh": float(profit_val),
             "created_at": datetime.datetime.now().isoformat()
@@ -136,34 +137,18 @@ if menu == txt["dash"]:
     profit = revenue - (flock_size * 2000) 
     st.metric("Projected Profit", f"{profit:,.0f} TSH")
     
-    if st.button(txt["save_btn"]):
-        save_to_firebase(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
-
-    st.subheader(txt["hist_title"])
-    # --- 5. DASHBOARD PAGE ---
-if menu == txt["dash"]:
-    st.title(f"{txt['dash']}: {flock_id}")
-    
-    # ... (your metric columns code) ...
-
-    st.divider()
-    # ... (your FCR/Laying Rate calculation code) ...
-
-    if st.button(txt["save_btn"]):
-        # Make sure this function name matches what we defined (save_to_supabase)
+    # Save Button with unique key to prevent DuplicateElementId error
+    if st.button(txt["save_btn"], key="save_to_supabase_btn"):
         save_to_supabase(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
 
-    st.subheader("📋 Recent Records (Supabase)")
-    
-    # CHANGE 'db' TO 'supabase' HERE:
+    st.subheader(txt["hist_title"])
     if supabase: 
         try:
-            # Updated query for Supabase syntax
-            response = supabase.table("farm_records").select("*").eq("flock_id", flock_id).order("created_at", desc=True).limit(5).execute()
+            response = supabase.table("farm_records").select("*").eq("flock_id", flock_id).order("created_at", desc=True).limit(10).execute()
             if response.data:
-                st.table(response.data)
+                st.dataframe(pd.DataFrame(response.data), use_container_width=True)
             else:
-                st.info("No records found in Supabase yet.")
+                st.info("No records found for this flock yet.")
         except Exception as e:
             st.info("Record log will appear here after your first save.")
 
@@ -213,4 +198,4 @@ elif menu == txt["market"]:
         c3.link_button("Order", f"https://wa.me/255700000000?text=I%20want%20to%20order%20{name}")
 
 st.divider()
-st.caption("🚀 FeedConvo Pro | Powered by Firebase Firestore")
+st.caption("🚀 FeedConvo Pro | Powered by Supabase PostgreSQL")
