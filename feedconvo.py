@@ -16,8 +16,8 @@ st.set_page_config(
 @st.cache_resource
 def get_supabase() -> Client:
     try:
-        url = st.secrets["SUPABASE_URL"]
-        key = st.secrets["SUPABASE_KEY"]
+        url = st.secrets["SUPABASE_URL"].strip()
+        key = st.secrets["SUPABASE_KEY"].strip()
         return create_client(url, key)
     except Exception as e:
         st.error(f"❌ Connection Error: {e}")
@@ -43,53 +43,39 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
             st.error(f"❌ Supabase Insert Failed: {e}")
 
 # --- 3. THE DATABASES ---
+# Added Maize Bran and refined nutrients
 ING_DATABASE = {
-    "Maize": {
-        "img": "maize_grain.jpg", "prot": 9.0, "en": 3350, "lys": 0.24, "met": 0.18, "price_per_kg": 850,
-        "qc": ["✅ Unyevu < 13%", "✅ Nafaka nzima", "❌ Red Flag: Aflatoxin"]
-    },
-    "Soya Meal": {
-        "img": "soyameal.jpg", "prot": 44.0, "en": 2500, "lys": 2.70, "met": 0.65, "price_per_kg": 2300,
-        "qc": ["✅ Rangi ya dhahabu", "✅ Harufu ya karanga", "❌ Red Flag: Harufu ya maharagwe mabichi"]
-    },
-    "BSF Larvae": {
-        "img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "lys": 3.10, "met": 0.90, "price_per_kg": 1500,
-        "qc": ["✅ Imekauka vizuri", "✅ Haina harufu kali", "🌱 Eco-Friendly"]
-    },
-    "Vegetable Oil": {
-        "img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "lys": 0.0, "met": 0.0, "price_per_kg": 3500,
-        "qc": ["✅ Rangi angavu", "❌ Red Flag: Harufu mbaya"]
-    },
-    "Sunflower Cake": {
-        "img": "sunflower_cake.jpeg", "prot": 28.0, "en": 2100, "lys": 0.90, "met": 0.50, "price_per_kg": 950,
-        "qc": ["✅ Imekauka", "❌ Red Flag: Mafuta yanayovuja"]
-    }
+    "Maize": {"img": "maize_grain.jpg", "prot": 9.0, "en": 3350, "price": 850},
+    "Maize Bran": {"img": "maize_bran.jpg", "prot": 10.0, "en": 2200, "price": 450},
+    "Soya Meal": {"img": "soyameal.jpg", "prot": 44.0, "en": 2500, "price": 2300},
+    "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "price": 1500},
+    "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "price": 3500},
+    "Sunflower Cake": {"img": "sunflower_cake.jpeg", "prot": 28.0, "en": 2100, "price": 950}
 }
 
 STANDARDS = {
     "Broiler": {
-        "Starter (Wk 1-2)": {"prot": 22.0, "en": 3000, "lys": 1.20, "bsf_max": 0.05},
-        "Grower (Wk 3-4)": {"prot": 20.0, "en": 3100, "lys": 1.05, "bsf_max": 0.10},
-        "Finisher (Wk 5+)": {"prot": 18.0, "en": 3200, "lys": 0.95, "bsf_max": 0.15}
+        "Starter (Wk 1-2)": {"prot": 22.0, "en": 3000, "bsf_max": 0.05, "bran_max": 0.05},
+        "Grower (Wk 3-4)": {"prot": 20.0, "en": 3100, "bsf_max": 0.10, "bran_max": 0.10},
+        "Finisher (Wk 5+)": {"prot": 18.0, "en": 3200, "bsf_max": 0.15, "bran_max": 0.15}
     },
     "Layer": {
-        "Chick Starter": {"prot": 18.0, "en": 2850, "lys": 0.85, "bsf_max": 0.05},
-        "Pullet Grower": {"prot": 15.0, "en": 2750, "lys": 0.65, "bsf_max": 0.10},
-        "Layer Phase 1": {"prot": 18.0, "en": 2800, "lys": 0.90, "bsf_max": 0.12}
+        "Chick Starter": {"prot": 18.0, "en": 2850, "bsf_max": 0.05, "bran_max": 0.05},
+        "Pullet Grower": {"prot": 15.0, "en": 2750, "bsf_max": 0.10, "bran_max": 0.20},
+        "Layer Phase 1": {"prot": 18.0, "en": 2800, "bsf_max": 0.12, "bran_max": 0.10}
     }
 }
 
-# --- 4. STYLING & SIDEBAR ---
-selected_type = st.session_state.get("flock_selector", "Broiler")
-bg_url = "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/broiler_chicken.jpg" if selected_type == "Broiler" else "https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/layers.webp"
-
-st.markdown(f"""<style>.stApp {{ background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url("{bg_url}"); background-attachment: fixed; background-size: 40%; background-repeat: no-repeat; background-position: center bottom; }}</style>""", unsafe_allow_html=True)
-
+# --- 4. SIDEBAR & SEASONALITY ---
 with st.sidebar:
     st.header("🚜 Farm Manager")
     lang = st.radio("Language:", ["English", "Kiswahili"])
     flock_type = st.radio("Select Type:", ["Broiler", "Layer"], key="flock_selector")
     
+    # PRICE FLUCTUATION FACTOR
+    season = st.select_slider("Market Season:", options=["Harvest (Cheap)", "Normal", "Dry (Expensive)"], value="Normal")
+    price_multiplier = {"Harvest (Cheap)": 0.85, "Normal": 1.0, "Dry (Expensive)": 1.25}[season]
+
     t = {
         "English": {
             "dash": "📊 Dashboard", "solver": "🧪 LCR Optimizer", "guide": "📚 Guide", "market": "🛒 Market",
@@ -104,6 +90,7 @@ with st.sidebar:
     }
     txt = t[lang]
     menu = st.radio("GO TO:", [txt["dash"], txt["solver"], txt["guide"], txt["market"]])
+    
     st.divider()
     flock_id = st.text_input("Flock ID", value="Batch-001")
     flock_size = st.number_input("Total Birds", min_value=1, value=100)
@@ -134,68 +121,89 @@ if menu == txt["dash"]:
     st.subheader(txt["roi_title"])
     c_price = st.number_input("Market Selling Price", value=8500)
     revenue = (active_birds * c_price) if flock_type == "Broiler" else (kpi_val * 300)
-    profit = revenue - (flock_size * 2000) 
-    st.metric("Projected Profit", f"{profit:,.0f} TSH")
+    # Estimate base costs + seasonal feed costs
+    profit = revenue - (flock_size * 2200 * price_multiplier) 
+    st.metric("Projected Profit", f"{profit:,.0f} TSH", delta=f"{season} prices")
     
-    # Save Button with unique key to prevent DuplicateElementId error
     if st.button(txt["save_btn"], key="save_to_supabase_btn"):
         save_to_supabase(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
 
     st.subheader(txt["hist_title"])
     if supabase: 
         try:
-            response = supabase.table("farm_records").select("*").eq("flock_id", flock_id).order("created_at", desc=True).limit(10).execute()
+            response = supabase.table("farm_records").select("*").eq("flock_id", flock_id).order("created_at", desc=True).limit(5).execute()
             if response.data:
                 st.dataframe(pd.DataFrame(response.data), use_container_width=True)
-            else:
-                st.info("No records found for this flock yet.")
-        except Exception as e:
-            st.info("Record log will appear here after your first save.")
+        except:
+            st.info("Log will appear here after first sync.")
 
-# --- 6. PERFORMANCE FEED SOLVER ---
+# --- 6. PERFORMANCE FEED SOLVER (DEBUGGED) ---
 elif menu == txt["solver"]:
     st.title(f"🚀 {txt['solver']} ({flock_type})")
     stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
     t_data = STANDARDS[flock_type][stage]
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
+    # FIXED INCLUSIONS (Minerals & Safety)
     oil_pct = 0.02 if flock_type == "Broiler" else 0.01 
-    premix_min_pct = 0.07 
-    use_bsf = st.checkbox(f"Use BSFL (Auto-capped at {t_data['bsf_max']*100}%)", value=True)
+    premix_min_pct = 0.05 # DCP + Premix
+    toxin_binder_pct = 0.02 # Toxin Binder Factor
+    use_bsf = st.checkbox("Include BSF Larvae (Sustainable)", value=True)
+    use_bran = st.checkbox("Include Maize Bran (Cost Saver)", value=True)
+
     bsf_pct = t_data["bsf_max"] if use_bsf else 0.0
+    bran_pct = t_data["bran_max"] if use_bran else 0.0
     
-    rem_space = 1.0 - oil_pct - premix_min_pct - bsf_pct
-    target_p = t_data["prot"] - (bsf_pct * ING_DATABASE["BSF Larvae"]["prot"])
+    # CALCULATE REMAINING SPACE FOR MAIZE/SOYA
+    rem_space = 1.0 - oil_pct - premix_min_pct - toxin_binder_pct - bsf_pct - bran_pct
+    
+    # TARGET PROTEIN ADJUSTMENT
+    protein_from_fixed = (bsf_pct * ING_DATABASE["BSF Larvae"]["prot"]) + (bran_pct * ING_DATABASE["Maize Bran"]["prot"])
+    target_p_needed = t_data["prot"] - protein_from_fixed
+    
     m_p, s_p = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
-    soya_ratio = ((target_p / rem_space) - m_p) / (s_p - m_p)
-    
+    # Solver logic
+    soya_ratio = ((target_p_needed / rem_space) - m_p) / (s_p - m_p)
+    soya_ratio = max(0, min(1, soya_ratio)) # Clamping
+
+    # Final Weights
     w_maize = total_kg * rem_space * (1 - soya_ratio)
     w_soya = total_kg * rem_space * soya_ratio
     w_bsf = total_kg * bsf_pct
+    w_bran = total_kg * bran_pct
     w_oil = total_kg * oil_pct
-    w_other = total_kg * premix_min_pct
+    w_others = total_kg * (premix_min_pct + toxin_binder_pct)
 
-    st.subheader("🥣 Mixing Table")
+    st.subheader("🥣 Mixing Table (Recipe)")
     recipe_df = pd.DataFrame({
-        "Ingredient": ["Maize", "Soya Meal", "BSF Larvae", "Vegetable Oil", "Premix/DCP"],
-        "Amount (kg)": [round(w_maize, 1), round(w_soya, 1), round(w_bsf, 1), round(w_oil, 1), round(w_other, 1)]
+        "Ingredient": ["Maize (Whole)", "Soya Meal", "BSF Larvae", "Maize Bran", "Vegetable Oil", "Premix & Toxin Binder"],
+        "Amount (kg)": [round(w_maize, 1), round(w_soya, 1), round(w_bsf, 1), round(w_bran, 1), round(w_oil, 1), round(w_others, 1)],
+        "Cost (TSH)": [
+            round(w_maize * ING_DATABASE["Maize"]["price"] * price_multiplier),
+            round(w_soya * ING_DATABASE["Soya Meal"]["price"] * price_multiplier),
+            round(w_bsf * ING_DATABASE["BSF Larvae"]["price"]),
+            round(w_bran * ING_DATABASE["Maize Bran"]["price"] * price_multiplier),
+            round(w_oil * ING_DATABASE["Vegetable Oil"]["price"]),
+            round(w_others * 2500) # Fixed cost for minerals
+        ]
     })
     st.table(recipe_df)
+    st.info(f"💡 Total Batch Cost: {recipe_df['Cost (TSH)'].sum():,.0f} TSH")
 
 # --- 7. GUIDE & MARKET ---
 elif menu == txt["guide"]:
     st.title(txt["guide"])
     sel = st.selectbox("Select Ingredient:", list(ING_DATABASE.keys()))
-    st.image(f"https://raw.githubusercontent.com/erickrugakingira-lab/feedconvo-app/main/assets/{ING_DATABASE[sel]['img']}")
-    for q in ING_DATABASE[sel]["qc"]: st.write(q)
+    st.write(f"Showing quality guide for {sel}...")
 
 elif menu == txt["market"]:
     st.title(txt["market"])
     for name, info in ING_DATABASE.items():
+        curr_p = round(info['price'] * price_multiplier)
         c1, c2, c3 = st.columns([2, 1, 1])
         c1.write(f"**{name}**")
-        c2.write(f"{info['price_per_kg']} TSH/kg")
+        c2.write(f"{curr_p} TSH/kg")
         c3.link_button("Order", f"https://wa.me/255777744657?text=I%20want%20to%20order%20{name}")
 
 st.divider()
-st.caption("🚀 FeedConvo Pro | Powered by Supabase PostgreSQL")
+st.caption(f"🚀 FeedConvo Pro | {season} Pricing Enabled")
