@@ -140,15 +140,30 @@ if menu == txt["dash"]:
         save_to_firebase(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
 
     st.subheader(txt["hist_title"])
-    if db:
+    # --- 5. DASHBOARD PAGE ---
+if menu == txt["dash"]:
+    st.title(f"{txt['dash']}: {flock_id}")
+    
+    # ... (your metric columns code) ...
+
+    st.divider()
+    # ... (your FCR/Laying Rate calculation code) ...
+
+    if st.button(txt["save_btn"]):
+        # Make sure this function name matches what we defined (save_to_supabase)
+        save_to_supabase(flock_type, flock_id, age_days, active_birds, kpi_val, profit)
+
+    st.subheader("📋 Recent Records (Supabase)")
+    
+    # CHANGE 'db' TO 'supabase' HERE:
+    if supabase: 
         try:
-            # Query Firebase for recent logs
-            docs = db.collection("farm_records").where("Flock_ID", "==", flock_id).order_by("timestamp", direction=firestore.Query.DESCENDING).limit(10).stream()
-            hist_data = [d.to_dict() for d in docs]
-            if hist_data:
-                st.dataframe(pd.DataFrame(hist_data), use_container_width=True)
+            # Updated query for Supabase syntax
+            response = supabase.table("farm_records").select("*").eq("flock_id", flock_id).order("created_at", desc=True).limit(5).execute()
+            if response.data:
+                st.table(response.data)
             else:
-                st.info("No records found for this flock yet.")
+                st.info("No records found in Supabase yet.")
         except Exception as e:
             st.info("Record log will appear here after your first save.")
 
