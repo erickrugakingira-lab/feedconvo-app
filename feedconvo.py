@@ -195,7 +195,7 @@ elif menu == txt["market"]:
         c1, c2, c3 = st.columns([2, 1, 1])
         c1.write(f"**{name}**")
         c2.write(f"{info['price_per_kg']} TSH/kg")
-        c3.link_button("Order", f"https://wa.me/255700000000?text=I%20want%20to%20order%20{name}")
+        c3.link_button("Order", f"https://wa.me/255777744657?text=I%20want%20to%20order%20{name}")
 
 st.divider()
 st.caption("🚀 FeedConvo Pro | Powered by Supabase PostgreSQL")
