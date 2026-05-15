@@ -53,7 +53,7 @@ ING_DATABASE = {
         "qc": ["✅ Rangi ya dhahabu", "✅ Harufu ya karanga", "❌ Red Flag: Harufu ya maharagwe mabichi"]
     },
     "BSF Larvae": {
-        "img": "bsfl.jpg", "prot": 50.0, "en": 3100, "lys": 3.10, "met": 0.90, "price_per_kg": 1500,
+        "img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "lys": 3.10, "met": 0.90, "price_per_kg": 1500,
         "qc": ["✅ Imekauka vizuri", "✅ Haina harufu kali", "🌱 Eco-Friendly"]
     },
     "Vegetable Oil": {
