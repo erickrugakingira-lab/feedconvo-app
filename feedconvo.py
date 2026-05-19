@@ -144,18 +144,23 @@ if menu == txt["dash"]:
         except:
             st.info("Log will appear here after first sync.")
 
-# --- 6. PERFORMANCE FEED SOLVER (REFRACTORED WITH DM% & DYNAMIC CHANNELS) ---
+# --- 6. PERFORMANCE FEED SOLVER (LINEAR PROGRAMMING & DRY MATTER CONVERGENCE) ---
 elif menu == txt["solver"]:
     st.title(f"🚀 {txt['solver']} ({flock_type})")
     stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
     t_data = STANDARDS[flock_type][stage]
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
-    st.sidebar.markdown("### 🥣 Select Recipe Base Ingredients")
-    me_choice = st.sidebar.selectbox("Primary ME Grain Source:", [k for k, v in ING_DATABASE.items() if v["type"] == "ME" and k != "Maize Bran" and k != "Vegetable Oil"])
-    cp_choice = st.sidebar.selectbox("Primary CP Meal Source:", [k for k, v in ING_DATABASE.items() if v["type"] == "CP" and k != "BSF Larvae"])
+    st.sidebar.markdown("### 🥣 Select Available Base Ingredients")
+    
+    # Filter groups from database dynamically so the user can control what goes to the solver
+    me_options = [k for k, v in ING_DATABASE.items() if v["type"] == "ME" and k not in ["Vegetable Oil", "Maize Bran"]]
+    cp_options = [k for k, v in ING_DATABASE.items() if v["type"] == "CP" and k != "BSF Larvae"]
 
-    # FIXED INCLUSIONS (Minerals, Oil, and Safety Factor)
+    me_choice = st.sidebar.selectbox("Primary ME Grain Source:", me_options)
+    cp_choice = st.sidebar.selectbox("Primary CP Meal Source:", cp_options)
+
+    # FIXED USER OVERRIDES (Inclusions & Checkboxes)
     oil_pct = 0.02 if flock_type == "Broiler" else 0.01 
     premix_min_pct = 0.05 
     toxin_binder_pct = 0.02 
@@ -165,90 +170,143 @@ elif menu == txt["solver"]:
     bsf_pct = t_data["bsf_max"] if use_bsf else 0.0
     bran_pct = t_data["bran_max"] if use_bran else 0.0
     
-    # FIXED POOL SUMMATION
-    fixed_space = oil_pct + premix_min_pct + toxin_binder_pct + bsf_pct + bran_pct
-    rem_space = 1.0 - fixed_space
-    
-    # --- DRY MATTER (DM) STEP-DOWN INTEGRATION LOGIC ---
-    # Convert baseline nutrient variables into 100% Dry Matter context before execution
-    dm_me_source = ING_DATABASE[me_choice]["dm_pct"] / 100.0
-    dm_cp_source = ING_DATABASE[cp_choice]["dm_pct"] / 100.0
-    dm_bsf = ING_DATABASE["BSF Larvae"]["dm_pct"] / 100.0
-    dm_bran = ING_DATABASE["Maize Bran"]["dm_pct"] / 100.0
-    
-    # Calculate Dry Protein contribution from the fixed allocation pool
-    p_from_bsf_dry = (bsf_pct * (ING_DATABASE["BSF Larvae"]["prot"] / dm_bsf)) if use_bsf else 0.0
-    p_from_bran_dry = (bran_pct * (ING_DATABASE["Maize Bran"]["prot"] / dm_bran)) if use_bran else 0.0
-    
-    # Minimum safe requirement targets adjusted to DM target window
-    target_p_dry = t_data["min_cp"] - (p_from_bsf_dry + p_from_bran_dry)
-    
-    # Grab dry values for solving matrix
-    m_p_dry = ING_DATABASE[me_choice]["prot"] / dm_me_source
-    s_p_dry = ING_DATABASE[cp_choice]["prot"] / dm_cp_source
-    
-    # Pearson square solving matrix adjusted with boundary brackets
-    if (s_p_dry - m_p_dry) > 0:
-        cp_ratio = ((target_p_dry / rem_space) - m_p_dry) / (s_p_dry - m_p_dry)
-        cp_ratio = max(0.0, min(1.0, cp_ratio)) # Dynamic constraint clamp
-    else:
-        cp_ratio = 0.5
-
-    # As-Fed (Air-Dry weight basis) calculations out-scaled back to farmer weights
-    w_me_grain = total_kg * rem_space * (1 - cp_ratio)
-    w_cp_meal = total_kg * rem_space * cp_ratio
+    # FIXED SUB-POOL CALCULATIONS
+    w_oil = total_kg * oil_pct
     w_bsf = total_kg * bsf_pct
     w_bran = total_kg * bran_pct
-    w_oil = total_kg * oil_pct
     w_others = total_kg * (premix_min_pct + toxin_binder_pct)
-
-    # Verification Calculations (Nutritional Quality Assurance Control)
-    total_calculated_cp = (
-        (w_me_grain * (ING_DATABASE[me_choice]["prot"] / 100.0)) +
-        (w_cp_meal * (ING_DATABASE[cp_choice]["prot"] / 100.0)) +
-        (w_bsf * (ING_DATABASE["BSF Larvae"]["prot"] / 100.0) if use_bsf else 0) +
-        (w_bran * (ING_DATABASE["Maize Bran"]["prot"] / 100.0) if use_bran else 0)
-    ) / total_kg * 100.0
-
-    total_calculated_me = (
-        (w_me_grain * ING_DATABASE[me_choice]["en"]) +
-        (w_cp_meal * ING_DATABASE[cp_choice]["en"]) +
-        (w_bsf * ING_DATABASE["BSF Larvae"]["en"] if use_bsf else 0) +
-        (w_bran * ING_DATABASE["Maize Bran"]["en"] if use_bran else 0) +
-        (w_oil * ING_DATABASE["Vegetable Oil"]["en"])
-    ) / total_kg
-
-    st.subheader("🥣 Mixing Table (Recipe output scaled As-Fed)")
-    recipe_df = pd.DataFrame({
-        "Ingredient": [f"{me_choice} (Base)", f"{cp_choice} (Protein)", "BSF Larvae", "Maize Bran", "Vegetable Oil", "Premix & Toxin Binder"],
-        "Amount (kg)": [round(w_me_grain, 1), round(w_cp_meal, 1), round(w_bsf, 1), round(w_bran, 1), round(w_oil, 1), round(w_others, 1)],
-        "Cost (TSH)": [
-            round(w_me_grain * ING_DATABASE[me_choice]["price"] * price_multiplier),
-            round(w_cp_meal * ING_DATABASE[cp_choice]["price"] * price_multiplier),
-            round(w_bsf * ING_DATABASE["BSF Larvae"]["price"]),
-            round(w_bran * ING_DATABASE["Maize Bran"]["price"] * price_multiplier),
-            round(w_oil * ING_DATABASE["Vegetable Oil"]["price"]),
-            round(w_others * 2500)
-        ]
-    })
-    st.table(recipe_df)
     
-    # Nutrition Quality Dashboard Verification Display
-    st.markdown("### 📊 Nutritional Analysis Audit Summary")
-    c1, c2, c3 = st.columns(3)
-    
-    # Display calculated metrics against backend safety target constraints
-    if t_data["min_cp"] <= total_calculated_cp <= t_data["max_cp"]:
-        c1.success(f"Crude Protein: {total_calculated_cp:.2f}% (Safe Range)")
-    else:
-        c1.warning(f"Crude Protein: {total_calculated_cp:.2f}% (Target: {t_data['min_cp']}% - {t_data['max_cp']}%)")
+    fixed_space = oil_pct + premix_min_pct + toxin_binder_pct + bsf_pct + bran_pct
+    rem_space = 1.0 - fixed_space
 
-    if t_data["min_en"] <= total_calculated_me <= t_data["max_en"]:
-        c2.success(f"Metabolizable Energy: {total_calculated_me:.0f} kcal/kg (Safe Range)")
-    else:
-        c2.warning(f"Energy: {total_calculated_me:.0f} kcal (Target: {t_data['min_en']} - {t_data['max_en']} kcal)")
+    # --- LINEAR PROGRAMMING SOLVER WITH DRY MATTER ENGINE ---
+    from scipy.optimize import linprog
+
+    # Macro pool ingredients available for structural solving calculation
+    solver_ingredients = [me_choice, cp_choice]
+    
+    # 1. Objective Function Vector (Minimize As-Fed seasonal pricing weight costs)
+    c_vector = [ING_DATABASE[ing]["price"] * price_multiplier for ing in solver_ingredients]
+
+    # 2. Extracting Dry Matter Ratios
+    dm_me = ING_DATABASE[me_choice]["dm_pct"] / 100.0
+    dm_cp = ING_DATABASE[cp_choice]["dm_pct"] / 100.0
+    dm_bsf = ING_DATABASE["BSF Larvae"]["dm_pct"] / 100.0
+    dm_bran = ING_DATABASE["Maize Bran"]["dm_pct"] / 100.0
+
+    # Calculate nutrient yields provided by the fixed ingredient blocks on a 100% Dry Matter basis
+    p_fixed_dry = 0.0
+    en_fixed_dry = 0.0
+
+    if use_bsf:
+        p_fixed_dry += bsf_pct * (ING_DATABASE["BSF Larvae"]["prot"] / dm_bsf)
+        en_fixed_dry += bsf_pct * (ING_DATABASE["BSF Larvae"]["en"] / dm_bsf)
+    if use_bran:
+        p_fixed_dry += bran_pct * (ING_DATABASE["Maize Bran"]["prot"] / dm_bran)
+        en_fixed_dry += bran_pct * (ING_DATABASE["Maize Bran"]["en"] / dm_bran)
         
-    c3.info(f"💡 Total Batch Cost: {recipe_df['Cost (TSH)'].sum():,.0f} TSH")
+    # Fat/Oil matrix contribution (virtually moisture free)
+    en_fixed_dry += oil_pct * (ING_DATABASE["Vegetable Oil"]["en"] / 0.99)
+
+    # 3. Formulating Dry Nutrient Constraints for the Solver Pool (A_ub * x <= b_ub)
+    # Scipy looks for <= equations, so minimums are flipped using negative multiplication
+    A_ub = []
+    b_ub = []
+
+    # Get Dry Protein values for optimization variables
+    prot_me_dry = ING_DATABASE[me_choice]["prot"] / dm_me
+    prot_cp_dry = ING_DATABASE[cp_choice]["prot"] / dm_cp
+    
+    # Get Dry Energy values for optimization variables
+    en_me_dry = ING_DATABASE[me_choice]["en"] / dm_me
+    en_cp_dry = ING_DATABASE[cp_choice]["en"] / dm_cp
+
+    # Constraint Line A: Minimum Crude Protein Threshold (Dry Basis)
+    A_ub.append([-prot_me_dry, -prot_cp_dry])
+    b_ub.append(-(t_data["min_cp"] - p_fixed_dry))
+
+    # Constraint Line B: Maximum Crude Protein Threshold (Dry Basis Safety Ceiling)
+    A_ub.append([prot_me_dry, prot_cp_dry])
+    b_ub.append(t_data["max_cp"] - p_fixed_dry)
+
+    # Constraint Line C: Minimum Metabolizable Energy Threshold (Dry Basis)
+    A_ub.append([-en_me_dry, -en_cp_dry])
+    b_ub.append(-(t_data["min_en"] - en_fixed_dry))
+
+    # Constraint Line D: Maximum Metabolizable Energy Threshold (Dry Basis Safety Ceiling)
+    A_ub.append([en_me_dry, en_cp_dry])
+    b_ub.append(t_data["max_en"] - en_fixed_dry)
+
+    # 4. Equality Constraint (Total allocated macro solver variables must match exact target rem_space)
+    A_eq = [[1.0, 1.0]]
+    b_eq = [rem_space]
+
+    # Boundaries: Inclusions must remain between 0% and 100% of remaining space
+    x_bounds = [(0.0, rem_space), (0.0, rem_space)]
+
+    # Compute Optimization Function Matrix
+    res = linprog(c_vector, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=x_bounds, method="highs")
+
+    if res.success:
+        # Dynamic variable array unraveling back out to Physical As-Fed weight profiles
+        w_me_grain = res.x[0] * total_kg
+        w_cp_meal = res.x[1] * total_kg
+
+        st.subheader("🥣 Optimized Mixing Table (Recipe output scaled As-Fed)")
+        recipe_df = pd.DataFrame({
+            "Ingredient": [f"{me_choice} (Base)", f"{cp_choice} (Protein Source)", "BSF Larvae", "Maize Bran", "Vegetable Oil", "Premix & Toxin Binder"],
+            "Amount (kg)": [round(w_me_grain, 1), round(w_cp_meal, 1), round(w_bsf, 1), round(w_bran, 1), round(w_oil, 1), round(w_others, 1)],
+            "Cost (TSH)": [
+                round(w_me_grain * ING_DATABASE[me_choice]["price"] * price_multiplier),
+                round(w_cp_meal * ING_DATABASE[cp_choice]["price"] * price_multiplier),
+                round(w_bsf * ING_DATABASE["BSF Larvae"]["price"]),
+                round(w_bran * ING_DATABASE["Maize Bran"]["price"] * price_multiplier),
+                round(w_oil * ING_DATABASE["Vegetable Oil"]["price"]),
+                round(w_others * 2500)
+            ]
+        })
+        st.table(recipe_df)
+        
+        # --- VERIFICATION QUALITY CONTROL ENGINE ---
+        # Back-calculating actual nutrient delivery fractions on standard 100% Dry Matter basis
+        total_dry_mass_kg = (
+            (w_me_grain * dm_me) + (w_cp_meal * dm_cp) + 
+            (w_bsf * dm_bsf) + (w_bran * dm_bran) + (w_oil * 0.99)
+        )
+        
+        calculated_cp_dry = (
+            (w_me_grain * (ING_DATABASE[me_choice]["prot"] / 100.0)) +
+            (w_cp_meal * (ING_DATABASE[cp_choice]["prot"] / 100.0)) +
+            (w_bsf * (ING_DATABASE["BSF Larvae"]["prot"] / 100.0)) +
+            (w_bran * (ING_DATABASE["Maize Bran"]["prot"] / 100.0))
+        ) / total_dry_mass_kg * 100.0
+
+        calculated_me_dry = (
+            (w_me_grain * ING_DATABASE[me_choice]["en"]) +
+            (w_cp_meal * ING_DATABASE[cp_choice]["en"]) +
+            (w_bsf * ING_DATABASE["BSF Larvae"]["en"]) +
+            (w_bran * ING_DATABASE["Maize Bran"]["en"]) +
+            (w_oil * ING_DATABASE["Vegetable Oil"]["en"])
+        ) / total_dry_mass_kg
+
+        # Standardizing output representation display metrics
+        st.markdown("### 📊 Nutritional Analysis Audit Summary (Validated on 100% Dry Matter Basis)")
+        c1, c2, c3 = st.columns(3)
+        
+        if t_data["min_cp"] <= calculated_cp_dry <= t_data["max_cp"]:
+            c1.success(f"Crude Protein: {calculated_cp_dry:.2f}% (Safe Range)")
+        else:
+            c1.warning(f"Crude Protein: {calculated_cp_dry:.2f}% (Target: {t_data['min_cp']}% - {t_data['max_cp']}%)")
+
+        if t_data["min_en"] <= calculated_me_dry <= t_data["max_en"]:
+            c2.success(f"Metabolizable Energy: {calculated_me_dry:.0f} kcal/kg (Safe Range)")
+        else:
+            c2.warning(f"Energy: {calculated_me_dry:.0f} kcal/kg (Target: {t_data['min_en']} - {t_data['max_en']})")
+            
+        st.info(f"💡 Total Batch Cost: {recipe_df['Cost (TSH)'].sum():,.0f} TSH")
+    else:
+        st.error(f"❌ Feasibility Constraint Block: Using exclusively **{me_choice}** and **{cp_choice}** with your current dry fixed additions, it is mathematically impossible to cross both minimum nutrition metrics ({t_data['min_cp']}% CP & {t_data['min_en']} kcal/kg ME) safely without violating the max safety ceilings.")
+        st.info("💡 **Solution:** Try switching your primary grain selector to an alternative energy source like **Sorghum**, or add a higher performance matrix choice in your protein sidebar selection field.")
 
 # --- 7. GUIDE & MARKET ---
 elif menu == txt["guide"]:
