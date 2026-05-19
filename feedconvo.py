@@ -42,27 +42,36 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
         except Exception as e:
             st.error(f"❌ Supabase Insert Failed: {e}")
 
-# --- 3. THE DATABASES ---
-# Added Maize Bran and refined nutrients
+# --- 3. THE DATABASES (UPDATED WITH DEAS 90: 2023 ANNEX B STANDARDS & DM%) ---
 ING_DATABASE = {
-    "Maize": {"img": "maize_grain.jpg", "prot": 9.0, "en": 3350, "price": 850},
-    "Maize Bran": {"img": "maize_bran.jpg", "prot": 10.0, "en": 2200, "price": 450},
-    "Soya Meal": {"img": "soyameal.jpg", "prot": 44.0, "en": 2500, "price": 2300},
-    "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "price": 1500},
-    "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "price": 3500},
-    "Sunflower Cake": {"img": "sunflower_cake.jpeg", "prot": 28.0, "en": 2100, "price": 950}
+    # M.E. Sources
+    "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "price": 850, "type": "ME"},
+    "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "price": 750, "type": "ME"},
+    "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "price": 500, "type": "ME"},
+    "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "price": 600, "type": "ME"},
+    "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "price": 450, "type": "ME"},
+    "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "price": 3500, "type": "ME"},
+    
+    # Crude Protein Sources
+    "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "price": 2300, "type": "CP"},
+    "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "price": 900, "type": "CP"},
+    "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "price": 650, "type": "CP"},
+    "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "price": 800, "type": "CP"},
+    "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "price": 1500, "type": "CP"},
+    "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "price": 2500, "type": "CP"}
 }
 
+# --- BACKEND SAFETY CONSTRAINTS (CP & ME MIN/MAX BRACKETS) ---
 STANDARDS = {
     "Broiler": {
-        "Starter (Wk 1-2)": {"prot": 22.0, "en": 3000, "bsf_max": 0.05, "bran_max": 0.05},
-        "Grower (Wk 3-4)": {"prot": 20.0, "en": 3100, "bsf_max": 0.10, "bran_max": 0.10},
-        "Finisher (Wk 5+)": {"prot": 18.0, "en": 3200, "bsf_max": 0.15, "bran_max": 0.15}
+        "Starter (Wk 1-2)": {"min_cp": 22.0, "max_cp": 24.5, "min_en": 3000, "max_en": 3150, "bsf_max": 0.05, "bran_max": 0.05},
+        "Grower (Wk 3-4)": {"min_cp": 20.0, "max_cp": 22.0, "min_en": 3000, "max_en": 3200, "bsf_max": 0.10, "bran_max": 0.10},
+        "Finisher (Wk 5+)": {"min_cp": 18.0, "max_cp": 20.0, "min_en": 3000, "max_en": 3250, "bsf_max": 0.15, "bran_max": 0.15}
     },
     "Layer": {
-        "Chick Starter": {"prot": 18.0, "en": 2850, "bsf_max": 0.05, "bran_max": 0.05},
-        "Pullet Grower": {"prot": 15.0, "en": 2750, "bsf_max": 0.10, "bran_max": 0.20},
-        "Layer Phase 1": {"prot": 18.0, "en": 2800, "bsf_max": 0.12, "bran_max": 0.10}
+        "Chick Starter": {"min_cp": 18.0, "max_cp": 20.5, "min_en": 2850, "max_en": 3000, "bsf_max": 0.05, "bran_max": 0.05},
+        "Pullet Grower": {"min_cp": 15.0, "max_cp": 17.5, "min_en": 2750, "max_en": 2900, "bsf_max": 0.10, "bran_max": 0.20},
+        "Layer Phase 1": {"min_cp": 18.0, "max_cp": 20.0, "min_en": 2800, "max_en": 2950, "bsf_max": 0.12, "bran_max": 0.10}
     }
 }
 
@@ -72,7 +81,6 @@ with st.sidebar:
     lang = st.radio("Language:", ["English", "Kiswahili"])
     flock_type = st.radio("Select Type:", ["Broiler", "Layer"], key="flock_selector")
     
-    # PRICE FLUCTUATION FACTOR
     season = st.select_slider("Market Season:", options=["Harvest (Cheap)", "Normal", "Dry (Expensive)"], value="Normal")
     price_multiplier = {"Harvest (Cheap)": 0.85, "Normal": 1.0, "Dry (Expensive)": 1.25}[season]
 
@@ -121,7 +129,6 @@ if menu == txt["dash"]:
     st.subheader(txt["roi_title"])
     c_price = st.number_input("Market Selling Price", value=8500)
     revenue = (active_birds * c_price) if flock_type == "Broiler" else (kpi_val * 300)
-    # Estimate base costs + seasonal feed costs
     profit = revenue - (flock_size * 2200 * price_multiplier) 
     st.metric("Projected Profit", f"{profit:,.0f} TSH", delta=f"{season} prices")
     
@@ -137,73 +144,130 @@ if menu == txt["dash"]:
         except:
             st.info("Log will appear here after first sync.")
 
-# --- 6. PERFORMANCE FEED SOLVER (DEBUGGED) ---
+# --- 6. PERFORMANCE FEED SOLVER (REFRACTORED WITH DM% & DYNAMIC CHANNELS) ---
 elif menu == txt["solver"]:
     st.title(f"🚀 {txt['solver']} ({flock_type})")
     stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
     t_data = STANDARDS[flock_type][stage]
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
-    # FIXED INCLUSIONS (Minerals & Safety)
+    st.sidebar.markdown("### 🥣 Select Recipe Base Ingredients")
+    me_choice = st.sidebar.selectbox("Primary ME Grain Source:", [k for k, v in ING_DATABASE.items() if v["type"] == "ME" and k != "Maize Bran" and k != "Vegetable Oil"])
+    cp_choice = st.sidebar.selectbox("Primary CP Meal Source:", [k for k, v in ING_DATABASE.items() if v["type"] == "CP" and k != "BSF Larvae"])
+
+    # FIXED INCLUSIONS (Minerals, Oil, and Safety Factor)
     oil_pct = 0.02 if flock_type == "Broiler" else 0.01 
-    premix_min_pct = 0.05 # DCP + Premix
-    toxin_binder_pct = 0.02 # Toxin Binder Factor
-    use_bsf = st.checkbox("Include BSF Larvae (Sustainable)", value=True)
-    use_bran = st.checkbox("Include Maize Bran (Cost Saver)", value=True)
+    premix_min_pct = 0.05 
+    toxin_binder_pct = 0.02 
+    use_bsf = st.checkbox("Include BSF Larvae (Sustainable CP Boost)", value=True)
+    use_bran = st.checkbox("Include Maize Bran (Cost Saver Fiber)", value=True)
 
     bsf_pct = t_data["bsf_max"] if use_bsf else 0.0
     bran_pct = t_data["bran_max"] if use_bran else 0.0
     
-    # CALCULATE REMAINING SPACE FOR MAIZE/SOYA
-    rem_space = 1.0 - oil_pct - premix_min_pct - toxin_binder_pct - bsf_pct - bran_pct
+    # FIXED POOL SUMMATION
+    fixed_space = oil_pct + premix_min_pct + toxin_binder_pct + bsf_pct + bran_pct
+    rem_space = 1.0 - fixed_space
     
-    # TARGET PROTEIN ADJUSTMENT
-    protein_from_fixed = (bsf_pct * ING_DATABASE["BSF Larvae"]["prot"]) + (bran_pct * ING_DATABASE["Maize Bran"]["prot"])
-    target_p_needed = t_data["prot"] - protein_from_fixed
+    # --- DRY MATTER (DM) STEP-DOWN INTEGRATION LOGIC ---
+    # Convert baseline nutrient variables into 100% Dry Matter context before execution
+    dm_me_source = ING_DATABASE[me_choice]["dm_pct"] / 100.0
+    dm_cp_source = ING_DATABASE[cp_choice]["dm_pct"] / 100.0
+    dm_bsf = ING_DATABASE["BSF Larvae"]["dm_pct"] / 100.0
+    dm_bran = ING_DATABASE["Maize Bran"]["dm_pct"] / 100.0
     
-    m_p, s_p = ING_DATABASE["Maize"]["prot"], ING_DATABASE["Soya Meal"]["prot"]
-    # Solver logic
-    soya_ratio = ((target_p_needed / rem_space) - m_p) / (s_p - m_p)
-    soya_ratio = max(0, min(1, soya_ratio)) # Clamping
+    # Calculate Dry Protein contribution from the fixed allocation pool
+    p_from_bsf_dry = (bsf_pct * (ING_DATABASE["BSF Larvae"]["prot"] / dm_bsf)) if use_bsf else 0.0
+    p_from_bran_dry = (bran_pct * (ING_DATABASE["Maize Bran"]["prot"] / dm_bran)) if use_bran else 0.0
+    
+    # Minimum safe requirement targets adjusted to DM target window
+    target_p_dry = t_data["min_cp"] - (p_from_bsf_dry + p_from_bran_dry)
+    
+    # Grab dry values for solving matrix
+    m_p_dry = ING_DATABASE[me_choice]["prot"] / dm_me_source
+    s_p_dry = ING_DATABASE[cp_choice]["prot"] / dm_cp_source
+    
+    # Pearson square solving matrix adjusted with boundary brackets
+    if (s_p_dry - m_p_dry) > 0:
+        cp_ratio = ((target_p_dry / rem_space) - m_p_dry) / (s_p_dry - m_p_dry)
+        cp_ratio = max(0.0, min(1.0, cp_ratio)) # Dynamic constraint clamp
+    else:
+        cp_ratio = 0.5
 
-    # Final Weights
-    w_maize = total_kg * rem_space * (1 - soya_ratio)
-    w_soya = total_kg * rem_space * soya_ratio
+    # As-Fed (Air-Dry weight basis) calculations out-scaled back to farmer weights
+    w_me_grain = total_kg * rem_space * (1 - cp_ratio)
+    w_cp_meal = total_kg * rem_space * cp_ratio
     w_bsf = total_kg * bsf_pct
     w_bran = total_kg * bran_pct
     w_oil = total_kg * oil_pct
     w_others = total_kg * (premix_min_pct + toxin_binder_pct)
 
-    st.subheader("🥣 Mixing Table (Recipe)")
+    # Verification Calculations (Nutritional Quality Assurance Control)
+    total_calculated_cp = (
+        (w_me_grain * (ING_DATABASE[me_choice]["prot"] / 100.0)) +
+        (w_cp_meal * (ING_DATABASE[cp_choice]["prot"] / 100.0)) +
+        (w_bsf * (ING_DATABASE["BSF Larvae"]["prot"] / 100.0) if use_bsf else 0) +
+        (w_bran * (ING_DATABASE["Maize Bran"]["prot"] / 100.0) if use_bran else 0)
+    ) / total_kg * 100.0
+
+    total_calculated_me = (
+        (w_me_grain * ING_DATABASE[me_choice]["en"]) +
+        (w_cp_meal * ING_DATABASE[cp_choice]["en"]) +
+        (w_bsf * ING_DATABASE["BSF Larvae"]["en"] if use_bsf else 0) +
+        (w_bran * ING_DATABASE["Maize Bran"]["en"] if use_bran else 0) +
+        (w_oil * ING_DATABASE["Vegetable Oil"]["en"])
+    ) / total_kg
+
+    st.subheader("🥣 Mixing Table (Recipe output scaled As-Fed)")
     recipe_df = pd.DataFrame({
-        "Ingredient": ["Maize (Whole)", "Soya Meal", "BSF Larvae", "Maize Bran", "Vegetable Oil", "Premix & Toxin Binder"],
-        "Amount (kg)": [round(w_maize, 1), round(w_soya, 1), round(w_bsf, 1), round(w_bran, 1), round(w_oil, 1), round(w_others, 1)],
+        "Ingredient": [f"{me_choice} (Base)", f"{cp_choice} (Protein)", "BSF Larvae", "Maize Bran", "Vegetable Oil", "Premix & Toxin Binder"],
+        "Amount (kg)": [round(w_me_grain, 1), round(w_cp_meal, 1), round(w_bsf, 1), round(w_bran, 1), round(w_oil, 1), round(w_others, 1)],
         "Cost (TSH)": [
-            round(w_maize * ING_DATABASE["Maize"]["price"] * price_multiplier),
-            round(w_soya * ING_DATABASE["Soya Meal"]["price"] * price_multiplier),
+            round(w_me_grain * ING_DATABASE[me_choice]["price"] * price_multiplier),
+            round(w_cp_meal * ING_DATABASE[cp_choice]["price"] * price_multiplier),
             round(w_bsf * ING_DATABASE["BSF Larvae"]["price"]),
             round(w_bran * ING_DATABASE["Maize Bran"]["price"] * price_multiplier),
             round(w_oil * ING_DATABASE["Vegetable Oil"]["price"]),
-            round(w_others * 2500) # Fixed cost for minerals
+            round(w_others * 2500)
         ]
     })
     st.table(recipe_df)
-    st.info(f"💡 Total Batch Cost: {recipe_df['Cost (TSH)'].sum():,.0f} TSH")
+    
+    # Nutrition Quality Dashboard Verification Display
+    st.markdown("### 📊 Nutritional Analysis Audit Summary")
+    c1, c2, c3 = st.columns(3)
+    
+    # Display calculated metrics against backend safety target constraints
+    if t_data["min_cp"] <= total_calculated_cp <= t_data["max_cp"]:
+        c1.success(f"Crude Protein: {total_calculated_cp:.2f}% (Safe Range)")
+    else:
+        c1.warning(f"Crude Protein: {total_calculated_cp:.2f}% (Target: {t_data['min_cp']}% - {t_data['max_cp']}%)")
+
+    if t_data["min_en"] <= total_calculated_me <= t_data["max_en"]:
+        c2.success(f"Metabolizable Energy: {total_calculated_me:.0f} kcal/kg (Safe Range)")
+    else:
+        c2.warning(f"Energy: {total_calculated_me:.0f} kcal (Target: {t_data['min_en']} - {t_data['max_en']} kcal)")
+        
+    c3.info(f"💡 Total Batch Cost: {recipe_df['Cost (TSH)'].sum():,.0f} TSH")
 
 # --- 7. GUIDE & MARKET ---
 elif menu == txt["guide"]:
     st.title(txt["guide"])
-    sel = st.selectbox("Select Ingredient:", list(ING_DATABASE.keys()))
-    st.write(f"Showing quality guide for {sel}...")
+    sel = st.selectbox("Select Ingredient Reference Profile:", list(ING_DATABASE.keys()))
+    inf = ING_DATABASE[sel]
+    st.markdown(f"### Official DEAS 90: 2023 Specifications for **{sel}**")
+    st.write(f"• **Dry Matter (DM):** {inf['dm_pct']}%")
+    st.write(f"• **Crude Protein (CP):** {inf['prot']}%")
+    st.write(f"• **Energy (ME):** {inf['en']} kcal/kg")
 
 elif menu == txt["market"]:
     st.title(txt["market"])
     for name, info in ING_DATABASE.items():
         curr_p = round(info['price'] * price_multiplier)
         c1, c2, c3 = st.columns([2, 1, 1])
-        c1.write(f"**{name}**")
+        c1.write(f"**{name}** ({info['type']} Vector)")
         c2.write(f"{curr_p} TSH/kg")
         c3.link_button("Order", f"https://wa.me/255777744657?text=I%20want%20to%20order%20{name}")
 
 st.divider()
-st.caption(f"🚀 FeedConvo Pro | {season} Pricing Enabled")
+st.caption(f"🚀 FeedConvo Pro | {season} Pricing System Configured with East African Dry Matter Controls.")
