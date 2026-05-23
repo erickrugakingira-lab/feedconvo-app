@@ -144,128 +144,264 @@ if menu == txt["dash"]:
         except:
             st.info("Log will appear here after first sync.")
 
-# --- 6. PERFORMANCE FEED SOLVER (LINEAR PROGRAMMING & DRY MATTER CONVERGENCE) ---
+# --- 6. PERFORMANCE FEED SOLVER (UPDATED PROFESSIONAL VERSION) ---
 elif menu == txt["solver"]:
+
+    from scipy.optimize import linprog
+    import numpy as np
+
     st.title(f"🚀 {txt['solver']} ({flock_type})")
+
     stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
     t_data = STANDARDS[flock_type][stage]
+
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
-    st.sidebar.markdown("### 🥣 Select Available Base Ingredients")
-    
-    # Filter groups from database dynamically so the user can control what goes to the solver
-    me_options = [k for k, v in ING_DATABASE.items() if v["type"] == "ME" and k not in ["Vegetable Oil", "Maize Bran"]]
-    cp_options = [k for k, v in ING_DATABASE.items() if v["type"] == "CP" and k != "BSF Larvae"]
+    st.sidebar.markdown("### 🥣 Select Ingredients")
 
-    me_choice = st.sidebar.selectbox("Primary ME Grain Source:", me_options)
-    cp_choice = st.sidebar.selectbox("Primary CP Meal Source:", cp_options)
+    available_ingredients = st.sidebar.multiselect(
+        "Choose Ingredients for Optimization",
+        list(ING_DATABASE.keys()),
+        default=["Maize", "Soya Meal", "Fish Meal", "Rice Bran"]
+    )
 
-    # FIXED USER OVERRIDES (Inclusions & Checkboxes)
-    oil_pct = 0.02 if flock_type == "Broiler" else 0.01 
-    premix_min_pct = 0.05 
-    toxin_binder_pct = 0.02 
-    use_bsf = st.checkbox("Include BSF Larvae (Sustainable CP Boost)", value=True)
-    use_bran = st.checkbox("Include Maize Bran (Cost Saver Fiber)", value=True)
+    if len(available_ingredients) < 2:
+        st.warning("Please select at least 2 ingredients.")
+        st.stop()
 
-    bsf_pct = t_data["bsf_max"] if use_bsf else 0.0
-    bran_pct = t_data["bran_max"] if use_bran else 0.0
-    
-    # FIXED SUB-POOL CALCULATIONS
-    w_oil = total_kg * oil_pct
-    w_bsf = total_kg * bsf_pct
-    w_bran = total_kg * bran_pct
-    w_others = total_kg * (premix_min_pct + toxin_binder_pct)
-    
-    fixed_space = oil_pct + premix_min_pct + toxin_binder_pct + bsf_pct + bran_pct
-    rem_space = 1.0 - fixed_space
+    # -----------------------------------------
+    # FIXED MICRO INGREDIENTS
+    # -----------------------------------------
 
-    # --- LINEAR PROGRAMMING SOLVER WITH DRY MATTER ENGINE ---
-    from scipy.optimize import linprog
+    oil_pct = 0.015 if flock_type == "Broiler" else 0.01
+    premix_pct = 0.005
+    toxin_binder_pct = 0.001
 
-    # Macro pool ingredients available for structural solving calculation
-    solver_ingredients = [me_choice, cp_choice]
-    
-    # 1. Objective Function Vector (Minimize As-Fed seasonal pricing weight costs)
-    c_vector = [ING_DATABASE[ing]["price"] * price_multiplier for ing in solver_ingredients]
+    fixed_micro_pct = oil_pct + premix_pct + toxin_binder_pct
 
-    # 2. Extracting Dry Matter Ratios
-    dm_me = ING_DATABASE[me_choice]["dm_pct"] / 100.0
-    dm_cp = ING_DATABASE[cp_choice]["dm_pct"] / 100.0
-    dm_bsf = ING_DATABASE["BSF Larvae"]["dm_pct"] / 100.0
-    dm_bran = ING_DATABASE["Maize Bran"]["dm_pct"] / 100.0
+    remaining_pct = 1.0 - fixed_micro_pct
 
-    # Calculate nutrient yields provided by the fixed ingredient blocks on a 100% Dry Matter basis
-    p_fixed_dry = 0.0
-    en_fixed_dry = 0.0
+    if remaining_pct <= 0:
+        st.error("Fixed ingredient percentages exceed 100%")
+        st.stop()
 
-    if use_bsf:
-        p_fixed_dry += bsf_pct * (ING_DATABASE["BSF Larvae"]["prot"] / dm_bsf)
-        en_fixed_dry += bsf_pct * (ING_DATABASE["BSF Larvae"]["en"] / dm_bsf)
-    if use_bran:
-        p_fixed_dry += bran_pct * (ING_DATABASE["Maize Bran"]["prot"] / dm_bran)
-        en_fixed_dry += bran_pct * (ING_DATABASE["Maize Bran"]["en"] / dm_bran)
-        
-    # Fat/Oil matrix contribution (virtually moisture free)
-    en_fixed_dry += oil_pct * (ING_DATABASE["Vegetable Oil"]["en"] / 0.99)
+    # -----------------------------------------
+    # BUILD OPTIMIZATION MATRICES
+    # -----------------------------------------
 
-    # 3. Formulating Dry Nutrient Constraints for the Solver Pool (A_ub * x <= b_ub)
-    # Scipy looks for <= equations, so minimums are flipped using negative multiplication
+    ingredient_names = []
+    prices = []
+    protein_vals = []
+    energy_vals = []
+
+    bounds = []
+
+    for ing in available_ingredients:
+
+        if ing in ["Vegetable Oil"]:
+            continue
+
+        ingredient_names.append(ing)
+
+        prices.append(
+            ING_DATABASE[ing]["price"] * price_multiplier
+        )
+
+        protein_vals.append(
+            ING_DATABASE[ing]["prot"]
+        )
+
+        energy_vals.append(
+            ING_DATABASE[ing]["en"]
+        )
+
+        # Ingredient inclusion limits
+        if ing == "Fish Meal":
+            bounds.append((0.00, 0.10))
+
+        elif ing == "BSF Larvae":
+            bounds.append((0.00, t_data["bsf_max"]))
+
+        elif ing == "Maize Bran":
+            bounds.append((0.00, t_data["bran_max"]))
+
+        elif ing == "Vegetable Oil":
+            bounds.append((0.00, oil_pct))
+
+        else:
+            bounds.append((0.00, 0.80))
+
+    # -----------------------------------------
+    # OBJECTIVE FUNCTION
+    # -----------------------------------------
+
+    c = np.array(prices)
+
+    # -----------------------------------------
+    # CONSTRAINTS
+    # -----------------------------------------
+
     A_ub = []
     b_ub = []
 
-    # Get Dry Protein values for optimization variables
-    prot_me_dry = ING_DATABASE[me_choice]["prot"] / dm_me
-    prot_cp_dry = ING_DATABASE[cp_choice]["prot"] / dm_cp
-    
-    # Get Dry Energy values for optimization variables
-    en_me_dry = ING_DATABASE[me_choice]["en"] / dm_me
-    en_cp_dry = ING_DATABASE[cp_choice]["en"] / dm_cp
+    # MIN CP
+    A_ub.append([-p for p in protein_vals])
+    b_ub.append(-(t_data["min_cp"] * remaining_pct))
 
-    # Constraint Line A: Minimum Crude Protein Threshold (Dry Basis)
-    A_ub.append([-prot_me_dry, -prot_cp_dry])
-    b_ub.append(-(t_data["min_cp"] - p_fixed_dry))
+    # MAX CP
+    A_ub.append([p for p in protein_vals])
+    b_ub.append(t_data["max_cp"] * remaining_pct)
 
-    # Constraint Line B: Maximum Crude Protein Threshold (Dry Basis Safety Ceiling)
-    A_ub.append([prot_me_dry, prot_cp_dry])
-    b_ub.append(t_data["max_cp"] - p_fixed_dry)
+    # MIN ENERGY
+    A_ub.append([-e for e in energy_vals])
+    b_ub.append(-(t_data["min_en"] * remaining_pct))
 
-    # Constraint Line C: Minimum Metabolizable Energy Threshold (Dry Basis)
-    A_ub.append([-en_me_dry, -en_cp_dry])
-    b_ub.append(-(t_data["min_en"] - en_fixed_dry))
+    # MAX ENERGY
+    A_ub.append([e for e in energy_vals])
+    b_ub.append(t_data["max_en"] * remaining_pct)
 
-    # Constraint Line D: Maximum Metabolizable Energy Threshold (Dry Basis Safety Ceiling)
-    A_ub.append([en_me_dry, en_cp_dry])
-    b_ub.append(t_data["max_en"] - en_fixed_dry)
+    # Equality Constraint
+    A_eq = [[1.0] * len(ingredient_names)]
+    b_eq = [remaining_pct]
 
-    # 4. Equality Constraint (Total allocated macro solver variables must match exact target rem_space)
-    A_eq = [[1.0, 1.0]]
-    b_eq = [rem_space]
+    # -----------------------------------------
+    # SOLVE
+    # -----------------------------------------
 
-    # Boundaries: Inclusions must remain between 0% and 100% of remaining space
-    x_bounds = [(0.0, rem_space), (0.0, rem_space)]
+    res = linprog(
+        c=c,
+        A_ub=A_ub,
+        b_ub=b_ub,
+        A_eq=A_eq,
+        b_eq=b_eq,
+        bounds=bounds,
+        method="highs"
+    )
 
-    # Compute Optimization Function Matrix
-    res = linprog(c_vector, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=x_bounds, method="highs")
+    # -----------------------------------------
+    # RESULTS
+    # -----------------------------------------
 
     if res.success:
-        # Dynamic variable array unraveling back out to Physical As-Fed weight profiles
-        w_me_grain = res.x[0] * total_kg
-        w_cp_meal = res.x[1] * total_kg
 
-        st.subheader("🥣 Optimized Mixing Table (Recipe output scaled As-Fed)")
-        recipe_df = pd.DataFrame({
-            "Ingredient": [f"{me_choice} (Base)", f"{cp_choice} (Protein Source)", "BSF Larvae", "Maize Bran", "Vegetable Oil", "Premix & Toxin Binder"],
-            "Amount (kg)": [round(w_me_grain, 1), round(w_cp_meal, 1), round(w_bsf, 1), round(w_bran, 1), round(w_oil, 1), round(w_others, 1)],
-            "Cost (TSH)": [
-                round(w_me_grain * ING_DATABASE[me_choice]["price"] * price_multiplier),
-                round(w_cp_meal * ING_DATABASE[cp_choice]["price"] * price_multiplier),
-                round(w_bsf * ING_DATABASE["BSF Larvae"]["price"]),
-                round(w_bran * ING_DATABASE["Maize Bran"]["price"] * price_multiplier),
-                round(w_oil * ING_DATABASE["Vegetable Oil"]["price"]),
-                round(w_others * 2500)
-            ]
+        solution = res.x
+
+        recipe_rows = []
+
+        total_cost = 0
+        total_cp = 0
+        total_energy = 0
+
+        for i, ing in enumerate(ingredient_names):
+
+            inclusion_pct = solution[i]
+
+            weight_kg = inclusion_pct * total_kg
+
+            cost = weight_kg * (
+                ING_DATABASE[ing]["price"] * price_multiplier
+            )
+
+            cp_contrib = inclusion_pct * ING_DATABASE[ing]["prot"]
+
+            energy_contrib = inclusion_pct * ING_DATABASE[ing]["en"]
+
+            total_cost += cost
+            total_cp += cp_contrib
+            total_energy += energy_contrib
+
+            recipe_rows.append({
+                "Ingredient": ing,
+                "Inclusion %": round(inclusion_pct * 100, 2),
+                "Amount (kg)": round(weight_kg, 2),
+                "Cost (TSH)": round(cost)
+            })
+
+        # Add fixed ingredients
+        oil_weight = oil_pct * total_kg
+        premix_weight = premix_pct * total_kg
+        toxin_weight = toxin_binder_pct * total_kg
+
+        oil_cost = oil_weight * ING_DATABASE["Vegetable Oil"]["price"]
+
+        total_cost += oil_cost
+
+        recipe_rows.append({
+            "Ingredient": "Vegetable Oil",
+            "Inclusion %": round(oil_pct * 100, 2),
+            "Amount (kg)": round(oil_weight, 2),
+            "Cost (TSH)": round(oil_cost)
         })
-        st.table(recipe_df)
+
+        recipe_rows.append({
+            "Ingredient": "Premix",
+            "Inclusion %": round(premix_pct * 100, 2),
+            "Amount (kg)": round(premix_weight, 2),
+            "Cost (TSH)": round(premix_weight * 2500)
+        })
+
+        recipe_rows.append({
+            "Ingredient": "Toxin Binder",
+            "Inclusion %": round(toxin_binder_pct * 100, 2),
+            "Amount (kg)": round(toxin_weight, 2),
+            "Cost (TSH)": round(toxin_weight * 4000)
+        })
+
+        recipe_df = pd.DataFrame(recipe_rows)
+
+        st.subheader("🥣 Optimized Feed Formula")
+
+        st.dataframe(recipe_df, use_container_width=True)
+
+        # -----------------------------------------
+        # FINAL NUTRITIONAL ANALYSIS
+        # -----------------------------------------
+
+        final_cp = total_cp
+
+        final_energy = total_energy + (
+            oil_pct * ING_DATABASE["Vegetable Oil"]["en"]
+        )
+
+        st.markdown("### 📊 Nutritional Analysis")
+
+        c1, c2, c3 = st.columns(3)
+
+        if t_data["min_cp"] <= final_cp <= t_data["max_cp"]:
+            c1.success(f"CP: {final_cp:.2f}%")
+        else:
+            c1.error(f"CP: {final_cp:.2f}%")
+
+        if t_data["min_en"] <= final_energy <= t_data["max_en"]:
+            c2.success(f"ME: {final_energy:.0f} kcal/kg")
+        else:
+            c2.error(f"ME: {final_energy:.0f} kcal/kg")
+
+        c3.info(f"Cost: {total_cost:,.0f} TSH")
+
+        # -----------------------------------------
+        # COST PER KG
+        # -----------------------------------------
+
+        cost_per_kg = total_cost / total_kg
+
+        st.metric(
+            "Feed Cost Per Kg",
+            f"{cost_per_kg:,.0f} TSH/kg"
+        )
+
+    else:
+
+        st.error("❌ No feasible solution found.")
+
+        st.info("""
+Possible causes:
+- Protein target too high
+- Energy target too high
+- Ingredient selection too limited
+- Inclusion limits too restrictive
+- Ingredient nutrient values unrealistic
+""")
         
         # --- VERIFICATION QUALITY CONTROL ENGINE ---
         # Back-calculating actual nutrient delivery fractions on standard 100% Dry Matter basis
