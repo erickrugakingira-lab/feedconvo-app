@@ -440,7 +440,7 @@ Possible causes:
             c2.warning(f"Energy: {calculated_me_dry:.0f} kcal/kg (Target: {t_data['min_en']} - {t_data['max_en']})")
             
         st.info(f"💡 Total Batch Cost: {recipe_df['Cost (TSH)'].sum():,.0f} TSH")
-    else:
+        else:
         st.error(f"❌ Feasibility Constraint Block: Using exclusively **{me_choice}** and **{cp_choice}** with your current dry fixed additions, it is mathematically impossible to cross both minimum nutrition metrics ({t_data['min_cp']}% CP & {t_data['min_en']} kcal/kg ME) safely without violating the max safety ceilings.")
         st.info("💡 **Solution:** Try switching your primary grain selector to an alternative energy source like **Sorghum**, or add a higher performance matrix choice in your protein sidebar selection field.")
 
