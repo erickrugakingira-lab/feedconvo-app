@@ -101,7 +101,6 @@ with st.sidebar:
     lang = st.radio("Language:", ["English", "Kiswahili"])
     flock_type = st.radio("Select Type:", ["Broiler", "Layer"], key="flock_selector")
     
-    # Formulation Mode Injection
     st.markdown("### ⚙️ Optimization Strategy")
     form_mode = st.selectbox("Formulation Mode:", ["Standard", "Premium", "Custom Eco"])
     
@@ -178,13 +177,11 @@ elif menu == txt["solver"]:
     # --- MODE LOGIC COMPILATION ---
     penalty_weight = 1.0
     if form_mode == "Premium":
-        # Premium mode demands higher minimum nutritive baselines and drops the penalty impacts
         penalty_weight = 0.25
         t_data["min_cp"] += 0.5
         t_data["min_lys"] += 0.05
         t_data["min_met"] += 0.02
     elif form_mode == "Custom Eco":
-        # Eco mode strictly punishes ingredients with high footprints/penalties (e.g. Phosphorus runoffs)
         penalty_weight = 3.0
 
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
@@ -229,7 +226,6 @@ elif menu == txt["solver"]:
 
         ingredient_names.append(ing)
         
-        # Linear optimization cost metric combined dynamically with penalty scores
         raw_price = ING_DATABASE[ing]["price"] * price_multiplier
         penalty_factor = ING_DATABASE[ing]["penalty"] * penalty_weight * 10.0  # Normalized scale factor
         prices_and_penalties.append(raw_price + penalty_factor)
@@ -254,51 +250,75 @@ elif menu == txt["solver"]:
     # Optimization Objective
     c = np.array(prices_and_penalties)
 
-    # Building Constraints
+    # --- 6a. DYNAMIC PRE-CALCULATION MATRIX STRUCTURE ---
+    fixed_cp = 0.0
+    fixed_en = oil_pct * ING_DATABASE["Vegetable Oil"]["en"]  # Captures 8800 kcal/kg contribution
+    fixed_lys = 0.0
+    fixed_met = 0.0
+    fixed_tryp = 0.0
+    fixed_ca = 0.0
+    fixed_phos = 0.0
+
+    # Subtract fixed nutrition pools from targeted profiles
+    target_min_cp = t_data["min_cp"] - fixed_cp
+    target_max_cp = t_data["max_cp"] - fixed_cp
+    target_min_en = t_data["min_en"] - fixed_en
+    target_max_en = t_data["max_en"] - fixed_en
+    target_min_lys = t_data["min_lys"] - fixed_lys
+    target_max_lys = t_data["max_lys"] - fixed_lys
+    target_min_met = t_data["min_met"] - fixed_met
+    target_max_met = t_data["max_met"] - fixed_met
+    target_min_tryp = t_data["min_tryp"] - fixed_tryp
+    target_max_tryp = t_data["max_tryp"] - fixed_tryp
+    target_min_ca = t_data["min_ca"] - fixed_ca
+    target_max_ca = t_data["max_ca"] - fixed_ca
+    target_min_phos = t_data["min_phos"] - fixed_phos
+    target_max_phos = t_data["max_phos"] - fixed_phos
+
     A_ub = []
     b_ub = []
 
     # MIN & MAX CP
     A_ub.append([-p for p in protein_vals])
-    b_ub.append(-(t_data["min_cp"] * remaining_pct))
+    b_ub.append(-target_min_cp)
     A_ub.append([p for p in protein_vals])
-    b_ub.append(t_data["max_cp"] * remaining_pct)
+    b_ub.append(target_max_cp)
 
     # MIN & MAX ENERGY
     A_ub.append([-e for e in energy_vals])
-    b_ub.append(-(t_data["min_en"] * remaining_pct))
+    b_ub.append(-target_min_en)
     A_ub.append([e for e in energy_vals])
-    b_ub.append(t_data["max_en"] * remaining_pct)
+    b_ub.append(target_max_en)
 
     # MIN & MAX LYSINE
     A_ub.append([-l for l in lys_vals])
-    b_ub.append(-(t_data["min_lys"] * remaining_pct))
+    b_ub.append(-target_min_lys)
     A_ub.append([l for l in lys_vals])
-    b_ub.append(t_data["max_lys"] * remaining_pct)
+    b_ub.append(target_max_lys)
 
     # MIN & MAX METHIONINE
     A_ub.append([-m for m in met_vals])
-    b_ub.append(-(t_data["min_met"] * remaining_pct))
+    b_ub.append(-target_min_met)
     A_ub.append([m for m in met_vals])
-    b_ub.append(t_data["max_met"] * remaining_pct)
+    b_ub.append(target_max_met)
 
     # MIN & MAX TRYPTOPHAN
     A_ub.append([-t_val for t_val in tryp_vals])
-    b_ub.append(-(t_data["min_tryp"] * remaining_pct))
+    b_ub.append(-target_min_tryp)
     A_ub.append([t_val for t_val in tryp_vals])
-    b_ub.append(t_data["max_tryp"] * remaining_pct)
+    b_ub.append(target_max_tryp)
 
     # MIN & MAX CALCIUM
     A_ub.append([-ca for ca in ca_vals])
-    b_ub.append(-(t_data["min_ca"] * remaining_pct))
+    b_ub.append(-target_min_ca)
     A_ub.append([ca for ca in ca_vals])
-    b_ub.append(t_data["max_ca"] * remaining_pct)
+    b_ub.append(target_max_ca)
 
     # MIN & MAX PHOSPHORUS
     A_ub.append([-ph for ph in phos_vals])
-    b_ub.append(-(t_data["min_phos"] * remaining_pct))
+    b_ub.append(-target_min_phos)
     A_ub.append([ph for ph in phos_vals])
-    b_ub.append(t_data["max_phos"] * remaining_pct)
+    b_ub.append(target_max_phos)
 
     # Equality Constraint
     A_eq = [[1.0] * len(ingredient_names)]
@@ -377,7 +397,7 @@ elif menu == txt["solver"]:
         st.subheader("🥣 Optimized Feed Formula")
         st.dataframe(recipe_df, use_container_width=True)
 
-        # Apply corrections to include Vegetable Oil's energetic vectors
+        # Final Profiles (As-Fed)
         final_cp = total_cp
         final_energy = total_energy + (oil_pct * ING_DATABASE["Vegetable Oil"]["en"])
         final_lys = total_lys
@@ -395,12 +415,9 @@ elif menu == txt["solver"]:
         ca_phos_ratio = final_ca / final_phos if final_phos > 0 else 0
         m_c4.metric("Ca : P Ratio", f"{ca_phos_ratio:.2f} : 1")
 
-        # -----------------------------------------------------------------
-        # --- 6b. VERIFICATION QUALITY CONTROL ENGINE (DYNAMIC INTEGRATION) ---
-        # -----------------------------------------------------------------
+        # --- 6b. VERIFICATION QUALITY CONTROL ENGINE ---
         st.markdown("### 📊 Nutritional Analysis Audit Summary (Validated on 100% Dry Matter Basis)")
         
-        # Calculate actual nutrient pools & tracking cumulative dry mass accurately
         total_dry_mass_kg = 0.0
         total_cp_mass_kg = 0.0
         total_me_pool = 0.0
@@ -410,7 +427,6 @@ elif menu == txt["solver"]:
         total_ca_mass = 0.0
         total_phos_mass = 0.0
 
-        # Run dynamic calculation loops based on generated recipe dataframe variables
         for _, row in recipe_df.iterrows():
             ing_name = row["Ingredient"]
             weight_as_fed = row["Amount (kg)"]
@@ -430,7 +446,6 @@ elif menu == txt["solver"]:
             else:
                 continue
 
-            # Accumulate Dry Weights & Nutrient Contributions
             dry_weight = weight_as_fed * dm_factor
             total_dry_mass_kg += dry_weight
             total_cp_mass_kg += (weight_as_fed * cp_factor)
@@ -441,7 +456,6 @@ elif menu == txt["solver"]:
             total_ca_mass += (weight_as_fed * ca_factor)
             total_phos_mass += (weight_as_fed * phos_factor)
 
-        # Base fractions evaluated safely on 100% dry base metrics
         if total_dry_mass_kg > 0:
             calculated_cp_dry = (total_cp_mass_kg / total_dry_mass_kg) * 100.0
             calculated_me_dry = total_me_pool / total_dry_mass_kg
@@ -467,9 +481,42 @@ elif menu == txt["solver"]:
             
         aud3.info(f"💡 Total Batch Cost: {total_cost:,.0f} TSH")
 
-        # Amino Acid and Mineral Specific Verification Auditing Line
-        st.markdown("#### Amino Acids & Minerals Audit Details")
+        # Amino Acid and Mineral Specific Verification Auditing Metrics
+        st.markdown("#### Amino Acids & Minerals Audit Details (Dry Basis)")
         aa1, aa2, aa3, mn1, mn2 = st.columns(5)
         
         # Lysine Check
-        if t_data
+        if t_data["min_lys"] <= calculated_lys_dry <= t_data["max_lys"]:
+            aa1.success(f"Lysine: {calculated_lys_dry:.2f}%")
+        else:
+            aa1.warning(f"Lysine: {calculated_lys_dry:.2f}%")
+
+        # Methionine Check
+        if t_data["min_met"] <= calculated_met_dry <= t_data["max_met"]:
+            aa2.success(f"Methionine: {calculated_met_dry:.2f}%")
+        else:
+            aa2.warning(f"Methionine: {calculated_met_dry:.2f}%")
+
+        # Tryptophan Check
+        if t_data["min_tryp"] <= calculated_tryp_dry <= t_data["max_tryp"]:
+            aa3.success(f"Tryptophan: {calculated_tryp_dry:.2f}%")
+        else:
+            aa3.warning(f"Tryptophan: {calculated_tryp_dry:.2f}%")
+
+        # Calcium Check
+        if t_data["min_ca"] <= calculated_ca_dry <= t_data["max_ca"]:
+            mn1.success(f"Calcium: {calculated_ca_dry:.2f}%")
+        else:
+            mn1.warning(f"Calcium: {calculated_ca_dry:.2f}%")
+
+        # Phosphorus Check
+        if t_data["min_phos"] <= calculated_phos_dry <= t_data["max_phos"]:
+            mn2.success(f"Phosphorus: {calculated_phos_dry:.2f}%")
+        else:
+            mn2.warning(f"Phosphorus: {calculated_phos_dry:.2f}%")
+    else:
+        st.error("❌ No feasible solution found with current ingredients and seasonal targets. Try adding alternative protein or energy sources.")
+
+else:
+    st.title("📚 Guide & Market Place")
+    st.info("Additional information metrics and guidelines for Tanzanian standards are accessible here.")
