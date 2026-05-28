@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import datetime
 import os
+from scipy.optimize import linprog
+import numpy as np
 from supabase import create_client, Client
 
 # --- 1. GLOBAL CONFIGURATION ---
@@ -42,36 +44,54 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
         except Exception as e:
             st.error(f"❌ Supabase Insert Failed: {e}")
 
-# --- 3. THE DATABASES (UPDATED WITH DEAS 90: 2023 ANNEX B STANDARDS & DM%) ---
+# --- 3. THE DATABASES (UPDATED WITH AMINO ACIDS, MINERALS, AND PENALTY SCORES) ---
 ING_DATABASE = {
     # M.E. Sources
-    "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "price": 850, "type": "ME"},
-    "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "price": 750, "type": "ME"},
-    "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "price": 500, "type": "ME"},
-    "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "price": 600, "type": "ME"},
-    "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "price": 450, "type": "ME"},
-    "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "price": 3500, "type": "ME"},
+    "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME"},
+    "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 2, "price": 750, "type": "ME"},
+    "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME"},
+    "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME"},
+    "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME"},
+    "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "penalty": 2, "price": 3500, "type": "ME"},
     
     # Crude Protein Sources
-    "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "price": 2300, "type": "CP"},
-    "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "price": 900, "type": "CP"},
-    "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "price": 650, "type": "CP"},
-    "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "price": 800, "type": "CP"},
-    "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "price": 1500, "type": "CP"},
-    "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "price": 2500, "type": "CP"}
+    "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "penalty": 1, "price": 2300, "type": "CP"},
+    "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "penalty": 4, "price": 900, "type": "CP"},
+    "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "penalty": 2, "price": 650, "type": "CP"},
+    "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "penalty": 3, "price": 800, "type": "CP"},
+    "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "penalty": 2, "price": 1500, "type": "CP"},
+    "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "penalty": 3, "price": 2500, "type": "CP"}
 }
 
-# --- BACKEND SAFETY CONSTRAINTS (CP & ME MIN/MAX BRACKETS) ---
+# --- BACKEND SAFETY CONSTRAINTS (UPDATED TARGET RANGES FOR AA & MINERALS) ---
 STANDARDS = {
     "Broiler": {
-        "Starter (Wk 1-2)": {"min_cp": 22.0, "max_cp": 24.5, "min_en": 3000, "max_en": 3150, "bsf_max": 0.05, "bran_max": 0.05},
-        "Grower (Wk 3-4)": {"min_cp": 20.0, "max_cp": 22.0, "min_en": 3000, "max_en": 3200, "bsf_max": 0.10, "bran_max": 0.10},
-        "Finisher (Wk 5+)": {"min_cp": 18.0, "max_cp": 20.0, "min_en": 3000, "max_en": 3250, "bsf_max": 0.15, "bran_max": 0.15}
+        "Starter (Wk 1-2)": {
+            "min_cp": 22.0, "max_cp": 24.5, "min_en": 3000, "max_en": 3150, "bsf_max": 0.05, "bran_max": 0.05,
+            "min_lys": 1.20, "max_lys": 1.45, "min_met": 0.50, "max_met": 0.65, "min_tryp": 0.20, "max_tryp": 0.30, "min_ca": 0.95, "max_ca": 1.15, "min_phos": 0.45, "max_phos": 0.60
+        },
+        "Grower (Wk 3-4)": {
+            "min_cp": 20.0, "max_cp": 22.0, "min_en": 3000, "max_en": 3200, "bsf_max": 0.10, "bran_max": 0.10,
+            "min_lys": 1.05, "max_lys": 1.30, "min_met": 0.45, "max_met": 0.60, "min_tryp": 0.18, "max_tryp": 0.28, "min_ca": 0.85, "max_ca": 1.05, "min_phos": 0.42, "max_phos": 0.55
+        },
+        "Finisher (Wk 5+)": {
+            "min_cp": 18.0, "max_cp": 20.0, "min_en": 3000, "max_en": 3250, "bsf_max": 0.15, "bran_max": 0.15,
+            "min_lys": 0.95, "max_lys": 1.20, "min_met": 0.40, "max_met": 0.55, "min_tryp": 0.16, "max_tryp": 0.25, "min_ca": 0.80, "max_ca": 1.00, "min_phos": 0.38, "max_phos": 0.50
+        }
     },
     "Layer": {
-        "Chick Starter": {"min_cp": 18.0, "max_cp": 20.5, "min_en": 2850, "max_en": 3000, "bsf_max": 0.05, "bran_max": 0.05},
-        "Pullet Grower": {"min_cp": 15.0, "max_cp": 17.5, "min_en": 2750, "max_en": 2900, "bsf_max": 0.10, "bran_max": 0.20},
-        "Layer Phase 1": {"min_cp": 18.0, "max_cp": 20.0, "min_en": 2800, "max_en": 2950, "bsf_max": 0.12, "bran_max": 0.10}
+        "Chick Starter": {
+            "min_cp": 18.0, "max_cp": 20.5, "min_en": 2850, "max_en": 3000, "bsf_max": 0.05, "bran_max": 0.05,
+            "min_lys": 0.85, "max_lys": 1.10, "min_met": 0.35, "max_met": 0.50, "min_tryp": 0.15, "max_tryp": 0.24, "min_ca": 0.90, "max_ca": 1.10, "min_phos": 0.40, "max_phos": 0.52
+        },
+        "Pullet Grower": {
+            "min_cp": 15.0, "max_cp": 17.5, "min_en": 2750, "max_en": 2900, "bsf_max": 0.10, "bran_max": 0.20,
+            "min_lys": 0.65, "max_lys": 0.90, "min_met": 0.30, "max_met": 0.42, "min_tryp": 0.12, "max_tryp": 0.20, "min_ca": 0.80, "max_ca": 1.00, "min_phos": 0.35, "max_phos": 0.48
+        },
+        "Layer Phase 1": {
+            "min_cp": 18.0, "max_cp": 20.0, "min_en": 2800, "max_en": 2950, "bsf_max": 0.12, "bran_max": 0.10,
+            "min_lys": 0.82, "max_lys": 1.05, "min_met": 0.38, "max_met": 0.52, "min_tryp": 0.16, "max_tryp": 0.25, "min_ca": 3.60, "max_ca": 4.20, "min_phos": 0.45, "max_phos": 0.58
+        }
     }
 }
 
@@ -80,6 +100,10 @@ with st.sidebar:
     st.header("🚜 Farm Manager")
     lang = st.radio("Language:", ["English", "Kiswahili"])
     flock_type = st.radio("Select Type:", ["Broiler", "Layer"], key="flock_selector")
+    
+    # Formulation Mode Injection
+    st.markdown("### ⚙️ Optimization Strategy")
+    form_mode = st.selectbox("Formulation Mode:", ["Standard", "Premium", "Custom Eco"])
     
     season = st.select_slider("Market Season:", options=["Harvest (Cheap)", "Normal", "Dry (Expensive)"], value="Normal")
     price_multiplier = {"Harvest (Cheap)": 0.85, "Normal": 1.0, "Dry (Expensive)": 1.25}[season]
@@ -146,13 +170,22 @@ if menu == txt["dash"]:
 
 # --- 6. PERFORMANCE FEED SOLVER ---
 elif menu == txt["solver"]:
-    from scipy.optimize import linprog
-    import numpy as np
-
-    st.title(f"🚀 {txt['solver']} ({flock_type})")
+    st.title(f"🚀 {txt['solver']} ({flock_type}) — Mode: {form_mode}")
 
     stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
-    t_data = STANDARDS[flock_type][stage]
+    t_data = STANDARDS[flock_type][stage].copy()
+
+    # --- MODE LOGIC COMPILATION ---
+    penalty_weight = 1.0
+    if form_mode == "Premium":
+        # Premium mode demands higher minimum nutritive baselines and drops the penalty impacts
+        penalty_weight = 0.25
+        t_data["min_cp"] += 0.5
+        t_data["min_lys"] += 0.05
+        t_data["min_met"] += 0.02
+    elif form_mode == "Custom Eco":
+        # Eco mode strictly punishes ingredients with high footprints/penalties (e.g. Phosphorus runoffs)
+        penalty_weight = 3.0
 
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
@@ -180,9 +213,14 @@ elif menu == txt["solver"]:
 
     # Build optimization metrics arrays
     ingredient_names = []
-    prices = []
+    prices_and_penalties = []
     protein_vals = []
     energy_vals = []
+    lys_vals = []
+    met_vals = []
+    tryp_vals = []
+    ca_vals = []
+    phos_vals = []
     bounds = []
 
     for ing in available_ingredients:
@@ -190,9 +228,19 @@ elif menu == txt["solver"]:
             continue
 
         ingredient_names.append(ing)
-        prices.append(ING_DATABASE[ing]["price"] * price_multiplier)
+        
+        # Linear optimization cost metric combined dynamically with penalty scores
+        raw_price = ING_DATABASE[ing]["price"] * price_multiplier
+        penalty_factor = ING_DATABASE[ing]["penalty"] * penalty_weight * 10.0  # Normalized scale factor
+        prices_and_penalties.append(raw_price + penalty_factor)
+        
         protein_vals.append(ING_DATABASE[ing]["prot"])
         energy_vals.append(ING_DATABASE[ing]["en"])
+        lys_vals.append(ING_DATABASE[ing]["lys"])
+        met_vals.append(ING_DATABASE[ing]["met"])
+        tryp_vals.append(ING_DATABASE[ing]["tryp"])
+        ca_vals.append(ING_DATABASE[ing]["ca"])
+        phos_vals.append(ING_DATABASE[ing]["phos"])
 
         if ing == "Fish Meal":
             bounds.append((0.00, 0.10))
@@ -204,7 +252,7 @@ elif menu == txt["solver"]:
             bounds.append((0.00, 0.80))
 
     # Optimization Objective
-    c = np.array(prices)
+    c = np.array(prices_and_penalties)
 
     # Building Constraints
     A_ub = []
@@ -222,6 +270,36 @@ elif menu == txt["solver"]:
     A_ub.append([e for e in energy_vals])
     b_ub.append(t_data["max_en"] * remaining_pct)
 
+    # MIN & MAX LYSINE
+    A_ub.append([-l for l in lys_vals])
+    b_ub.append(-(t_data["min_lys"] * remaining_pct))
+    A_ub.append([l for l in lys_vals])
+    b_ub.append(t_data["max_lys"] * remaining_pct)
+
+    # MIN & MAX METHIONINE
+    A_ub.append([-m for m in met_vals])
+    b_ub.append(-(t_data["min_met"] * remaining_pct))
+    A_ub.append([m for m in met_vals])
+    b_ub.append(t_data["max_met"] * remaining_pct)
+
+    # MIN & MAX TRYPTOPHAN
+    A_ub.append([-t_val for t_val in tryp_vals])
+    b_ub.append(-(t_data["min_tryp"] * remaining_pct))
+    A_ub.append([t_val for t_val in tryp_vals])
+    b_ub.append(t_data["max_tryp"] * remaining_pct)
+
+    # MIN & MAX CALCIUM
+    A_ub.append([-ca for ca in ca_vals])
+    b_ub.append(-(t_data["min_ca"] * remaining_pct))
+    A_ub.append([ca for ca in ca_vals])
+    b_ub.append(t_data["max_ca"] * remaining_pct)
+
+    # MIN & MAX PHOSPHORUS
+    A_ub.append([-ph for ph in phos_vals])
+    b_ub.append(-(t_data["min_phos"] * remaining_pct))
+    A_ub.append([ph for ph in phos_vals])
+    b_ub.append(t_data["max_phos"] * remaining_pct)
+
     # Equality Constraint
     A_eq = [[1.0] * len(ingredient_names)]
     b_eq = [remaining_pct]
@@ -233,20 +311,32 @@ elif menu == txt["solver"]:
         solution = res.x
         recipe_rows = []
         total_cost = 0
+        total_penalty = 0
+        
         total_cp = 0
         total_energy = 0
+        total_lys = 0
+        total_met = 0
+        total_tryp = 0
+        total_ca = 0
+        total_phos = 0
 
         for i, ing in enumerate(ingredient_names):
             inclusion_pct = solution[i]
             weight_kg = inclusion_pct * total_kg
             cost = weight_kg * (ING_DATABASE[ing]["price"] * price_multiplier)
+            penalty_score = inclusion_pct * ING_DATABASE[ing]["penalty"]
             
-            cp_contrib = inclusion_pct * ING_DATABASE[ing]["prot"]
-            energy_contrib = inclusion_pct * ING_DATABASE[ing]["en"]
-
             total_cost += cost
-            total_cp += cp_contrib
-            total_energy += energy_contrib
+            total_penalty += penalty_score
+            
+            total_cp += inclusion_pct * ING_DATABASE[ing]["prot"]
+            total_energy += inclusion_pct * ING_DATABASE[ing]["en"]
+            total_lys += inclusion_pct * ING_DATABASE[ing]["lys"]
+            total_met += inclusion_pct * ING_DATABASE[ing]["met"]
+            total_tryp += inclusion_pct * ING_DATABASE[ing]["tryp"]
+            total_ca += inclusion_pct * ING_DATABASE[ing]["ca"]
+            total_phos += inclusion_pct * ING_DATABASE[ing]["phos"]
 
             recipe_rows.append({
                 "Ingredient": ing,
@@ -261,6 +351,7 @@ elif menu == txt["solver"]:
         toxin_weight = toxin_binder_pct * total_kg
         oil_cost = oil_weight * ING_DATABASE["Vegetable Oil"]["price"]
         total_cost += oil_cost
+        total_penalty += oil_pct * ING_DATABASE["Vegetable Oil"]["penalty"]
 
         recipe_rows.append({
             "Ingredient": "Vegetable Oil",
@@ -286,25 +377,23 @@ elif menu == txt["solver"]:
         st.subheader("🥣 Optimized Feed Formula")
         st.dataframe(recipe_df, use_container_width=True)
 
+        # Apply corrections to include Vegetable Oil's energetic vectors
         final_cp = total_cp
         final_energy = total_energy + (oil_pct * ING_DATABASE["Vegetable Oil"]["en"])
+        final_lys = total_lys
+        final_met = total_met
+        final_tryp = total_tryp
+        final_ca = total_ca
+        final_phos = total_phos
 
         st.markdown("### 📊 Nutritional Analysis (As-Fed Basis)")
-        c1, c2, c3 = st.columns(3)
-        if t_data["min_cp"] <= final_cp <= t_data["max_cp"]:
-            c1.success(f"CP: {final_cp:.2f}%")
-        else:
-            c1.error(f"CP: {final_cp:.2f}%")
-
-        if t_data["min_en"] <= final_energy <= t_data["max_en"]:
-            c2.success(f"ME: {final_energy:.0f} kcal/kg")
-        else:
-            c2.error(f"ME: {final_energy:.0f} kcal/kg")
-
-        c3.info(f"Cost: {total_cost:,.0f} TSH")
-
-        cost_per_kg = total_cost / total_kg
-        st.metric("Feed Cost Per Kg", f"{cost_per_kg:,.0f} TSH/kg")
+        m_c1, m_c2, m_c3, m_c4 = st.columns(4)
+        m_c1.metric("Feed Cost Per Kg", f"{total_cost / total_kg:,.0f} TSH/kg")
+        m_c2.metric("Total Formulation Penalty", f"{total_penalty:.2f}")
+        m_c3.metric("CP / ME Profiles", f"{final_cp:.1f}% CP | {final_energy:.0f} kcal")
+        
+        ca_phos_ratio = final_ca / final_phos if final_phos > 0 else 0
+        m_c4.metric("Ca : P Ratio", f"{ca_phos_ratio:.2f} : 1")
 
         # -----------------------------------------------------------------
         # --- 6b. VERIFICATION QUALITY CONTROL ENGINE (DYNAMIC INTEGRATION) ---
@@ -315,6 +404,11 @@ elif menu == txt["solver"]:
         total_dry_mass_kg = 0.0
         total_cp_mass_kg = 0.0
         total_me_pool = 0.0
+        total_lys_mass = 0.0
+        total_met_mass = 0.0
+        total_tryp_mass = 0.0
+        total_ca_mass = 0.0
+        total_phos_mass = 0.0
 
         # Run dynamic calculation loops based on generated recipe dataframe variables
         for _, row in recipe_df.iterrows():
@@ -322,13 +416,17 @@ elif menu == txt["solver"]:
             weight_as_fed = row["Amount (kg)"]
             
             if ing_name in ING_DATABASE:
-                dm_factor = ING_DATABASE[ing_name]["dm_pct"] / 100.0
-                cp_factor = ING_DATABASE[ing_name]["prot"] / 100.0
-                me_val = ING_DATABASE[ing_name]["en"]
-            elif ing_name == "Premix":
-                dm_factor, cp_factor, me_val = 1.0, 0.0, 0.0
-            elif ing_name == "Toxin Binder":
-                dm_factor, cp_factor, me_val = 1.0, 0.0, 0.0
+                db_ref = ING_DATABASE[ing_name]
+                dm_factor = db_ref["dm_pct"] / 100.0
+                cp_factor = db_ref["prot"] / 100.0
+                me_val = db_ref["en"]
+                lys_factor = db_ref["lys"] / 100.0
+                met_factor = db_ref["met"] / 100.0
+                tryp_factor = db_ref["tryp"] / 100.0
+                ca_factor = db_ref["ca"] / 100.0
+                phos_factor = db_ref["phos"] / 100.0
+            elif ing_name in ["Premix", "Toxin Binder"]:
+                dm_factor, cp_factor, me_val, lys_factor, met_factor, tryp_factor, ca_factor, phos_factor = 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
             else:
                 continue
 
@@ -337,53 +435,41 @@ elif menu == txt["solver"]:
             total_dry_mass_kg += dry_weight
             total_cp_mass_kg += (weight_as_fed * cp_factor)
             total_me_pool += (weight_as_fed * me_val)
+            total_lys_mass += (weight_as_fed * lys_factor)
+            total_met_mass += (weight_as_fed * met_factor)
+            total_tryp_mass += (weight_as_fed * tryp_factor)
+            total_ca_mass += (weight_as_fed * ca_factor)
+            total_phos_mass += (weight_as_fed * phos_factor)
 
         # Base fractions evaluated safely on 100% dry base metrics
         if total_dry_mass_kg > 0:
             calculated_cp_dry = (total_cp_mass_kg / total_dry_mass_kg) * 100.0
             calculated_me_dry = total_me_pool / total_dry_mass_kg
+            calculated_lys_dry = (total_lys_mass / total_dry_mass_kg) * 100.0
+            calculated_met_dry = (total_met_mass / total_dry_mass_kg) * 100.0
+            calculated_tryp_dry = (total_tryp_mass / total_dry_mass_kg) * 100.0
+            calculated_ca_dry = (total_ca_mass / total_dry_mass_kg) * 100.0
+            calculated_phos_dry = (total_phos_mass / total_dry_mass_kg) * 100.0
         else:
-            calculated_cp_dry, calculated_me_dry = 0.0, 0.0
+            calculated_cp_dry = calculated_me_dry = calculated_lys_dry = calculated_met_dry = calculated_tryp_dry = calculated_ca_dry = calculated_phos_dry = 0.0
 
         aud1, aud2, aud3 = st.columns(3)
         
         if t_data["min_cp"] <= calculated_cp_dry <= t_data["max_cp"]:
-            aud1.success(f"Crude Protein: {calculated_cp_dry:.2f}% (Safe Range)")
+            aud1.success(f"Crude Protein: {calculated_cp_dry:.2f}% (Safe)")
         else:
             aud1.warning(f"Crude Protein: {calculated_cp_dry:.2f}% (Target: {t_data['min_cp']}% - {t_data['max_cp']}%)")
 
         if t_data["min_en"] <= calculated_me_dry <= t_data["max_en"]:
-            aud2.success(f"Metabolizable Energy: {calculated_me_dry:.0f} kcal/kg (Safe Range)")
+            aud2.success(f"Energy: {calculated_me_dry:.0f} kcal/kg (Safe)")
         else:
             aud2.warning(f"Energy: {calculated_me_dry:.0f} kcal/kg (Target: {t_data['min_en']} - {t_data['max_en']})")
             
         aud3.info(f"💡 Total Batch Cost: {total_cost:,.0f} TSH")
 
-    else:
-        st.error("❌ No feasible solution found.")
-        st.info("""
-**Feasibility Constraint Block:** It is mathematically impossible to cross your minimum nutrition metrics safely without violating the max safety ceilings.
-💡 **Solution:** Try switching your primary grain selector to an alternative energy source like **Sorghum**, or add a higher performance matrix choice in your protein sidebar selection field (like **BSF Larvae** or **Fish Meal**).
-""")
-
-# --- 7. GUIDE & MARKET ---
-elif menu == txt["guide"]:
-    st.title(txt["guide"])
-    sel = st.selectbox("Select Ingredient Reference Profile:", list(ING_DATABASE.keys()))
-    inf = ING_DATABASE[sel]
-    st.markdown(f"### Official DEAS 90: 2023 Specifications for **{sel}**")
-    st.write(f"• **Dry Matter (DM):** {inf['dm_pct']}%")
-    st.write(f"• **Crude Protein (CP):** {inf['prot']}%")
-    st.write(f"• **Energy (ME):** {inf['en']} kcal/kg")
-
-elif menu == txt["market"]:
-    st.title(txt["market"])
-    for name, info in ING_DATABASE.items():
-        curr_p = round(info['price'] * price_multiplier)
-        c1, c2, c3 = st.columns([2, 1, 1])
-        c1.write(f"**{name}** ({info['type']} Vector)")
-        c2.write(f"{curr_p} TSH/kg")
-        c3.link_button("Order", f"https://wa.me/255777744657?text=I%20want%20to%20order%20{name}")
-
-st.divider()
-st.caption(f"🚀 FeedConvo Pro | {season} Pricing System Configured with East African Dry Matter Controls.")
+        # Amino Acid and Mineral Specific Verification Auditing Line
+        st.markdown("#### Amino Acids & Minerals Audit Details")
+        aa1, aa2, aa3, mn1, mn2 = st.columns(5)
+        
+        # Lysine Check
+        if t_data
