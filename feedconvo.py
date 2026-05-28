@@ -45,25 +45,27 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
             st.error(f"❌ Supabase Insert Failed: {e}")
 
 # --- 3. THE DATABASES (UPDATED WITH AMINO ACIDS, MINERALS, AND PENALTY SCORES) ---
-ING_DATABASE = {
-    # M.E. Sources
-    "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME"},
-    "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 2, "price": 750, "type": "ME"},
-    "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME"},
-    "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME"},
-    "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME"},
-    "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "penalty": 2, "price": 3500, "type": "ME"},
-    
-    # Crude Protein Sources
-    "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "penalty": 1, "price": 2300, "type": "CP"},
-    "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "penalty": 4, "price": 900, "type": "CP"},
-    "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "penalty": 2, "price": 650, "type": "CP"},
-    "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "penalty": 3, "price": 800, "type": "CP"},
-    "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "penalty": 2, "price": 1500, "type": "CP"},
-    "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "penalty": 3, "price": 2500, "type": "CP"}
-}
+if "ING_DATABASE" not in st.session_state:
+    st.session_state["ING_DATABASE"] = {
+        # M.E. Sources
+        "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME"},
+        "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 2, "price": 750, "type": "ME"},
+        "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME"},
+        "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME"},
+        "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME"},
+        "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "penalty": 2, "price": 3500, "type": "ME"},
+        
+        # Crude Protein Sources
+        "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "penalty": 1, "price": 2300, "type": "CP"},
+        "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "penalty": 4, "price": 900, "type": "CP"},
+        "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "penalty": 2, "price": 650, "type": "CP"},
+        "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "penalty": 3, "price": 800, "type": "CP"},
+        "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "penalty": 2, "price": 1500, "type": "CP"},
+        "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "penalty": 3, "price": 2500, "type": "CP"}
+    }
 
-# --- BACKEND SAFETY CONSTRAINTS (UPDATED TARGET RANGES FOR AA & MINERALS) ---
+ING_DATABASE = st.session_state["ING_DATABASE"]
+
 STANDARDS = {
     "Broiler": {
         "Starter (Wk 1-2)": {
@@ -227,7 +229,7 @@ elif menu == txt["solver"]:
         ingredient_names.append(ing)
         
         raw_price = ING_DATABASE[ing]["price"] * price_multiplier
-        penalty_factor = ING_DATABASE[ing]["penalty"] * penalty_weight * 10.0  # Normalized scale factor
+        penalty_factor = ING_DATABASE[ing]["penalty"] * penalty_weight * 10.0  
         prices_and_penalties.append(raw_price + penalty_factor)
         
         protein_vals.append(ING_DATABASE[ing]["prot"])
@@ -252,7 +254,7 @@ elif menu == txt["solver"]:
 
     # --- 6a. DYNAMIC PRE-CALCULATION MATRIX STRUCTURE ---
     fixed_cp = 0.0
-    fixed_en = oil_pct * ING_DATABASE["Vegetable Oil"]["en"]  # Captures 8800 kcal/kg contribution
+    fixed_en = oil_pct * ING_DATABASE["Vegetable Oil"]["en"]  
     fixed_lys = 0.0
     fixed_met = 0.0
     fixed_tryp = 0.0
@@ -481,35 +483,29 @@ elif menu == txt["solver"]:
             
         aud3.info(f"💡 Total Batch Cost: {total_cost:,.0f} TSH")
 
-        # Amino Acid and Mineral Specific Verification Auditing Metrics
         st.markdown("#### Amino Acids & Minerals Audit Details (Dry Basis)")
         aa1, aa2, aa3, mn1, mn2 = st.columns(5)
         
-        # Lysine Check
         if t_data["min_lys"] <= calculated_lys_dry <= t_data["max_lys"]:
             aa1.success(f"Lysine: {calculated_lys_dry:.2f}%")
         else:
             aa1.warning(f"Lysine: {calculated_lys_dry:.2f}%")
 
-        # Methionine Check
         if t_data["min_met"] <= calculated_met_dry <= t_data["max_met"]:
             aa2.success(f"Methionine: {calculated_met_dry:.2f}%")
         else:
             aa2.warning(f"Methionine: {calculated_met_dry:.2f}%")
 
-        # Tryptophan Check
         if t_data["min_tryp"] <= calculated_tryp_dry <= t_data["max_tryp"]:
             aa3.success(f"Tryptophan: {calculated_tryp_dry:.2f}%")
         else:
             aa3.warning(f"Tryptophan: {calculated_tryp_dry:.2f}%")
 
-        # Calcium Check
         if t_data["min_ca"] <= calculated_ca_dry <= t_data["max_ca"]:
             mn1.success(f"Calcium: {calculated_ca_dry:.2f}%")
         else:
             mn1.warning(f"Calcium: {calculated_ca_dry:.2f}%")
 
-        # Phosphorus Check
         if t_data["min_phos"] <= calculated_phos_dry <= t_data["max_phos"]:
             mn2.success(f"Phosphorus: {calculated_phos_dry:.2f}%")
         else:
@@ -517,6 +513,64 @@ elif menu == txt["solver"]:
     else:
         st.error("❌ No feasible solution found with current ingredients and seasonal targets. Try adding alternative protein or energy sources.")
 
-else:
-    st.title("📚 Guide & Market Place")
-    st.info("Additional information metrics and guidelines for Tanzanian standards are accessible here.")
+# --- 7. RESTORED GUIDE SECTION ---
+elif menu == txt["guide"]:
+    st.title("📚 Feed Formulation Guide & Legal Framework")
+    
+    if lang == "English":
+        st.markdown("""
+        ### 🧪 Formulation Fundamentals
+        Poultry performance relies entirely on balancing **Crude Protein (CP)** for structural tissue growth and **Metabolizable Energy (ME)** for systemic function.
+        
+        *   **Dry Matter Adjustments:** Ingredients change mass based on variable moisture levels. This framework computes feeds utilizing absolute dry mass indices to protect nutritional intensity.
+        *   **Anti-Nutritional Limits:** Ingredients like Cotton Seed Cake carry high processing inhibitors (Gossypol). Over-inclusion can cause severe systemic toxicity.
+        """)
+    else:
+        st.markdown("""
+        ### 🧪 Misingi ya Lishe ya Kuku
+        Mavuno na ukuaji bora wa kuku hutegemea uwiano thabiti wa **Crude Protein (CP)** kwa ajili ya kujenga mwili na **Metabolizable Energy (ME)** kwa nguvu.
+        
+        *   **Marekebisho ya Kukausha (Dry Matter):** Viambatisho hubadilika uzito kulingana na unyevu. Mfumo huu unakokotoa kulingana na uzito halisi wa pakavu ili kulinda kiwango cha virutubisho.
+        *   **Vizuizi vya Sumu Asilia:** Mashudu ya Pamba yana sumu ya asili (Gossypol). Usizidishe viwango vilivyopendekezwa ili kuepusha madhara.
+        """)
+
+    st.subheader("🇹🇿 Tanzania Bureau of Standards (TBS) Official Targets")
+    tbs_data = [
+        {"Stage": "Broiler Starter", "TBS Crude Protein": "22.0% - 24.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
+        {"Stage": "Broiler Grower", "TBS Crude Protein": "20.0% - 22.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
+        {"Stage": "Broiler Finisher", "TBS Crude Protein": "18.0% - 20.0%", "TBS Metabolizable Energy": "3100 kcal/kg"},
+        {"Stage": "Layer Chick Starter", "TBS Crude Protein": "18.5% - 21.0%", "TBS Metabolizable Energy": "2800 kcal/kg"},
+        {"Stage": "Layer Grower", "TBS Crude Protein": "15.0% - 17.0%", "TBS Metabolizable Energy": "2700 kcal/kg"},
+        {"Stage": "Layer Phase 1 (Laying)", "TBS Crude Protein": "18.0% - 19.5%", "TBS Metabolizable Energy": "2750 kcal/kg"}
+    ]
+    st.table(pd.DataFrame(tbs_data))
+
+# --- 8. RESTORED MARKET SECTION ---
+elif menu == txt["market"]:
+    st.title("🛒 Local Feed Ingredient Market Manager")
+    st.subheader("📋 Live Pricing Matrix Adjustments")
+    
+    if lang == "English":
+        st.caption("Modify pricing here to instantly re-calibrate the linear programming equations in the Optimizer tab.")
+    else:
+        st.caption("Badilisha bei hapa ili kuboresha milinganyo ya kikokotoo kwenye kichupo cha Optimizer papo hapo.")
+
+    # Split ingredients by energy or protein types for clear editing
+    c1, c2 = st.columns(2)
+    
+    with c1:
+        st.markdown("### 🌾 Energy Sources (ME)")
+        for name, profile in ING_DATABASE.items():
+            if profile["type"] == "ME":
+                new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=8000, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                st.session_state["ING_DATABASE"][name]["price"] = new_price
+
+    with c2:
+        st.markdown("### 🍗 Protein Sources (CP)")
+        for name, profile in ING_DATABASE.items():
+            if profile["type"] == "CP":
+                new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=8000, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                st.session_state["ING_DATABASE"][name]["price"] = new_price
+
+    st.divider()
+    st.info("💡 Pro Tip: When mixing alternative inputs like **Black Soldier Fly (BSF) Larvae**, ensure reliable local sourcing to maintain consistent crude protein profiles across separate batches.")
