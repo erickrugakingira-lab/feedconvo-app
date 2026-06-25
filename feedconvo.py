@@ -70,33 +70,91 @@ if "ING_DATABASE" not in st.session_state:
 
 ING_DATABASE = st.session_state["ING_DATABASE"]
 
+# --- UPDATED DICTIONARY WITH IDEAL TARGETS FOR WEIGHTED GOAL LP ---
 STANDARDS = {
     "Broiler": {
         "Starter (Wk 1-2)": {
-            "min_cp": 22.0, "max_cp": 24.5, "min_en": 3000, "max_en": 3150, "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.03,
-            "min_lys": 1.20, "max_lys": 1.45, "min_met": 0.50, "max_met": 0.65, "min_tryp": 0.20, "max_tryp": 0.30, "min_ca": 0.95, "max_ca": 1.15, "min_phos": 0.45, "max_phos": 0.60
+            "min_cp": 22.5, "target_cp": 23.0, "max_cp": 24.5,
+            "min_en": 2975, "target_en": 3000, "max_en": 3050,
+            "min_lys": 1.32, "target_lys": 1.38, "max_lys": 1.45,
+            "min_met": 0.55, "target_met": 0.57, "max_met": 0.60,
+            "min_tryp": 0.21, "target_tryp": 0.24, "max_tryp": 0.28,
+            "min_thr": 0.90, "max_thr": 1.10,
+            "min_val": 1.00, "max_val": 1.30,
+            "min_ile": 0.85, "max_ile": 1.10,
+            "min_ca": 0.95, "target_ca": 1.00, "max_ca": 1.10,
+            "min_phos": 0.50, "target_phos": 0.53, "max_phos": 0.60,
+            "min_na": 0.16, "max_na": 0.23, "min_cl": 0.16, "max_cl": 0.25, "min_k": 0.70, "max_k": 1.10,
+            "min_mn": 80, "max_mn": 300, "min_zn": 80, "max_zn": 300, "min_fe": 40, "max_fe": 500, "min_cu": 8, "max_cu": 25, "min_i": 1.0, "max_i": 4.0, "min_se": 0.15, "max_se": 0.40,
+            "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03, "min_ca_p_ratio": 1.8, "max_ca_p_ratio": 2.2
         },
         "Grower (Wk 3-4)": {
-            "min_cp": 20.0, "max_cp": 22.0, "min_en": 3000, "max_en": 3200, "bsf_max": 0.10, "bran_max": 0.10, "oil_max": 0.04,
-            "min_lys": 1.05, "max_lys": 1.30, "min_met": 0.45, "max_met": 0.60, "min_tryp": 0.18, "max_tryp": 0.28, "min_ca": 0.85, "max_ca": 1.05, "min_phos": 0.42, "max_phos": 0.55
+            "min_cp": 20.5, "target_cp": 21.5, "max_cp": 22.5,
+            "min_en": 3050, "target_en": 3100, "max_en": 3150,
+            "min_lys": 1.18, "target_lys": 1.24, "max_lys": 1.35,
+            "min_met": 0.51, "target_met": 0.54, "max_met": 0.58,
+            "min_tryp": 0.19, "target_tryp": 0.22, "max_tryp": 0.25,
+            "min_thr": 0.80, "max_thr": 1.00,
+            "min_val": 0.90, "max_val": 1.20,
+            "min_ile": 0.75, "max_ile": 1.00,
+            "min_ca": 0.75, "target_ca": 0.85, "max_ca": 0.95,
+            "min_phos": 0.42, "target_phos": 0.47, "max_phos": 0.55,
+            "min_na": 0.15, "max_na": 0.22, "min_cl": 0.15, "max_cl": 0.25, "min_k": 0.65, "max_k": 1.00,
+            "min_mn": 80, "max_mn": 300, "min_zn": 80, "max_zn": 300, "min_fe": 40, "max_fe": 500, "min_cu": 8, "max_cu": 25, "min_i": 1.0, "max_i": 4.0, "min_se": 0.15, "max_se": 0.40,
+            "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04, "min_ca_p_ratio": 1.8, "max_ca_p_ratio": 2.2
         },
         "Finisher (Wk 5+)": {
-            "min_cp": 18.0, "max_cp": 20.0, "min_en": 3000, "max_en": 3250, "bsf_max": 0.15, "bran_max": 0.15, "oil_max": 0.05,
-            "min_lys": 0.95, "max_lys": 1.20, "min_met": 0.40, "max_met": 0.55, "min_tryp": 0.16, "max_tryp": 0.25, "min_ca": 0.80, "max_ca": 1.00, "min_phos": 0.38, "max_phos": 0.50
+            "min_cp": 18.0, "target_cp": 19.5, "max_cp": 20.5,
+            "min_en": 3150, "target_en": 3200, "max_en": 3250,
+            "min_lys": 1.08, "target_lys": 1.14, "max_lys": 1.25,
+            "min_met": 0.48, "target_met": 0.51, "max_met": 0.55,
+            "min_tryp": 0.17, "target_tryp": 0.19, "max_tryp": 0.22,
+            "min_thr": 0.75, "max_thr": 0.95,
+            "min_val": 0.85, "max_val": 1.10,
+            "min_ile": 0.70, "max_ile": 0.95,
+            "min_ca": 0.65, "target_ca": 0.75, "max_ca": 0.85,
+            "min_phos": 0.36, "target_phos": 0.42, "max_phos": 0.50,
+            "min_na": 0.15, "max_na": 0.22, "min_cl": 0.15, "max_cl": 0.25, "min_k": 0.60, "max_k": 1.00,
+            "min_mn": 80, "max_mn": 300, "min_zn": 80, "max_zn": 300, "min_fe": 40, "max_fe": 500, "min_cu": 8, "max_cu": 25, "min_i": 1.0, "max_i": 4.0, "min_se": 0.15, "max_se": 0.40,
+            "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05, "min_ca_p_ratio": 1.8, "max_ca_p_ratio": 2.2
         }
     },
     "Layer": {
         "Chick Starter": {
-            "min_cp": 18.0, "max_cp": 20.5, "min_en": 2850, "max_en": 3000, "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02,
-            "min_lys": 0.85, "max_lys": 1.10, "min_met": 0.35, "max_met": 0.50, "min_tryp": 0.15, "max_tryp": 0.24, "min_ca": 0.90, "max_ca": 1.10, "min_phos": 0.40, "max_phos": 0.52
+            "min_cp": 18.0, "target_cp": 19.0, "max_cp": 20.5,
+            "min_en": 2850, "target_en": 2900, "max_en": 3000,
+            "min_lys": 0.85, "target_lys": 0.95, "max_lys": 1.10,
+            "min_met": 0.35, "target_met": 0.42, "max_met": 0.50,
+            "min_tryp": 0.15, "target_tryp": 0.19, "max_tryp": 0.24,
+            "min_ca": 0.90, "target_ca": 1.00, "max_ca": 1.10,
+            "min_phos": 0.40, "target_phos": 0.45, "max_phos": 0.52,
+            "min_na": 0.15, "max_na": 0.22, "min_cl": 0.15, "max_cl": 0.25, "min_k": 0.60, "max_k": 1.00,
+            "min_mn": 80, "max_mn": 300, "min_zn": 80, "max_zn": 300, "min_fe": 40, "max_fe": 500, "min_cu": 8, "max_cu": 25, "min_i": 1.0, "max_i": 4.0, "min_se": 0.15, "max_se": 0.40,
+            "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02, "min_ca_p_ratio": 1.8, "max_ca_p_ratio": 2.2
         },
         "Pullet Grower": {
-            "min_cp": 15.0, "max_cp": 17.5, "min_en": 2750, "max_en": 2900, "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02,
-            "min_lys": 0.65, "max_lys": 0.90, "min_met": 0.30, "max_met": 0.42, "min_tryp": 0.12, "max_tryp": 0.20, "min_ca": 0.80, "max_ca": 1.00, "min_phos": 0.35, "max_phos": 0.48
+            "min_cp": 15.0, "target_cp": 16.0, "max_cp": 17.5,
+            "min_en": 2750, "target_en": 2800, "max_en": 2900,
+            "min_lys": 0.65, "target_lys": 0.75, "max_lys": 0.90,
+            "min_met": 0.30, "target_met": 0.36, "max_met": 0.42,
+            "min_tryp": 0.12, "target_tryp": 0.16, "max_tryp": 0.20,
+            "min_ca": 0.80, "target_ca": 0.90, "max_ca": 1.00,
+            "min_phos": 0.35, "target_phos": 0.40, "max_phos": 0.48,
+            "min_na": 0.15, "max_na": 0.22, "min_cl": 0.15, "max_cl": 0.25, "min_k": 0.60, "max_k": 1.00,
+            "min_mn": 80, "max_mn": 300, "min_zn": 80, "max_zn": 300, "min_fe": 40, "max_fe": 500, "min_cu": 8, "max_cu": 25, "min_i": 1.0, "max_i": 4.0, "min_se": 0.15, "max_se": 0.40,
+            "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02, "min_ca_p_ratio": 1.8, "max_ca_p_ratio": 2.2
         },
         "Layer Phase 1": {
-            "min_cp": 18.0, "max_cp": 20.0, "min_en": 2800, "max_en": 2950, "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03,
-            "min_lys": 0.82, "max_lys": 1.05, "min_met": 0.38, "max_met": 0.52, "min_tryp": 0.16, "max_tryp": 0.25, "min_ca": 3.60, "max_ca": 4.20, "min_phos": 0.45, "max_phos": 0.58
+            "min_cp": 18.0, "target_cp": 19.0, "max_cp": 20.0,
+            "min_en": 2800, "target_en": 2850, "max_en": 2950,
+            "min_lys": 0.82, "target_lys": 0.92, "max_lys": 1.05,
+            "min_met": 0.38, "target_met": 0.45, "max_met": 0.52,
+            "min_tryp": 0.16, "target_tryp": 0.20, "max_tryp": 0.25,
+            "min_ca": 3.60, "target_ca": 3.90, "max_ca": 4.20,
+            "min_phos": 0.45, "target_phos": 0.50, "max_phos": 0.58,
+            "min_na": 0.15, "max_na": 0.22, "min_cl": 0.15, "max_cl": 0.25, "min_k": 0.60, "max_k": 1.00,
+            "min_mn": 80, "max_mn": 300, "min_zn": 80, "max_zn": 300, "min_fe": 40, "max_fe": 500, "min_cu": 8, "max_cu": 25, "min_i": 1.0, "max_i": 4.0, "min_se": 0.15, "max_se": 0.40,
+            "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03, "min_ca_p_ratio": 1.8, "max_ca_p_ratio": 2.2
         }
     }
 }
@@ -180,19 +238,23 @@ elif menu == txt["solver"]:
     stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
     t_data = STANDARDS[flock_type][stage].copy()
 
-    # --- MODE LOGIC COMPILATION ---
+    # --- MODE LOGIC COMPILATION & GOAL PENALTIES ---
+    # Penalty costs per unit variance below/above target
+    goal_penalty_cost = 5000.0  # Standard mode target pull
     penalty_weight = 1.0
+    
     if form_mode == "Premium":
         penalty_weight = 0.25
+        goal_penalty_cost = 15000.0  # Force targets aggressively
         t_data["min_cp"] += 0.5
         t_data["min_lys"] += 0.05
     elif form_mode == "Custom Eco":
         penalty_weight = 3.0
+        goal_penalty_cost = 1500.0   # Relax target tracking to save money
 
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
     st.sidebar.markdown("### 🥣 Select Ingredients")
-    # Auto-include macro mineral sources to avoid mathematical unfeasibility
     available_ingredients = st.sidebar.multiselect(
         "Choose Ingredients for Optimization",
         list(ING_DATABASE.keys()),
@@ -203,14 +265,14 @@ elif menu == txt["solver"]:
         st.warning("Please select at least 2 macro ingredients to begin solving.")
         st.stop()
 
-    # Fixed core micro-additions (Vitamin Premix + Toxin Binders)
+    # Fixed core micro-additions
     premix_pct = 0.005
     toxin_binder_pct = 0.001
     fixed_micro_pct = premix_pct + toxin_binder_pct
     remaining_pct = 1.0 - fixed_micro_pct
 
     ingredient_names = []
-    prices_and_penalties = []
+    base_costs = []
     protein_vals = []
     energy_vals = []
     lys_vals = []
@@ -225,7 +287,7 @@ elif menu == txt["solver"]:
         
         raw_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP"] else ING_DATABASE[ing]["price"]
         penalty_factor = ING_DATABASE[ing]["penalty"] * penalty_weight * 10.0  
-        prices_and_penalties.append(raw_price + penalty_factor)
+        base_costs.append(raw_price + penalty_factor)
         
         protein_vals.append(ING_DATABASE[ing]["prot"])
         energy_vals.append(ING_DATABASE[ing]["en"])
@@ -235,7 +297,7 @@ elif menu == txt["solver"]:
         ca_vals.append(ING_DATABASE[ing]["ca"])
         phos_vals.append(ING_DATABASE[ing]["phos"])
 
-        # Construct safe upper/lower boundaries
+        # Construct boundaries
         if ing == "Fish Meal":
             bounds.append((0.00, 0.08))
         elif ing == "BSF Larvae":
@@ -245,61 +307,82 @@ elif menu == txt["solver"]:
         elif ing == "Vegetable Oil":
             bounds.append((0.00, t_data["oil_max"]))
         elif ing == "Maize":
-            bounds.append((0.15, 0.70))  # Force min 15% Maize base to protect gut health
+            bounds.append((0.15, 0.70))  
         elif ing in ["Limestone", "DCP"]:
             bounds.append((0.00, 0.06))
         else:
             bounds.append((0.00, 0.65))
 
-    c = np.array(prices_and_penalties)
+    num_ingredients = len(ingredient_names)
+    
+    # Define targeted traits for the penalty variable array adjustments
+    targeted_traits = [
+        {"name": "cp", "vals": protein_vals, "target": t_data["target_cp"]},
+        {"name": "en", "vals": energy_vals, "target": t_data["target_en"]},
+        {"name": "lys", "vals": lys_vals, "target": t_data["target_lys"]},
+        {"name": "met", "vals": met_vals, "target": t_data["target_met"]},
+        {"name": "ca", "vals": ca_vals, "target": t_data["target_ca"]},
+        {"name": "phos", "vals": phos_vals, "target": t_data["target_phos"]}
+    ]
+    num_targets = len(targeted_traits)
 
-    # Dynamic target adjustments on clean As-Fed metrics
-    target_min_cp = t_data["min_cp"]
-    target_max_cp = t_data["max_cp"]
-    target_min_en = t_data["min_en"]
-    target_max_en = t_data["max_en"]
-    target_min_lys = t_data["min_lys"]
-    target_max_lys = t_data["max_lys"]
-    target_min_met = t_data["min_met"]
-    target_max_met = t_data["max_met"]
-    target_min_tryp = t_data["min_tryp"]
-    target_max_tryp = t_data["max_tryp"]
-    target_min_ca = t_data["min_ca"]
-    target_max_ca = t_data["max_ca"]
-    target_min_phos = t_data["min_phos"]
-    target_max_phos = t_data["max_phos"]
+    # --- 6B. THE PENALTY SLACK VARIABLE MATRIX EXPANSION (OPTION B) ---
+    # Cost array expansion: [base_costs] + [penalties for below] + [penalties for above]
+    c_expanded = base_costs + [goal_penalty_cost] * num_targets + [goal_penalty_cost] * num_targets
+    c = np.array(c_expanded)
+
+    # Pad bounds to cover slack variables (slack values must be positive, bounded up to a safe scaling limit)
+    for _ in range(num_targets * 2):
+        bounds.append((0.0, 5000.0))
 
     A_ub = []
     b_ub = []
 
-    # Matrix assembly loops
-    A_ub.append([-p for p in protein_vals]); b_ub.append(-target_min_cp)
-    A_ub.append([p for p in protein_vals]); b_ub.append(target_max_cp)
-    A_ub.append([-e for e in energy_vals]); b_ub.append(-target_min_en)
-    A_ub.append([e for e in energy_vals]); b_ub.append(target_max_en)
-    A_ub.append([-l for l in lys_vals]); b_ub.append(-target_min_lys)
-    A_ub.append([l for l in lys_vals]); b_ub.append(target_max_lys)
-    A_ub.append([-m for m in met_vals]); b_ub.append(-target_min_met)
-    A_ub.append([m for m in met_vals]); b_ub.append(target_max_met)
-    A_ub.append([-t_val for t_val in tryp_vals]); b_ub.append(-target_min_tryp)
-    A_ub.append([t_val for t_val in tryp_vals]); b_ub.append(target_max_tryp)
-    A_ub.append([-ca for ca in ca_vals]); b_ub.append(-target_min_ca)
-    A_ub.append([ca for ca in ca_vals]); b_ub.append(target_max_ca)
-    A_ub.append([-ph for ph in phos_vals]); b_ub.append(-target_min_phos)
-    A_ub.append([ph for ph in phos_vals]); b_ub.append(target_max_phos)
+    # Standard Minimum / Maximum hard constraints (padded with zeros for slack variables)
+    slack_pad = [0.0] * (num_targets * 2)
+    
+    A_ub.append([-p for p in protein_vals] + slack_pad); b_ub.append(-t_data["min_cp"])
+    A_ub.append([p for p in protein_vals] + slack_pad); b_ub.append(t_data["max_cp"])
+    A_ub.append([-e for e in energy_vals] + slack_pad); b_ub.append(-t_data["min_en"])
+    A_ub.append([e for e in energy_vals] + slack_pad); b_ub.append(t_data["max_en"])
+    A_ub.append([-l for l in lys_vals] + slack_pad); b_ub.append(-t_data["min_lys"])
+    A_ub.append([l for l in lys_vals] + slack_pad); b_ub.append(t_data["max_lys"])
+    A_ub.append([-m for m in met_vals] + slack_pad); b_ub.append(-t_data["min_met"])
+    A_ub.append([m for m in met_vals] + slack_pad); b_ub.append(t_data["max_met"])
+    A_ub.append([-t_val for t_val in tryp_vals] + slack_pad); b_ub.append(-t_data["min_tryp"])
+    A_ub.append([t_val for t_val in tryp_vals] + slack_pad); b_ub.append(t_data["max_tryp"])
+    A_ub.append([-ca for ca in ca_vals] + slack_pad); b_ub.append(-t_data["min_ca"])
+    A_ub.append([ca for ca in ca_vals] + slack_pad); b_ub.append(t_data["max_ca"])
+    A_ub.append([-ph for ph in phos_vals] + slack_pad); b_ub.append(-t_data["min_phos"])
+    A_ub.append([ph for ph in phos_vals] + slack_pad); b_ub.append(t_data["max_phos"])
 
-    A_eq = [[1.0] * len(ingredient_names)]
+    # Core Equality constraint: ingredients sum to remaining_pct (slack parameters do not change recipe bulk weight)
+    A_eq = [[1.0] * num_ingredients + [0.0] * (num_targets * 2)]
     b_eq = [remaining_pct]
+
+    # Target identity constraints: Dynamic mix + s_below - s_above = Target_Value
+    for idx, trait in enumerate(targeted_traits):
+        identity_row = [0.0] * (num_ingredients + num_targets * 2)
+        
+        # Populate raw ingredient contributions
+        for i in range(num_ingredients):
+            identity_row[i] = trait["vals"][i]
+            
+        # Wire slack parameters
+        identity_row[num_ingredients + idx] = 1.0        # + s_below
+        identity_row[num_ingredients + num_targets + idx] = -1.0  # - s_above
+        
+        A_eq.append(identity_row)
+        b_eq.append(trait["target"])
 
     res = linprog(c=c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs")
 
     if res.success:
-        solution = res.x
+        solution = res.x[:num_ingredients] # Strip out pure ingredient allocations
         recipe_rows = []
         total_cost = 0
         total_penalty = 0
         
-        # Real-time nutrient accumulators
         audit_cp = audit_energy = audit_lys = audit_met = audit_tryp = audit_ca = audit_phos = 0.0
 
         for i, ing in enumerate(ingredient_names):
@@ -335,7 +418,7 @@ elif menu == txt["solver"]:
         recipe_rows.append({"Ingredient": "Toxin Binder", "Inclusion %": round(toxin_binder_pct * 100, 2), "Amount (kg)": round(toxin_weight, 2), "Cost (TSH)": round(toxin_weight * 4000)})
 
         recipe_df = pd.DataFrame(recipe_rows)
-        st.subheader("🥣 Optimized Feed Formula")
+        st.subheader("🥣 Optimized Target-Guided Feed Formula")
         st.dataframe(recipe_df, use_container_width=True)
 
         st.markdown("### 📊 Nutritional Analysis Audit Summary (As-Fed Basis Verification)")
@@ -349,12 +432,12 @@ elif menu == txt["solver"]:
 
         aud1, aud2, aud3 = st.columns(3)
         if t_data["min_cp"] <= audit_cp <= t_data["max_cp"]:
-            aud1.success(f"Crude Protein: {audit_cp:.2f}% (Safe)")
+            aud1.success(f"Crude Protein: {audit_cp:.2f}% (Safe) | Target: {t_data['target_cp']}%")
         else:
             aud1.warning(f"Crude Protein: {audit_cp:.2f}% (Target: {t_data['min_cp']}%-{t_data['max_cp']}%)")
 
         if t_data["min_en"] <= audit_energy <= t_data["max_en"]:
-            aud2.success(f"Energy: {audit_energy:.0f} kcal/kg (Safe)")
+            aud2.success(f"Energy: {audit_energy:.0f} kcal/kg (Safe) | Target: {t_data['target_en']}")
         else:
             aud2.warning(f"Energy: {audit_energy:.0f} kcal/kg (Target: {t_data['min_en']}-{t_data['max_en']})")
             
@@ -397,7 +480,7 @@ elif menu == txt["guide"]:
         ### 🧪 Misingi ya Lishe ya Kuku
         Mavuno na ukuaji bora wa kuku hutegemea uwiano thabiti wa **Crude Protein (CP)** kwa ajili ya kujenga mwili na **Metabolizable Energy (ME)** kwa nguvu.
         
-        * **Uzito Halisi (As-Fed):** Kikokotoo hiki kinafanya kazi kwa kutumia uzito halisi wa mifuko ili kurahisisha uchanganyaji ghalani bila usumbufu wa kimahesabu.
+        * **Uzito Halisi (As-Fed):** Kikokotoo hiki kinafanya kazi kwa kutumia uzito halisi vya mifuko ili kurahisisha uchanganyaji ghalani bila usumbufu wa kimahesabu.
         * **Vizuizi vya Sumu Asilia:** Mashudu ya Pamba yana sumu ya asili (Gossypol). Usizidishe viwango vilivyopendekezwa ili kuepusha madhara.
         """)
 
