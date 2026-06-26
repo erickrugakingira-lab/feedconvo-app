@@ -65,7 +65,12 @@ if "ING_DATABASE" not in st.session_state:
         
         # Macro Mineral Replacements (Crucial for Feasibility)
         "Limestone": {"img": "limestone.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 38.0, "phos": 0.0, "penalty": 1, "price": 300, "type": "MIN"},
-        "DCP": {"img": "dcp.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 21.0, "phos": 18.0, "penalty": 1, "price": 1200, "type": "MIN"}
+        "DCP": {"img": "dcp.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 21.0, "phos": 18.0, "penalty": 1, "price": 1200, "type": "MIN"},
+
+        # Synthetic Amino Acids & Essentials
+        "DL-Methionine": {"img": "synthetic_aa.jpg", "prot": 58.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 99.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 9500, "type": "CP"},
+        "L-Lysine HCL": {"img": "synthetic_aa.jpg", "prot": 94.0, "en": 0.0, "dm_pct": 99.0, "lys": 78.8, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 7500, "type": "CP"},
+        "Salt": {"img": "salt.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 400, "type": "MIN"}
     }
 
 ING_DATABASE = st.session_state["ING_DATABASE"]
@@ -239,26 +244,26 @@ elif menu == txt["solver"]:
     t_data = STANDARDS[flock_type][stage].copy()
 
     # --- MODE LOGIC COMPILATION & GOAL PENALTIES ---
-    # Penalty costs per unit variance below/above target
-    goal_penalty_cost = 5000.0  # Standard mode target pull
+    goal_penalty_cost = 5000.0  
     penalty_weight = 1.0
     
     if form_mode == "Premium":
         penalty_weight = 0.25
-        goal_penalty_cost = 15000.0  # Force targets aggressively
+        goal_penalty_cost = 15000.0  
         t_data["min_cp"] += 0.5
         t_data["min_lys"] += 0.05
     elif form_mode == "Custom Eco":
         penalty_weight = 3.0
-        goal_penalty_cost = 1500.0   # Relax target tracking to save money
+        goal_penalty_cost = 1500.0   
 
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
     st.sidebar.markdown("### 🥣 Select Ingredients")
+    # Updated default items to auto-include synthetics and salt for matrix stability
     available_ingredients = st.sidebar.multiselect(
         "Choose Ingredients for Optimization",
         list(ING_DATABASE.keys()),
-        default=["Maize", "Soya Meal", "Fish Meal", "Rice Bran", "Limestone", "DCP"]
+        default=["Maize", "Soya Meal", "Fish Meal", "Rice Bran", "Limestone", "DCP", "DL-Methionine", "L-Lysine HCL", "Salt"]
     )
 
     if len(available_ingredients) < 2:
@@ -285,7 +290,8 @@ elif menu == txt["solver"]:
     for ing in available_ingredients:
         ingredient_names.append(ing)
         
-        raw_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP"] else ING_DATABASE[ing]["price"]
+        # Avoid multiplying high cost fixed supplements by seasonal multipliers
+        raw_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP", "DL-Methionine", "L-Lysine HCL", "Salt"] else ING_DATABASE[ing]["price"]
         penalty_factor = ING_DATABASE[ing]["penalty"] * penalty_weight * 10.0  
         base_costs.append(raw_price + penalty_factor)
         
@@ -297,9 +303,15 @@ elif menu == txt["solver"]:
         ca_vals.append(ING_DATABASE[ing]["ca"])
         phos_vals.append(ING_DATABASE[ing]["phos"])
 
-        # Construct boundaries
+        # Construct boundaries matching relaxed constraints
         if ing == "Fish Meal":
-            bounds.append((0.00, 0.08))
+            bounds.append((0.00, 0.12))  # Relaxed up to 12% ceiling
+        elif ing == "DL-Methionine":
+            bounds.append((0.00, 0.005)) # Safe capping profile ceiling
+        elif ing == "L-Lysine HCL":
+            bounds.append((0.00, 0.005)) # Safe capping profile ceiling
+        elif ing == "Salt":
+            bounds.append((0.003, 0.003)) # 0.3% Hard Exact Lock Requirement
         elif ing == "BSF Larvae":
             bounds.append((0.00, t_data["bsf_max"]))
         elif ing == "Maize Bran":
@@ -307,7 +319,7 @@ elif menu == txt["solver"]:
         elif ing == "Vegetable Oil":
             bounds.append((0.00, t_data["oil_max"]))
         elif ing == "Maize":
-            bounds.append((0.15, 0.70))  
+            bounds.append((0.00, 0.70))  # Lower bound removed entirely! Not mandatory.
         elif ing in ["Limestone", "DCP"]:
             bounds.append((0.00, 0.06))
         else:
@@ -315,7 +327,6 @@ elif menu == txt["solver"]:
 
     num_ingredients = len(ingredient_names)
     
-    # Define targeted traits for the penalty variable array adjustments
     targeted_traits = [
         {"name": "cp", "vals": protein_vals, "target": t_data["target_cp"]},
         {"name": "en", "vals": energy_vals, "target": t_data["target_en"]},
@@ -326,19 +337,14 @@ elif menu == txt["solver"]:
     ]
     num_targets = len(targeted_traits)
 
-    # --- 6B. THE PENALTY SLACK VARIABLE MATRIX EXPANSION (OPTION B) ---
-    # Cost array expansion: [base_costs] + [penalties for below] + [penalties for above]
     c_expanded = base_costs + [goal_penalty_cost] * num_targets + [goal_penalty_cost] * num_targets
     c = np.array(c_expanded)
 
-    # Pad bounds to cover slack variables (slack values must be positive, bounded up to a safe scaling limit)
     for _ in range(num_targets * 2):
         bounds.append((0.0, 5000.0))
 
     A_ub = []
     b_ub = []
-
-    # Standard Minimum / Maximum hard constraints (padded with zeros for slack variables)
     slack_pad = [0.0] * (num_targets * 2)
     
     A_ub.append([-p for p in protein_vals] + slack_pad); b_ub.append(-t_data["min_cp"])
@@ -356,29 +362,22 @@ elif menu == txt["solver"]:
     A_ub.append([-ph for ph in phos_vals] + slack_pad); b_ub.append(-t_data["min_phos"])
     A_ub.append([ph for ph in phos_vals] + slack_pad); b_ub.append(t_data["max_phos"])
 
-    # Core Equality constraint: ingredients sum to remaining_pct (slack parameters do not change recipe bulk weight)
     A_eq = [[1.0] * num_ingredients + [0.0] * (num_targets * 2)]
     b_eq = [remaining_pct]
 
-    # Target identity constraints: Dynamic mix + s_below - s_above = Target_Value
     for idx, trait in enumerate(targeted_traits):
         identity_row = [0.0] * (num_ingredients + num_targets * 2)
-        
-        # Populate raw ingredient contributions
         for i in range(num_ingredients):
             identity_row[i] = trait["vals"][i]
-            
-        # Wire slack parameters
-        identity_row[num_ingredients + idx] = 1.0        # + s_below
-        identity_row[num_ingredients + num_targets + idx] = -1.0  # - s_above
-        
+        identity_row[num_ingredients + idx] = 1.0        
+        identity_row[num_ingredients + num_targets + idx] = -1.0  
         A_eq.append(identity_row)
         b_eq.append(trait["target"])
 
     res = linprog(c=c, A_ub=A_ub, b_ub=b_ub, A_eq=A_eq, b_eq=b_eq, bounds=bounds, method="highs")
 
     if res.success:
-        solution = res.x[:num_ingredients] # Strip out pure ingredient allocations
+        solution = res.x[:num_ingredients] 
         recipe_rows = []
         total_cost = 0
         total_penalty = 0
@@ -388,7 +387,7 @@ elif menu == txt["solver"]:
         for i, ing in enumerate(ingredient_names):
             inclusion_pct = solution[i]
             weight_kg = inclusion_pct * total_kg
-            ing_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP"] else ING_DATABASE[ing]["price"]
+            ing_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP", "DL-Methionine", "L-Lysine HCL", "Salt"] else ING_DATABASE[ing]["price"]
             cost = weight_kg * ing_price
             
             total_cost += cost
@@ -409,7 +408,6 @@ elif menu == txt["solver"]:
                 "Cost (TSH)": round(cost)
             })
 
-        # Append Micro Additions to Recipe Table
         premix_weight = premix_pct * total_kg
         toxin_weight = toxin_binder_pct * total_kg
         total_cost += (premix_weight * 2500) + (toxin_weight * 4000)
@@ -462,7 +460,7 @@ elif menu == txt["solver"]:
         else: mn2.warning(f"Phosphorus: {audit_phos:.2f}%")
         
     else:
-        st.error("❌ No mathematically feasible solution found. Ensure you selected 'Limestone' and 'DCP' to satisfy critical mineral requirements.")
+        st.error("❌ No mathematically feasible solution found. Ensure you selected synthetics, minerals, and an energy source to satisfy constraints.")
 
 # --- 7. RESTORED GUIDE SECTION ---
 elif menu == txt["guide"]:
@@ -510,14 +508,17 @@ elif menu == txt["market"]:
         st.markdown("### 🌾 Energy & Mineral Sources")
         for name, profile in ING_DATABASE.items():
             if profile["type"] in ["ME", "MIN"]:
-                new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=8000, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                # Debugged fix: Dynamically scale max_value ceiling to accept premium synthetic/concentrated inclusions safely
+                max_ceil = 12000 if profile["price"] > 8000 else 8000
+                new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
                 st.session_state["ING_DATABASE"][name]["price"] = new_price
 
     with c2:
         st.markdown("### 🍗 Protein Sources (CP)")
         for name, profile in ING_DATABASE.items():
             if profile["type"] == "CP":
-                new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=8000, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                max_ceil = 12000 if profile["price"] > 8000 else 8000
+                new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
                 st.session_state["ING_DATABASE"][name]["price"] = new_price
 
 st.divider()
