@@ -291,20 +291,20 @@ elif menu == txt["solver"]:
     
     # Pure lower-bound inequalities (converted to <= form for scipy by multiplying by -1)
     A_ub = [
-        [-p for p in protein_vals],
-        [p for p in protein_vals],
-        [-e for e in energy_vals],
-        [e for e in energy_vals],
-        [-l for l in lys_vals],
-        [l for l in lys_vals],
-        [-m for m in met_vals],
-        [m for m in met_vals],
-        [-t_val for t_val in tryp_vals],
-        [t_val for t_val in tryp_vals],
-        [-ca for ca in ca_vals],
-        [ca for ca in ca_vals],
-        [-ph for ph in phos_vals],
-        [ph for ph in phos_vals]
+        [-p for p in protein_vals], # Index 0: Min CP
+        [p for p in protein_vals],  # Index 1: Max CP
+        [-e for e in energy_vals],  # Index 2: Min Energy
+        [e for e in energy_vals],   # Index 3: Max Energy
+        [-l for l in lys_vals],     # Index 4: Min Lysine
+        [l for l in lys_vals],      # Index 5: Max Lysine
+        [-m for m in met_vals],     # Index 6: Min Methionine
+        [m for m in met_vals],      # Index 7: Max Methionine
+        [-t_val for t_val in tryp_vals], # Index 8: Min Tryptophan
+        [t_val for t_val in tryp_vals],  # Index 9: Max Tryptophan
+        [-ca for ca in ca_vals],    # Index 10: Min Calcium
+        [ca for ca in ca_vals],     # Index 11: Max Calcium
+        [-ph for ph in phos_vals],  # Index 12: Min Phosphorus
+        [ph for ph in phos_vals]    # Index 13: Max Phosphorus
     ]
     b_ub = [
         -t_data["min_cp"], t_data["max_cp"],
@@ -390,27 +390,20 @@ elif menu == txt["solver"]:
         mn1.metric("Calcium", f"{audit_ca:.2f}%")
         mn2.metric("Phosphorus", f"{audit_phos:.2f}%")
         
-        else:
-            st.error("❌ No mathematically feasible solution found.")
-            st.markdown("### 🔍 Troubleshooting & Formulation Advice")
-            st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
+    else:
+        st.error("❌ No mathematically feasible solution found.")
+        st.markdown("### 🔍 Troubleshooting & Formulation Advice")
+        st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
 
         # --- NEW ADVANCED RELAXED DIAGNOSTIC ---
-        # We run a secondary optimization where we allow constraints to be broken, 
-        # but penalize the deficits heavily. This reveals the exact bottleneck.
         num_nutrients = len(b_ub)
-        
-        # Expand cost array to include penalty variables for missing nutrients
         c_diag = list(c) + [100000.0] * num_nutrients
-        
-        # Expand bounds for the raw ingredients + the deficit slack variables (which must be >= 0)
         bounds_diag = list(bounds) + [(0.0, 1.0)] * num_nutrients
         
-        # Modify A_ub to include the diagnostic slacks
         A_ub_diag = []
         for row_idx, row_vals in enumerate(A_ub):
             slack_row = [0.0] * num_nutrients
-            slack_row[row_idx] = -1.0  # If this slack is positive, it reduces the deficit
+            slack_row[row_idx] = -1.0  
             A_ub_diag.append(list(row_vals) + slack_row)
             
         A_eq_diag = [list(A_eq[0]) + [0.0] * num_nutrients]
@@ -420,14 +413,15 @@ elif menu == txt["solver"]:
         if res_diag.success:
             slack_results = res_diag.x[num_ingredients:]
             
-            # Map the scipy b_ub indices to user-friendly names and advice
+            # Aligned perfectly to the index mappings of A_ub matrix
             diagnostic_map = [
                 {"name": "Crude Protein", "deficit": slack_results[0], "advice": "Try adding high-protein ingredients like **Soya Meal** or **Fish Meal**, or increase their maximum inclusion limits in the sidebar setup."},
                 {"name": "Metabolizable Energy", "deficit": slack_results[2], "advice": "Your mix is running low on energy. Consider adding a concentrated energy source like **Vegetable Oil**, or allow a higher ceiling for **Maize**."},
                 {"name": "Lysine", "deficit": slack_results[4], "advice": "Amino Acid shortage. Ensure **L-Lysine HCL** is checked, or increase its maximum allowed allowance past 0.5% if safe."},
-                {"name": "Methionine", "deficit": slack_results[6], "advice": "Amino Acid shortage. Ensure **DL-Methionine** is checked in your ingredient list."},
-                {"name": "Calcium", "deficit": slack_results[8], "advice": "Layer birds require massive calcium levels. Try raising the maximum limit for **Limestone** or **DCP** to give the solver more room to move."},
-                {"name": "Phosphorus", "deficit": slack_results[10], "advice": "Consider increasing the maximum limits for **DCP** or adding phosphorus-rich ingredients like **Rice Bran**."}
+                {"name": "Methionine", "deficit": slack_results[6], "advice": "Amino Acid shortage. Ensure **DL-Methionine** is checked in your ingredient pool."},
+                {"name": "Tryptophan", "deficit": slack_results[8], "advice": "Shortage in Tryptophan baseline. Verify ingredient options or ease amino acid ceilings."},
+                {"name": "Calcium", "deficit": slack_results[10], "advice": "Layer birds require massive calcium levels. Try raising the maximum limit for **Limestone** or **DCP** to give the solver more room to move."},
+                {"name": "Phosphorus", "deficit": slack_results[12], "advice": "Consider increasing the maximum limits for **DCP** or adding phosphorus-rich ingredients like **Rice Bran**."}
             ]
             
             has_deficits = False
