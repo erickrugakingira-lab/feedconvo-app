@@ -49,7 +49,7 @@ if "ING_DATABASE" not in st.session_state:
     st.session_state["ING_DATABASE"] = {
         # M.E. Sources
         "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME"},
-        "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 2, "price": 750, "type": "ME"},
+        "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 3, "price": 750, "type": "ME"},
         "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME"},
         "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME"},
         "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME"},
