@@ -50,6 +50,7 @@ if "ING_DATABASE" not in st.session_state:
         # M.E. Sources
         "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME"},
         "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 3, "price": 750, "type": "ME"},
+        "Dehulled Sorghum": {"img": "sorghum_dehulled.jpg", "prot": 9.5, "en": 3300, "dm_pct": 88.0, "lys": 0.23, "met": 0.17, "tryp": 0.09, "ca": 0.03, "phos": 0.29, "penalty": 3, "price": 850, "type": "ME"},
         "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME"},
         "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME"},
         "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME"},
@@ -268,7 +269,12 @@ elif menu == txt["solver"]:
         ca_vals.append(ING_DATABASE[ing]["ca"])
         phos_vals.append(ING_DATABASE[ing]["phos"])
 
-        if ing == "Fish Meal":
+        # Dynamic Bound Adjustments for Sorghum Varieties
+        if ing == "Sorghum":
+            bounds.append((0.00, 0.30))  # Max 30% upper inclusion boundary limit
+        elif ing == "Dehulled Sorghum":
+            bounds.append((0.00, 0.50))  # Max 50% upper inclusion boundary limit
+        elif ing == "Fish Meal":
             bounds.append((0.00, 0.12))
         elif ing in ["DL-Methionine", "L-Lysine HCL"]:
             bounds.append((0.00, 0.005))
@@ -315,6 +321,22 @@ elif menu == txt["solver"]:
         -t_data["min_ca"], t_data["max_ca"],
         -t_data["min_phos"], t_data["max_phos"]
     ]
+
+    # --- INJECT RELATIVE ENERGY PROFILE RATIO LIMITS ---
+    energy_ingredients = ["Maize", "Sorghum", "Dehulled Sorghum", "Maize Bran", "Wheat Pollard", "Cassava Meal"]
+    has_sorghum = "Sorghum" in ingredient_names or "Dehulled Sorghum" in ingredient_names
+    
+    if has_sorghum:
+        ratio_row = []
+        for ing in ingredient_names:
+            if ing in ["Sorghum", "Dehulled Sorghum"]:
+                ratio_row.append(0.50)  # Coefficient derived from (1.0 - 0.50)
+            elif ing in energy_ingredients:
+                ratio_row.append(-0.50) # Coefficient derived from (0.0 - 0.50)
+            else:
+                ratio_row.append(0.00)
+        A_ub.append(ratio_row)
+        b_ub.append(0.00)
 
     # Batch weight equality lock matching space limits
     A_eq = [[1.0] * num_ingredients]
@@ -395,7 +417,7 @@ elif menu == txt["solver"]:
         st.markdown("### 🔍 Troubleshooting & Formulation Advice")
         st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
 
-        # --- NEW ADVANCED RELAXED DIAGNOSTIC ---
+        # --- ADVANCED RELAXED DIAGNOSTIC ENGINE ---
         num_nutrients = len(b_ub)
         c_diag = list(c) + [100000.0] * num_nutrients
         bounds_diag = list(bounds) + [(0.0, 1.0)] * num_nutrients
@@ -413,7 +435,6 @@ elif menu == txt["solver"]:
         if res_diag.success:
             slack_results = res_diag.x[num_ingredients:]
             
-            # Aligned perfectly to the index mappings of A_ub matrix
             diagnostic_map = [
                 {"name": "Crude Protein", "deficit": slack_results[0], "advice": "Try adding high-protein ingredients like **Soya Meal** or **Fish Meal**, or increase their maximum inclusion limits in the sidebar setup."},
                 {"name": "Metabolizable Energy", "deficit": slack_results[2], "advice": "Your mix is running low on energy. Consider adding a concentrated energy source like **Vegetable Oil**, or allow a higher ceiling for **Maize**."},
@@ -430,6 +451,11 @@ elif menu == txt["solver"]:
                     has_deficits = True
                     st.warning(f"⚠️ **{item['name']} Deficit Detected:** {item['advice']}")
             
+            # Catching ratio rules or space blockades
+            if not has_deficits and has_sorghum and len(slack_results) > 14 and res_diag.x[num_ingredients + 14] > 0.001:
+                has_deficits = True
+                st.warning("⚠️ **Sorghum Cap Limit Restriction:** Sorghum makes up more than 50% of the total energy source ingredients. Add alternative energy carriers like **Maize** or **Rice Bran** so the formula can re-balance.")
+                
             if not has_deficits:
                 st.warning("🔄 **Space Constraint Bottleneck:** Your selected ingredients have the nutrients, but they cannot physically fit together under a 100% weight allocation ceiling. Try relaxing the maximum percentage constraints on your main macro items (like Maize or Brans).")
         else:
