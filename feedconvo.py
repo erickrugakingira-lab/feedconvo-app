@@ -390,10 +390,10 @@ elif menu == txt["solver"]:
         mn1.metric("Calcium", f"{audit_ca:.2f}%")
         mn2.metric("Phosphorus", f"{audit_phos:.2f}%")
         
-   else:
-        st.error("❌ No mathematically feasible solution found.")
-        st.markdown("### 🔍 Troubleshooting & Formulation Advice")
-        st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
+        else:
+            st.error("❌ No mathematically feasible solution found.")
+            st.markdown("### 🔍 Troubleshooting & Formulation Advice")
+            st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
 
         # --- NEW ADVANCED RELAXED DIAGNOSTIC ---
         # We run a secondary optimization where we allow constraints to be broken, 
