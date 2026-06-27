@@ -390,26 +390,56 @@ elif menu == txt["solver"]:
         mn1.metric("Calcium", f"{audit_ca:.2f}%")
         mn2.metric("Phosphorus", f"{audit_phos:.2f}%")
         
-    else:
+   else:
         st.error("❌ No mathematically feasible solution found.")
-        st.markdown("### 🔍 Advanced Infeasibility Diagnostic Report")
-        st.warning("The selected ingredients cannot satisfy your target constraints. Evaluating limiting factors below:")
+        st.markdown("### 🔍 Troubleshooting & Formulation Advice")
+        st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
 
-        traits_checklist = [
-            ("Crude Protein", protein_vals, t_data["min_cp"], "%"),
-            ("Metabolizable Energy", energy_vals, t_data["min_en"], " kcal/kg"),
-            ("Lysine", lys_vals, t_data["min_lys"], "%"),
-            ("Methionine", met_vals, t_data["min_met"], "%"),
-            ("Calcium", ca_vals, t_data["min_ca"], "%"),
-            ("Phosphorus", phos_vals, t_data["min_phos"], "%")
-        ]
-
-        for label, values, required_min, unit in traits_checklist:
-            max_possible_yield = sum(bounds[idx][1] * values[idx] for idx in range(num_ingredients))
-            if max_possible_yield < required_min:
-                st.error(f"🚨 **{label} Deficit:** Your chosen ingredient pool provides a maximum potential of only **{max_possible_yield:.2f}{unit}**, failing to meet the mandatory **{required_min:.2f}{unit}** minimum benchmark.")
-            else:
-                st.write(f"✅ {label}: Ingredient capacities can theoretically cover this floor.")
+        # --- NEW ADVANCED RELAXED DIAGNOSTIC ---
+        # We run a secondary optimization where we allow constraints to be broken, 
+        # but penalize the deficits heavily. This reveals the exact bottleneck.
+        num_nutrients = len(b_ub)
+        
+        # Expand cost array to include penalty variables for missing nutrients
+        c_diag = list(c) + [100000.0] * num_nutrients
+        
+        # Expand bounds for the raw ingredients + the deficit slack variables (which must be >= 0)
+        bounds_diag = list(bounds) + [(0.0, 1.0)] * num_nutrients
+        
+        # Modify A_ub to include the diagnostic slacks
+        A_ub_diag = []
+        for row_idx, row_vals in enumerate(A_ub):
+            slack_row = [0.0] * num_nutrients
+            slack_row[row_idx] = -1.0  # If this slack is positive, it reduces the deficit
+            A_ub_diag.append(list(row_vals) + slack_row)
+            
+        A_eq_diag = [list(A_eq[0]) + [0.0] * num_nutrients]
+        
+        res_diag = linprog(c=c_diag, A_ub=A_ub_diag, b_ub=b_ub, A_eq=A_eq_diag, b_eq=b_eq, bounds=bounds_diag, method="highs")
+        
+        if res_diag.success:
+            slack_results = res_diag.x[num_ingredients:]
+            
+            # Map the scipy b_ub indices to user-friendly names and advice
+            diagnostic_map = [
+                {"name": "Crude Protein", "deficit": slack_results[0], "advice": "Try adding high-protein ingredients like **Soya Meal** or **Fish Meal**, or increase their maximum inclusion limits in the sidebar setup."},
+                {"name": "Metabolizable Energy", "deficit": slack_results[2], "advice": "Your mix is running low on energy. Consider adding a concentrated energy source like **Vegetable Oil**, or allow a higher ceiling for **Maize**."},
+                {"name": "Lysine", "deficit": slack_results[4], "advice": "Amino Acid shortage. Ensure **L-Lysine HCL** is checked, or increase its maximum allowed allowance past 0.5% if safe."},
+                {"name": "Methionine", "deficit": slack_results[6], "advice": "Amino Acid shortage. Ensure **DL-Methionine** is checked in your ingredient list."},
+                {"name": "Calcium", "deficit": slack_results[8], "advice": "Layer birds require massive calcium levels. Try raising the maximum limit for **Limestone** or **DCP** to give the solver more room to move."},
+                {"name": "Phosphorus", "deficit": slack_results[10], "advice": "Consider increasing the maximum limits for **DCP** or adding phosphorus-rich ingredients like **Rice Bran**."}
+            ]
+            
+            has_deficits = False
+            for item in diagnostic_map:
+                if item["deficit"] > 0.001:
+                    has_deficits = True
+                    st.warning(f"⚠️ **{item['name']} Deficit Detected:** {item['advice']}")
+            
+            if not has_deficits:
+                st.warning("🔄 **Space Constraint Bottleneck:** Your selected ingredients have the nutrients, but they cannot physically fit together under a 100% weight allocation ceiling. Try relaxing the maximum percentage constraints on your main macro items (like Maize or Brans).")
+        else:
+            st.warning("⚠️ The ingredient pool is severely limited. Please verify that a foundational energy source (like Maize) and macro mineral (like Limestone) are both selected to build a baseline recipe framework.")
 
 # --- 7. RESTORED GUIDE SECTION ---
 elif menu == txt["guide"]:
