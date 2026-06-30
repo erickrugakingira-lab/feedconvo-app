@@ -87,7 +87,7 @@ STANDARDS = {
             "min_ca": 0.95, "max_ca": 1.10,
             "min_phos": 0.50, "max_phos": 0.60,
             "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03,
-            "min_pqi": 8.5
+            "min_pqi": 7.6
         },
         "Grower (Wk 3-4)": {
             "min_cp": 20.5, "max_cp": 22.5,
@@ -98,7 +98,7 @@ STANDARDS = {
             "min_ca": 0.75, "max_ca": 0.95,
             "min_phos": 0.42, "max_phos": 0.55,
             "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04,
-            "min_pqi": 8.1
+            "min_pqi": 6.9
         },
         "Finisher (Wk 5+)": {
             "min_cp": 18.0, "max_cp": 20.5,
@@ -109,7 +109,7 @@ STANDARDS = {
             "min_ca": 0.65, "max_ca": 0.85,
             "min_phos": 0.36, "max_phos": 0.50,
             "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05,
-            "min_pqi": 7.7
+            "min_pqi": 6.4
         }
     },
     "Layer": {
@@ -122,7 +122,7 @@ STANDARDS = {
             "min_ca": 0.90, "max_ca": 1.10,
             "min_phos": 0.40, "max_phos": 0.52,
             "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02,
-            "min_pqi": 8.3
+            "min_pqi": 7.4
         },
         "Pullet Grower": {
             "min_cp": 15.0, "max_cp": 17.5,
@@ -133,7 +133,7 @@ STANDARDS = {
             "min_ca": 0.80, "max_ca": 1.00,
             "min_phos": 0.35, "max_phos": 0.48,
             "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02,
-            "min_pqi": 7.3
+            "min_pqi": 6.6
         },
         "Layer Phase 1": {
             "min_cp": 18.0, "max_cp": 20.0,
@@ -144,7 +144,7 @@ STANDARDS = {
             "min_ca": 3.60, "max_ca": 4.20,
             "min_phos": 0.45, "max_phos": 0.58,
             "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03,
-            "min_pqi": 7.6
+            "min_pqi": 7.0
         }
     }
 }
