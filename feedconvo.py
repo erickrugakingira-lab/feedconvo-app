@@ -48,30 +48,30 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val):
 if "ING_DATABASE" not in st.session_state:
     st.session_state["ING_DATABASE"] = {
         # M.E. Sources
-        "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME"},
-        "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 3, "price": 750, "type": "ME"},
-        "Dehulled Sorghum": {"img": "sorghum_dehulled.jpg", "prot": 9.5, "en": 3300, "dm_pct": 88.0, "lys": 0.23, "met": 0.17, "tryp": 0.09, "ca": 0.03, "phos": 0.29, "penalty": 3, "price": 850, "type": "ME"},
-        "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME"},
-        "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME"},
-        "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME"},
-        "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "penalty": 2, "price": 3500, "type": "ME"},
+        "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME", "quality_score": 6},
+        "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 3, "price": 750, "type": "ME", "quality_score": 5},
+        "Dehulled Sorghum": {"img": "sorghum_dehulled.jpg", "prot": 9.5, "en": 3300, "dm_pct": 88.0, "lys": 0.23, "met": 0.17, "tryp": 0.09, "ca": 0.03, "phos": 0.29, "penalty": 3, "price": 850, "type": "ME", "quality_score": 7},
+        "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME", "quality_score": 4},
+        "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME", "quality_score": 2},
+        "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME", "quality_score": 4},
+        "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "penalty": 2, "price": 3500, "type": "ME", "quality_score": 0},
         
         # Crude Protein Sources
-        "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "penalty": 1, "price": 2300, "type": "CP"},
-        "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "penalty": 4, "price": 900, "type": "CP"},
-        "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "penalty": 2, "price": 650, "type": "CP"},
-        "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "penalty": 3, "price": 800, "type": "CP"},
-        "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "penalty": 2, "price": 1500, "type": "CP"},
-        "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "penalty": 3, "price": 2500, "type": "CP"},
+        "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "penalty": 1, "price": 2300, "type": "CP", "quality_score": 10},
+        "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "penalty": 4, "price": 900, "type": "CP", "quality_score": 5},
+        "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "penalty": 2, "price": 650, "type": "CP", "quality_score": 6},
+        "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "penalty": 3, "price": 800, "type": "CP", "quality_score": 5},
+        "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "penalty": 2, "price": 1500, "type": "CP", "quality_score": 9},
+        "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "penalty": 3, "price": 2500, "type": "CP", "quality_score": 10},
         
         # Macro Mineral Replacements
-        "Limestone": {"img": "limestone.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 38.0, "phos": 0.0, "penalty": 1, "price": 300, "type": "MIN"},
-        "DCP": {"img": "dcp.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 21.0, "phos": 18.0, "penalty": 1, "price": 1200, "type": "MIN"},
+        "Limestone": {"img": "limestone.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 38.0, "phos": 0.0, "penalty": 1, "price": 300, "type": "MIN", "quality_score": 0},
+        "DCP": {"img": "dcp.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 21.0, "phos": 18.0, "penalty": 1, "price": 1200, "type": "MIN", "quality_score": 0},
 
         # Synthetic Amino Acids & Essentials
-        "DL-Methionine": {"img": "synthetic_aa.jpg", "prot": 58.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 99.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 9500, "type": "CP"},
-        "L-Lysine HCL": {"img": "synthetic_aa.jpg", "prot": 94.0, "en": 0.0, "dm_pct": 99.0, "lys": 78.8, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 7500, "type": "CP"},
-        "Salt": {"img": "salt.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 400, "type": "MIN"}
+        "DL-Methionine": {"img": "synthetic_aa.jpg", "prot": 58.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 99.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 9500, "type": "CP", "quality_score": 0},
+        "L-Lysine HCL": {"img": "synthetic_aa.jpg", "prot": 94.0, "en": 0.0, "dm_pct": 99.0, "lys": 78.8, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 7500, "type": "CP", "quality_score": 0},
+        "Salt": {"img": "salt.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 400, "type": "MIN", "quality_score": 0}
     }
 
 ING_DATABASE = st.session_state["ING_DATABASE"]
@@ -86,7 +86,8 @@ STANDARDS = {
             "min_tryp": 0.21, "max_tryp": 0.28,
             "min_ca": 0.95, "max_ca": 1.10,
             "min_phos": 0.50, "max_phos": 0.60,
-            "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03
+            "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03,
+            "min_pqi": 7.2
         },
         "Grower (Wk 3-4)": {
             "min_cp": 20.5, "max_cp": 22.5,
@@ -96,7 +97,8 @@ STANDARDS = {
             "min_tryp": 0.19, "max_tryp": 0.25,
             "min_ca": 0.75, "max_ca": 0.95,
             "min_phos": 0.42, "max_phos": 0.55,
-            "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04
+            "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04,
+            "min_pqi": 6.5
         },
         "Finisher (Wk 5+)": {
             "min_cp": 18.0, "max_cp": 20.5,
@@ -106,7 +108,8 @@ STANDARDS = {
             "min_tryp": 0.17, "max_tryp": 0.22,
             "min_ca": 0.65, "max_ca": 0.85,
             "min_phos": 0.36, "max_phos": 0.50,
-            "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05
+            "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05,
+            "min_pqi": 6.0
         }
     },
     "Layer": {
@@ -118,7 +121,8 @@ STANDARDS = {
             "min_tryp": 0.15, "max_tryp": 0.24,
             "min_ca": 0.90, "max_ca": 1.10,
             "min_phos": 0.40, "max_phos": 0.52,
-            "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02
+            "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02,
+            "min_pqi": 7.0
         },
         "Pullet Grower": {
             "min_cp": 15.0, "max_cp": 17.5,
@@ -128,7 +132,8 @@ STANDARDS = {
             "min_tryp": 0.12, "max_tryp": 0.20,
             "min_ca": 0.80, "max_ca": 1.00,
             "min_phos": 0.35, "max_phos": 0.48,
-            "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02
+            "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02,
+            "min_pqi": 6.2
         },
         "Layer Phase 1": {
             "min_cp": 18.0, "max_cp": 20.0,
@@ -138,7 +143,8 @@ STANDARDS = {
             "min_tryp": 0.16, "max_tryp": 0.25,
             "min_ca": 3.60, "max_ca": 4.20,
             "min_phos": 0.45, "max_phos": 0.58,
-            "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03
+            "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03,
+            "min_pqi": 6.6
         }
     }
 }
@@ -226,6 +232,7 @@ elif menu == txt["solver"]:
     if form_mode == "Premium":
         t_data["min_cp"] += 0.5
         t_data["min_lys"] += 0.05
+        t_data["min_pqi"] += 0.3  # Premium strategy scales required baseline proteins
 
     total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
@@ -254,6 +261,7 @@ elif menu == txt["solver"]:
     tryp_vals = []
     ca_vals = []
     phos_vals = []
+    quality_vals = []
     bounds = []
 
     for ing in available_ingredients:
@@ -268,6 +276,7 @@ elif menu == txt["solver"]:
         tryp_vals.append(ING_DATABASE[ing]["tryp"])
         ca_vals.append(ING_DATABASE[ing]["ca"])
         phos_vals.append(ING_DATABASE[ing]["phos"])
+        quality_vals.append(ING_DATABASE[ing].get("quality_score", 0))
 
         # Dynamic Bound Adjustments for Sorghum Varieties
         if ing == "Sorghum":
@@ -322,6 +331,10 @@ elif menu == txt["solver"]:
         -t_data["min_phos"], t_data["max_phos"]
     ]
 
+    # --- INJECT PROTEIN QUALITY INDEX MATRIX INEQUALITY ROW ---
+    A_ub.append([-q for q in quality_vals])
+    b_ub.append(-t_data["min_pqi"])
+
     # --- INJECT RELATIVE ENERGY PROFILE RATIO LIMITS ---
     energy_ingredients = ["Maize", "Sorghum", "Dehulled Sorghum", "Maize Bran", "Wheat Pollard", "Cassava Meal"]
     has_sorghum = "Sorghum" in ingredient_names or "Dehulled Sorghum" in ingredient_names
@@ -349,7 +362,7 @@ elif menu == txt["solver"]:
         recipe_rows = []
         total_cost = 0
         
-        audit_cp = audit_energy = audit_lys = audit_met = audit_tryp = audit_ca = audit_phos = 0.0
+        audit_cp = audit_energy = audit_lys = audit_met = audit_tryp = audit_ca = audit_phos = audit_pqi = 0.0
 
         for i, ing in enumerate(ingredient_names):
             inclusion_pct = solution[i]
@@ -365,6 +378,7 @@ elif menu == txt["solver"]:
             audit_tryp += inclusion_pct * ING_DATABASE[ing]["tryp"]
             audit_ca += inclusion_pct * ING_DATABASE[ing]["ca"]
             audit_phos += inclusion_pct * ING_DATABASE[ing]["phos"]
+            audit_pqi += inclusion_pct * ING_DATABASE[ing].get("quality_score", 0)
 
             recipe_rows.append({
                 "Ingredient": ing,
@@ -404,13 +418,14 @@ elif menu == txt["solver"]:
             
         aud3.info(f"💡 Total Batch Cost: {total_cost:,.0f} TSH")
 
-        st.markdown("#### Amino Acids & Minerals Details")
-        aa1, aa2, aa3, mn1, mn2 = st.columns(5)
+        st.markdown("#### Amino Acids, Minerals & Feed Quality Index")
+        aa1, aa2, aa3, mn1, mn2, q_metric = st.columns(6)
         aa1.metric("Lysine", f"{audit_lys:.2f}%")
         aa2.metric("Methionine", f"{audit_met:.2f}%")
         aa3.metric("Tryptophan", f"{audit_tryp:.2f}%")
         mn1.metric("Calcium", f"{audit_ca:.2f}%")
         mn2.metric("Phosphorus", f"{audit_phos:.2f}%")
+        q_metric.metric("Actual PQI Score", f"{audit_pqi:.2f}", f"Target: {t_data['min_pqi']}")
         
     else:
         st.error("❌ No mathematically feasible solution found.")
@@ -442,7 +457,8 @@ elif menu == txt["solver"]:
                 {"name": "Methionine", "deficit": slack_results[6], "advice": "Amino Acid shortage. Ensure **DL-Methionine** is checked in your ingredient pool."},
                 {"name": "Tryptophan", "deficit": slack_results[8], "advice": "Shortage in Tryptophan baseline. Verify ingredient options or ease amino acid ceilings."},
                 {"name": "Calcium", "deficit": slack_results[10], "advice": "Layer birds require massive calcium levels. Try raising the maximum limit for **Limestone** or **DCP** to give the solver more room to move."},
-                {"name": "Phosphorus", "deficit": slack_results[12], "advice": "Consider increasing the maximum limits for **DCP** or adding phosphorus-rich ingredients like **Rice Bran**."}
+                {"name": "Phosphorus", "deficit": slack_results[12], "advice": "Consider increasing the maximum limits for **DCP** or adding phosphorus-rich ingredients like **Rice Bran**."},
+                {"name": "Protein Quality Index", "deficit": slack_results[14] if len(slack_results) > 14 else 0.0, "advice": "The mix failed because it used too many low-quality ingredients. Uncheck low-tier options like **Cotton Seed Cake** or **Coconut Cake**, or activate **Soya Meal** / **Fish Meal** to restore standard amino acid bioavailability ratios."}
             ]
             
             has_deficits = False
@@ -452,7 +468,7 @@ elif menu == txt["solver"]:
                     st.warning(f"⚠️ **{item['name']} Deficit Detected:** {item['advice']}")
             
             # Catching ratio rules or space blockades
-            if not has_deficits and has_sorghum and len(slack_results) > 14 and res_diag.x[num_ingredients + 14] > 0.001:
+            if not has_deficits and has_sorghum and len(slack_results) > 15 and res_diag.x[num_ingredients + 15] > 0.001:
                 has_deficits = True
                 st.warning("⚠️ **Sorghum Cap Limit Restriction:** Sorghum makes up more than 50% of the total energy source ingredients. Add alternative energy carriers like **Maize** or **Rice Bran** so the formula can re-balance.")
                 
