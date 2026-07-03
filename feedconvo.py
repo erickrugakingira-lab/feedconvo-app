@@ -185,7 +185,7 @@ if st.session_state["user_role"] == "Farmer":
     # --- SIDEBAR & SEASONALITY ---
     with st.sidebar:
         st.header("🚜 Farm Manager")
-        if st.button("🔄 Switch to Buyer Layer", color="secondary"):
+        if st.button("🔄 Switch to Buyer Layer", type="secondary"):
             st.session_state["user_role"] = None
             st.rerun()
             
@@ -605,7 +605,7 @@ if st.session_state["user_role"] == "Farmer":
 elif st.session_state["user_role"] == "Trader":
     with st.sidebar:
         st.header("🛒 Buyer Navigation")
-        if st.button("🔄 Switch to Farmer Layer", color="secondary"):
+        if st.button("🔄 Switch to Farmer Layer", type="secondary"):
             st.session_state["user_role"] = None
             st.rerun()
             
