@@ -40,7 +40,6 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val, is_m
             "location_region": str(market_region),
             "location_district": str(market_district),
             "asking_price_tsh": float(asking_price),
-            "created_at": datetime.datetime.now().isoformat()
         }
         try:
             supabase.table("farm_records").insert(data).execute()
