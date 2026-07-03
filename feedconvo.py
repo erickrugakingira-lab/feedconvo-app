@@ -30,8 +30,8 @@ supabase = get_supabase()
 def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val, is_market_listed=False, market_region="", market_district="", asking_price=0):
     if supabase:
         data = {
-            "flock_type": flock_type,
-            "flock_id": flock_id,
+            "flock_type": str(flock_type),
+            "flock_id": str(flock_id),
             "age_days": int(age),
             "active_birds": int(birds),
             "kpi_value": float(kpi_val),
@@ -39,7 +39,7 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val, is_m
             "is_listed": bool(is_market_listed),
             "location_region": str(market_region),
             "location_district": str(market_district),
-            "asking_price_tsh": float(asking_price),
+            "asking_price_tsh": float(asking_price)
         }
         try:
             supabase.table("farm_records").insert(data).execute()
