@@ -37,7 +37,7 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val, is_m
             "kpi_value": float(kpi_val),
             "profit_tsh": float(profit_val),
             "is_listed": bool(is_market_listed),
-            "location_region": str(market_region),
+            "location_region": txt(market_region),
             "location_district": str(market_district),
             "asking_price_tsh": float(asking_price),
         }
