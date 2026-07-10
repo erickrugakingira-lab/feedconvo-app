@@ -51,30 +51,30 @@ def save_to_supabase(flock_type, flock_id, age, birds, kpi_val, profit_val, is_m
 if "ING_DATABASE" not in st.session_state:
     st.session_state["ING_DATABASE"] = {
         # M.E. Sources
-        "Maize": {"img": "maize_grain.jpg", "prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "penalty": 1, "price": 850, "type": "ME", "quality_score": 6},
-        "Sorghum": {"img": "sorghum.jpg", "prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "penalty": 3, "price": 750, "type": "ME", "quality_score": 5},
-        "Dehulled Sorghum": {"img": "sorghum_dehulled.jpg", "prot": 9.5, "en": 3300, "dm_pct": 88.0, "lys": 0.23, "met": 0.17, "tryp": 0.09, "ca": 0.03, "phos": 0.29, "penalty": 3, "price": 850, "type": "ME", "quality_score": 7},
-        "Rice Bran": {"img": "rice_bran.jpg", "prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "penalty": 4, "price": 500, "type": "ME", "quality_score": 4},
-        "Cassava Meal": {"img": "cassava_meal.jpg", "prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "penalty": 3, "price": 600, "type": "ME", "quality_score": 2},
-        "Maize Bran": {"img": "maize_bran.jpg", "prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "penalty": 1, "price": 450, "type": "ME", "quality_score": 4},
-        "Vegetable Oil": {"img": "vegetable-oil.webp", "prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "penalty": 2, "price": 3500, "type": "ME", "quality_score": 0},
+        "Maize": {"prot": 8.0, "en": 3000, "dm_pct": 88.0, "lys": 0.24, "met": 0.18, "tryp": 0.07, "ca": 0.02, "phos": 0.28, "price": 850, "type": "ME", "quality_score": 6},
+        "Sorghum": {"prot": 9.0, "en": 3250, "dm_pct": 88.0, "lys": 0.22, "met": 0.16, "tryp": 0.09, "ca": 0.04, "phos": 0.30, "price": 750, "type": "ME", "quality_score": 5},
+        "Dehulled Sorghum": {"prot": 9.5, "en": 3300, "dm_pct": 88.0, "lys": 0.23, "met": 0.17, "tryp": 0.09, "ca": 0.03, "phos": 0.29, "price": 850, "type": "ME", "quality_score": 7},
+        "Rice Bran": {"prot": 13.5, "en": 3000, "dm_pct": 88.0, "lys": 0.60, "met": 0.25, "tryp": 0.18, "ca": 0.08, "phos": 1.40, "price": 500, "type": "ME", "quality_score": 4},
+        "Cassava Meal": {"prot": 2.8, "en": 3000, "dm_pct": 88.0, "lys": 0.10, "met": 0.05, "tryp": 0.03, "ca": 0.12, "phos": 0.11, "price": 600, "type": "ME", "quality_score": 2},
+        "Maize Bran": {"prot": 9.4, "en": 2200, "dm_pct": 88.0, "lys": 0.30, "met": 0.14, "tryp": 0.06, "ca": 0.03, "phos": 0.54, "price": 450, "type": "ME", "quality_score": 4},
+        "Vegetable Oil": {"prot": 0.0, "en": 8800, "dm_pct": 99.0, "lys": 0.00, "met": 0.00, "tryp": 0.00, "ca": 0.00, "phos": 0.00, "price": 3500, "type": "ME", "quality_score": 0},
         
         # Crude Protein Sources
-        "Soya Meal": {"img": "soyameal.jpg", "prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "penalty": 1, "price": 2300, "type": "CP", "quality_score": 10},
-        "Cotton Seed Cake": {"img": "cottonseed_cake.jpg", "prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "penalty": 4, "price": 900, "type": "CP", "quality_score": 5},
-        "Wheat Pollard": {"img": "wheat_pollard.jpg", "prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "penalty": 2, "price": 650, "type": "CP", "quality_score": 6},
-        "Coconut Cake": {"img": "coconut_cake.jpg", "prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "penalty": 3, "price": 800, "type": "CP", "quality_score": 5},
-        "BSF Larvae": {"img": "BSF_larvae.jpg", "prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "penalty": 2, "price": 1500, "type": "CP", "quality_score": 9},
-        "Fish Meal": {"img": "fishmeal.jpg", "prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "penalty": 3, "price": 2500, "type": "CP", "quality_score": 10},
+        "Soya Meal": {"prot": 43.0, "en": 2800, "dm_pct": 88.0, "lys": 2.70, "met": 0.62, "tryp": 0.60, "ca": 0.29, "phos": 0.65, "price": 2300, "type": "CP", "quality_score": 10},
+        "Cotton Seed Cake": {"prot": 40.0, "en": 968, "dm_pct": 88.0, "lys": 1.62, "met": 0.55, "tryp": 0.48, "ca": 0.35, "phos": 1.10, "price": 900, "type": "CP", "quality_score": 5},
+        "Wheat Pollard": {"prot": 15.0, "en": 2300, "dm_pct": 88.0, "lys": 0.65, "met": 0.22, "tryp": 0.19, "ca": 0.10, "phos": 0.90, "price": 650, "type": "CP", "quality_score": 6},
+        "Coconut Cake": {"prot": 21.0, "en": 1650, "dm_pct": 90.0, "lys": 0.68, "met": 0.35, "tryp": 0.22, "ca": 0.20, "phos": 0.60, "price": 800, "type": "CP", "quality_score": 5},
+        "BSF Larvae": {"prot": 50.0, "en": 3100, "dm_pct": 88.0, "lys": 3.10, "met": 0.95, "tryp": 0.65, "ca": 0.85, "phos": 0.70, "price": 1500, "type": "CP", "quality_score": 9},
+        "Fish Meal": {"prot": 60.0, "en": 2310, "dm_pct": 88.0, "lys": 4.50, "met": 1.80, "tryp": 0.70, "ca": 4.80, "phos": 2.60, "price": 2500, "type": "CP", "quality_score": 10},
         
-        # Macro Mineral Replacements
-        "Limestone": {"img": "limestone.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 38.0, "phos": 0.0, "penalty": 1, "price": 300, "type": "MIN", "quality_score": 0},
-        "DCP": {"img": "dcp.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 21.0, "phos": 18.0, "penalty": 1, "price": 1200, "type": "MIN", "quality_score": 0},
+        # Macro Minerals
+        "Limestone": {"prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 38.0, "phos": 0.0, "price": 300, "type": "MIN", "quality_score": 0},
+        "DCP": {"prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 21.0, "phos": 18.0, "price": 1200, "type": "MIN", "quality_score": 0},
 
         # Synthetic Amino Acids & Essentials
-        "DL-Methionine": {"img": "synthetic_aa.jpg", "prot": 58.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 99.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 9500, "type": "CP", "quality_score": 0},
-        "L-Lysine HCL": {"img": "synthetic_aa.jpg", "prot": 94.0, "en": 0.0, "dm_pct": 99.0, "lys": 78.8, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 7500, "type": "CP", "quality_score": 0},
-        "Salt": {"img": "salt.jpg", "prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "penalty": 0, "price": 400, "type": "MIN", "quality_score": 0}
+        "DL-Methionine": {"prot": 58.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 99.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "price": 9500, "type": "CP", "quality_score": 0},
+        "L-Lysine HCL": {"prot": 94.0, "en": 0.0, "dm_pct": 99.0, "lys": 78.8, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "price": 7500, "type": "CP", "quality_score": 0},
+        "Salt": {"prot": 0.0, "en": 0.0, "dm_pct": 99.0, "lys": 0.0, "met": 0.0, "tryp": 0.0, "ca": 0.0, "phos": 0.0, "price": 400, "type": "MIN", "quality_score": 0}
     }
 
 ING_DATABASE = st.session_state["ING_DATABASE"]
@@ -82,96 +82,62 @@ ING_DATABASE = st.session_state["ING_DATABASE"]
 STANDARDS = {
     "Broiler": {
         "Starter (Wk 1-2)": {
-            "min_cp": 22.5, "max_cp": 24.5,
-            "min_en": 2975, "max_en": 3050,
-            "min_lys": 1.32, "max_lys": 1.45,
-            "min_met": 0.55, "max_met": 0.60,
-            "min_tryp": 0.21, "max_tryp": 0.28,
-            "min_ca": 0.95, "max_ca": 1.10,
-            "min_phos": 0.50, "max_phos": 0.60,
-            "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03,
-            "min_pqi": 7.6
+            "min_cp": 22.5, "max_cp": 24.5, "min_en": 2975, "max_en": 3050,
+            "min_lys": 1.32, "max_lys": 1.45, "min_met": 0.55, "max_met": 0.60,
+            "min_tryp": 0.21, "max_tryp": 0.28, "min_ca": 0.95, "min_phos": 0.50,
+            "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03, "min_pqi": 7.6
         },
         "Grower (Wk 3-4)": {
-            "min_cp": 20.5, "max_cp": 22.5,
-            "min_en": 3050, "max_en": 3150,
-            "min_lys": 1.18, "max_lys": 1.35,
-            "min_met": 0.51, "max_met": 0.58,
-            "min_tryp": 0.19, "max_tryp": 0.25,
-            "min_ca": 0.75, "max_ca": 0.95,
-            "min_phos": 0.42, "max_phos": 0.55,
-            "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04,
-            "min_pqi": 6.9
+            "min_cp": 20.5, "max_cp": 22.5, "min_en": 3050, "max_en": 3150,
+            "min_lys": 1.18, "max_lys": 1.35, "min_met": 0.51, "max_met": 0.58,
+            "min_tryp": 0.19, "max_tryp": 0.25, "min_ca": 0.75, "min_phos": 0.42,
+            "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04, "min_pqi": 6.9
         },
         "Finisher (Wk 5+)": {
-            "min_cp": 18.0, "max_cp": 20.5,
-            "min_en": 3150, "max_en": 3250,
-            "min_lys": 1.08, "max_lys": 1.25,
-            "min_met": 0.48, "max_met": 0.55,
-            "min_tryp": 0.17, "max_tryp": 0.22,
-            "min_ca": 0.65, "max_ca": 0.85,
-            "min_phos": 0.36, "max_phos": 0.50,
-            "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05,
-            "min_pqi": 6.4
+            "min_cp": 18.0, "max_cp": 20.5, "min_en": 3150, "max_en": 3250,
+            "min_lys": 1.08, "max_lys": 1.25, "min_met": 0.48, "max_met": 0.55,
+            "min_tryp": 0.17, "max_tryp": 0.22, "min_ca": 0.65, "min_phos": 0.36,
+            "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05, "min_pqi": 6.4
         }
     },
     "Layer": {
         "Chick Starter": {
-            "min_cp": 18.0, "max_cp": 20.5,
-            "min_en": 2850, "max_en": 3000,
-            "min_lys": 0.85, "max_lys": 1.10,
-            "min_met": 0.35, "max_met": 0.50,
-            "min_tryp": 0.15, "max_tryp": 0.24,
-            "min_ca": 0.90, "max_ca": 1.10,
-            "min_phos": 0.40, "max_phos": 0.52,
-            "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02,
-            "min_pqi": 7.4
+            "min_cp": 18.0, "max_cp": 20.5, "min_en": 2850, "max_en": 3000,
+            "min_lys": 0.85, "max_lys": 1.10, "min_met": 0.35, "max_met": 0.50,
+            "min_tryp": 0.15, "max_tryp": 0.24, "min_ca": 0.90, "min_phos": 0.40,
+            "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02, "min_pqi": 7.4
         },
         "Pullet Grower": {
-            "min_cp": 15.0, "max_cp": 17.5,
-            "min_en": 2750, "max_en": 2900,
-            "min_lys": 0.65, "max_lys": 0.90,
-            "min_met": 0.30, "max_met": 0.42,
-            "min_tryp": 0.12, "max_tryp": 0.20,
-            "min_ca": 0.80, "max_ca": 1.00,
-            "min_phos": 0.35, "max_phos": 0.48,
-            "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02,
-            "min_pqi": 6.6
+            "min_cp": 15.0, "max_cp": 17.5, "min_en": 2750, "max_en": 2900,
+            "min_lys": 0.65, "max_lys": 0.90, "min_met": 0.30, "max_met": 0.42,
+            "min_tryp": 0.12, "max_tryp": 0.20, "min_ca": 0.80, "min_phos": 0.35,
+            "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02, "min_pqi": 6.6
         },
         "Layer Phase 1": {
-            "min_cp": 18.0, "max_cp": 20.0,
-            "min_en": 2800, "max_en": 2950,
-            "min_lys": 0.82, "max_lys": 1.05,
-            "min_met": 0.38, "max_met": 0.52,
-            "min_tryp": 0.16, "max_tryp": 0.25,
-            "min_ca": 3.60, "max_ca": 4.20,
-            "min_phos": 0.45, "max_phos": 0.58,
-            "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03,
-            "min_pqi": 7.0
+            "min_cp": 18.0, "max_cp": 20.0, "min_en": 2800, "max_en": 2950,
+            "min_lys": 0.82, "max_lys": 1.05, "min_met": 0.38, "max_met": 0.52,
+            "min_tryp": 0.16, "max_tryp": 0.25, "min_ca": 3.60, "min_phos": 0.45,
+            "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03, "min_pqi": 7.0
         }
     }
 }
 
-# --- 4. MULTI-LAYER USER ROLE ROUTER ---
+# --- 4. LAYER ROUTER ---
 if "user_role" not in st.session_state:
     st.session_state["user_role"] = None
 
 if st.session_state["user_role"] is None:
     st.title("🚜 Welcome to FeedConvo Pro")
     st.subheader("Linking Intelligent Production with Local Dynamic Markets")
-    
     st.markdown("---")
-    st.markdown("### 🔑 Choose Your Workspace Layer")
-    
     col_a, col_b = st.columns(2)
     with col_a:
-        st.info("### 👨‍🌾 Poultry Farmer Portal\nFormulate least-cost rations, manage flocks, monitor high-precision health checklists, and safely broadcast mature inventory.")
+        st.info("### 👨‍🌾 Poultry Farmer Portal\nFormulate least-cost rations, manage flocks, and broadcast inventory.")
         if st.button("Access Farmer Framework", use_container_width=True):
             st.session_state["user_role"] = "Farmer"
             st.rerun()
-            
     with col_b:
-        st.success("### 🛒 Trader & Buyer Directory\nAccess localized agricultural supply metrics. Connect instantly with trusted producers for cash transactions, catering, and delivery contracts.")
+        st.success("### 🛒 Trader & Buyer Directory\nAccess localized agricultural metrics and dynamic demands.")
         if st.button("Access Market/Trader Hub", use_container_width=True):
             st.session_state["user_role"] = "Trader"
             st.rerun()
@@ -181,7 +147,6 @@ if st.session_state["user_role"] is None:
 # WORKSPACE LAYER A: POULTRY FARMER WORKFLOW
 # -----------------------------------------------------------------------------
 if st.session_state["user_role"] == "Farmer":
-    # --- SIDEBAR & SEASONALITY ---
     with st.sidebar:
         st.header("🚜 Farm Manager")
         if st.button("🔄 Switch to Buyer Layer", type="secondary"):
@@ -190,10 +155,7 @@ if st.session_state["user_role"] == "Farmer":
             
         lang = st.radio("Language:", ["English", "Kiswahili"])
         flock_type = st.radio("Select Type:", ["Broiler", "Layer"], key="flock_selector")
-        
-        st.markdown("### ⚙️ Optimization Strategy")
         form_mode = st.selectbox("Formulation Mode:", ["Standard", "Premium", "Custom Eco"])
-        
         season = st.select_slider("Market Season:", options=["Harvest (Cheap)", "Normal", "Dry (Expensive)"], value="Normal")
         price_multiplier = {"Harvest (Cheap)": 0.85, "Normal": 1.0, "Dry (Expensive)": 1.25}[season]
 
@@ -230,10 +192,14 @@ if st.session_state["user_role"] == "Farmer":
 
         st.divider()
         if flock_type == "Broiler":
-            f_in = st.number_input("Total Feed Used (kg)", value=10.0)
-            a_wt = st.number_input("Avg Weight (kg)", value=0.5)
-            kpi_val = f_in / (active_birds * a_wt) if (active_birds * a_wt) > 0 else 0
-            st.metric("FCR (Lower is Better)", f"{kpi_val:.2f}")
+            f_in = st.number_input("Total Feed Consumed to Date (kg)", value=100.0, min_value=0.1)
+            a_wt = st.number_input("Current Avg Body Weight (kg)", value=0.5, min_value=0.05)
+            
+            # FCR Calculation Correction: Using Weight Gain instead of total raw weight
+            chick_start_weight = 0.04  # Standard Day 1 weight (40 grams)
+            weight_gain = max(0.01, a_wt - chick_start_weight)
+            kpi_val = f_in / (active_birds * weight_gain) if (active_birds * weight_gain) > 0 else 0
+            st.metric("Feed Conversion Ratio (FCR based on Weight Gain)", f"{kpi_val:.2f}")
         else:
             eggs = st.number_input("Eggs Collected Today", value=50)
             kpi_val = (eggs / active_birds * 100) if active_birds > 0 else 0
@@ -245,11 +211,8 @@ if st.session_state["user_role"] == "Farmer":
         profit = revenue - (flock_size * 2200 * price_multiplier) 
         st.metric("Projected Profit", f"{profit:,.0f} TSH", delta=f"{season} prices")
         
-        # --- MARKETPLACE LINKING LOGIC HOOK ---
         st.markdown("---")
         st.subheader("📢 FeedConvo Marketplace Integration Gateway")
-        
-        # Operational Gate 1: Check age threshold (2 Weeks out from typical 42-day market maturity)
         gate_age_passed = age_days >= 28
         
         st.markdown("#### 🩺 Biosecurity & Vaccination Checklist")
@@ -273,12 +236,11 @@ if st.session_state["user_role"] == "Farmer":
                     market_district = st.text_input("District Name:", value="Ilala")
                 with c_m3:
                     asking_price = st.number_input("Desired Asking Price per Bird (TSH):", value=int(c_price))
-                    
-                st.info(f"💡 Publicly Listing: {active_birds} birds available in approximately {max(0, 42 - age_days)} days located in {market_district}, {market_region}.")
+                st.info(f"💡 Publicly Listing: {active_birds} birds available in local district market index.")
         else:
             st.warning("🔒 Marketplace Broadcasting Locked")
             if not gate_age_passed:
-                st.write(f"• Birds must reach low-mortality threshold age of 28 Days (Current: {age_days} Days).")
+                st.write(f"• Birds must reach threshold age of 28 Days (Current: {age_days} Days).")
             if not gate_vaccinations_passed:
                 st.write("• Full biosecurity protection required: Check both core vaccination schedules.")
         
@@ -293,7 +255,7 @@ if st.session_state["user_role"] == "Farmer":
                 if response.data:
                     st.dataframe(pd.DataFrame(response.data), use_container_width=True)
             except:
-                st.info("Log will appear here after first sync.")
+                st.info("Log will appear here after sync connection parameters match backend tables.")
 
     # --- 6. LEAST-COST RATION FEED SOLVER ---
     elif menu == txt["solver"]:
@@ -302,11 +264,9 @@ if st.session_state["user_role"] == "Farmer":
         stage = st.selectbox("Stage:", list(STANDARDS[flock_type].keys()))
         t_data = STANDARDS[flock_type][stage].copy()
 
-        # Apply structural modifications matching formulation profile changes
         if form_mode == "Premium":
             t_data["min_cp"] += 0.5
             t_data["min_lys"] += 0.05
-            t_data["min_pqi"] += 0.3  # Premium strategy scales required baseline proteins
 
         total_kg = st.number_input("Total Feed to Make (kg)", value=100.0)
 
@@ -327,15 +287,8 @@ if st.session_state["user_role"] == "Farmer":
         remaining_pct = 1.0 - fixed_micro_pct
 
         ingredient_names = []
-        c = []  # Strictly raw financial costs
-        protein_vals = []
-        energy_vals = []
-        lys_vals = []
-        met_vals = []
-        tryp_vals = []
-        ca_vals = []
-        phos_vals = []
-        quality_vals = []
+        c = [] 
+        protein_vals, energy_vals, lys_vals, met_vals, tryp_vals, ca_vals, phos_vals = [], [], [], [], [], [], []
         bounds = []
 
         for ing in available_ingredients:
@@ -350,17 +303,22 @@ if st.session_state["user_role"] == "Farmer":
             tryp_vals.append(ING_DATABASE[ing]["tryp"])
             ca_vals.append(ING_DATABASE[ing]["ca"])
             phos_vals.append(ING_DATABASE[ing]["phos"])
-            quality_vals.append(ING_DATABASE[ing].get("quality_score", 0))
 
-            # Dynamic Bound Adjustments for Sorghum Varieties
-            if ing == "Sorghum":
-                bounds.append((0.00, 0.30))  # Max 30% upper inclusion boundary limit
+            # Boundary Inclusion Optimizations
+            if ing == "Limestone" and flock_type == "Layer":
+                bounds.append((0.00, 0.12))  # Enhanced upper bound limit (12%) for dynamic layer requirements
+            elif ing == "Sorghum":
+                bounds.append((0.00, 0.30))
             elif ing == "Dehulled Sorghum":
-                bounds.append((0.00, 0.50))  # Max 50% upper inclusion boundary limit
+                bounds.append((0.00, 0.50))
             elif ing == "Fish Meal":
-                bounds.append((0.00, 0.12))
+                # Enhanced starter diet elasticity limit adjustment
+                upper_fm = 0.15 if "Starter" in stage else 0.12
+                bounds.append((0.00, upper_fm))
             elif ing in ["DL-Methionine", "L-Lysine HCL"]:
-                bounds.append((0.00, 0.005))
+                # Elastic scaling boundaries for critical micro amino acids during starter phase
+                upper_aa = 0.01 if "Starter" in stage else 0.005
+                bounds.append((0.00, upper_aa))
             elif ing == "Salt":
                 bounds.append((0.003, 0.003))
             elif ing == "BSF Larvae":
@@ -378,22 +336,20 @@ if st.session_state["user_role"] == "Farmer":
 
         num_ingredients = len(ingredient_names)
         
-        # Pure lower-bound inequalities (converted to <= form for scipy by multiplying by -1)
+        # Build Upper Bound matrix rows dynamically (Relaxed Max caps on Ca/P)
         A_ub = [
-            [-p for p in protein_vals], # Index 0: Min CP
-            [p for p in protein_vals],  # Index 1: Max CP
-            [-e for e in energy_vals],  # Index 2: Min Energy
-            [e for e in energy_vals],   # Index 3: Max Energy
-            [-l for l in lys_vals],     # Index 4: Min Lysine
-            [l for l in lys_vals],      # Index 5: Max Lysine
-            [-m for m in met_vals],     # Index 6: Min Methionine
-            [m for m in met_vals],      # Index 7: Max Methionine
-            [-t_val for t_val in tryp_vals], # Index 8: Min Tryptophan
-            [t_val for t_val in tryp_vals],  # Index 9: Max Tryptophan
-            [-ca for ca in ca_vals],    # Index 10: Min Calcium
-            [ca for ca in ca_vals],     # Index 11: Max Calcium
-            [-ph for ph in phos_vals],  # Index 12: Min Phosphorus
-            [ph for ph in phos_vals]    # Index 13: Max Phosphorus
+            [-p for p in protein_vals], # Min CP
+            [p for p in protein_vals],  # Max CP
+            [-e for e in energy_vals],  # Min Energy
+            [e for e in energy_vals],   # Max Energy
+            [-l for l in lys_vals],     # Min Lysine
+            [l for l in lys_vals],      # Max Lysine
+            [-m for m in met_vals],     # Min Methionine
+            [m for m in met_vals],      # Max Methionine
+            [-t_val for t_val in tryp_vals], # Min Tryptophan
+            [t_val for t_val in tryp_vals],  # Max Tryptophan
+            [-ca for ca in ca_vals],    # Min Calcium (No Max cap applied)
+            [-ph for ph in phos_vals],  # Min Phosphorus (No Max cap applied)
         ]
         b_ub = [
             -t_data["min_cp"], t_data["max_cp"],
@@ -401,15 +357,11 @@ if st.session_state["user_role"] == "Farmer":
             -t_data["min_lys"], t_data["max_lys"],
             -t_data["min_met"], t_data["max_met"],
             -t_data["min_tryp"], t_data["max_tryp"],
-            -t_data["min_ca"], t_data["max_ca"],
-            -t_data["min_phos"], t_data["max_phos"]
+            -t_data["min_ca"],
+            -t_data["min_phos"]
         ]
 
-        # --- INJECT PROTEIN QUALITY INDEX MATRIX INEQUALITY ROW ---
-        A_ub.append([-q for q in quality_vals])
-        b_ub.append(-t_data["min_pqi"])
-
-        # --- INJECT RELATIVE ENERGY PROFILE RATIO LIMITS ---
+        # Conditional Sorghum Energy Ratio constraints 
         energy_ingredients = ["Maize", "Sorghum", "Dehulled Sorghum", "Maize Bran", "Wheat Pollard", "Cassava Meal"]
         has_sorghum = "Sorghum" in ingredient_names or "Dehulled Sorghum" in ingredient_names
         
@@ -417,15 +369,15 @@ if st.session_state["user_role"] == "Farmer":
             ratio_row = []
             for ing in ingredient_names:
                 if ing in ["Sorghum", "Dehulled Sorghum"]:
-                    ratio_row.append(0.50)  # Coefficient derived from (1.0 - 0.50)
+                    ratio_row.append(0.50)
                 elif ing in energy_ingredients:
-                    ratio_row.append(-0.50) # Coefficient derived from (0.0 - 0.50)
+                    ratio_row.append(-0.50)
                 else:
                     ratio_row.append(0.00)
             A_ub.append(ratio_row)
             b_ub.append(0.00)
 
-        # Batch weight equality lock matching space limits
+        # Space ceiling weight allocation limits
         A_eq = [[1.0] * num_ingredients]
         b_eq = [remaining_pct]
 
@@ -435,7 +387,6 @@ if st.session_state["user_role"] == "Farmer":
             solution = res.x
             recipe_rows = []
             total_cost = 0
-            
             audit_cp = audit_energy = audit_lys = audit_met = audit_tryp = audit_ca = audit_phos = audit_pqi = 0.0
 
             for i, ing in enumerate(ingredient_names):
@@ -481,75 +432,87 @@ if st.session_state["user_role"] == "Farmer":
 
             aud1, aud2, aud3 = st.columns(3)
             if t_data["min_cp"] <= audit_cp <= t_data["max_cp"]:
-                aud1.success(f"Crude Protein: {audit_cp:.2f}% (Safe Range)")
+                aud1.success(f"Crude Protein: {audit_cp:.2f}% (Safe)")
             else:
                 aud1.warning(f"Crude Protein Out of Bounds: {audit_cp:.2f}%")
 
             if t_data["min_en"] <= audit_energy <= t_data["max_en"]:
-                aud2.success(f"Energy: {audit_energy:.0f} kcal/kg (Safe Range)")
+                aud2.success(f"Energy: {audit_energy:.0f} kcal/kg (Safe)")
             else:
                 aud2.warning(f"Energy Out of Bounds: {audit_energy:.0f} kcal")
                 
             aud3.info(f"💡 Total Batch Cost: {total_cost:,.0f} TSH")
 
-            st.markdown("#### Amino Acids, Minerals & Feed Quality Index")
+            st.markdown("#### Amino Acids, Minerals & Post-Formulation Quality Score")
             aa1, aa2, aa3, mn1, mn2, q_metric = st.columns(6)
             aa1.metric("Lysine", f"{audit_lys:.2f}%")
             aa2.metric("Methionine", f"{audit_met:.2f}%")
             aa3.metric("Tryptophan", f"{audit_tryp:.2f}%")
             mn1.metric("Calcium", f"{audit_ca:.2f}%")
             mn2.metric("Phosphorus", f"{audit_phos:.2f}%")
-            q_metric.metric("Actual PQI Score", f"{audit_pqi:.2f}", f"Target: {t_data['min_pqi']}")
+            
+            # Post formulation score calculation (Item 1 adjustment output representation)
+            q_metric.metric("Calculated PQI Score", f"{audit_pqi:.2f}", f"Baseline Target: {t_data['min_pqi']}")
             
         else:
             st.error("❌ No mathematically feasible solution found.")
             st.markdown("### 🔍 Troubleshooting & Formulation Advice")
-            st.info("The system couldn't find a way to mix these ingredients that satisfies all rules at the same time. This usually happens when ingredients conflict with space limits (e.g., needing too much Limestone to hit Calcium targets, leaving no room for Protein).")
+            st.info("The system couldn't find a balance that satisfies all metrics simultaneously.")
 
-            # --- ADVANCED RELAXED DIAGNOSTIC ENGINE ---
-            num_nutrients = len(b_ub)
-            c_diag = list(c) + [100000.0] * num_nutrients
-            bounds_diag = list(bounds) + [(0.0, 1.0)] * num_nutrients
+            # --- DYNAMICALLY ALIGNED ADVANCED DIAGNOSTIC ENGINE ---
+            actual_constraints_len = len(A_ub)
+            c_diag = list(c) + [100000.0] * actual_constraints_len
+            bounds_diag = list(bounds) + [(0.0, 1.0)] * actual_constraints_len
             
             A_ub_diag = []
             for row_idx, row_vals in enumerate(A_ub):
-                slack_row = [0.0] * num_nutrients
+                slack_row = [0.0] * actual_constraints_len
                 slack_row[row_idx] = -1.0  
                 A_ub_diag.append(list(row_vals) + slack_row)
                 
-            A_eq_diag = [list(A_eq[0]) + [0.0] * num_nutrients]
+            A_eq_diag = [list(A_eq[0]) + [0.0] * actual_constraints_len]
             
             res_diag = linprog(c=c_diag, A_ub=A_ub_diag, b_ub=b_ub, A_eq=A_eq_diag, b_eq=b_eq, bounds=bounds_diag, method="highs")
             
             if res_diag.success:
                 slack_results = res_diag.x[num_ingredients:]
                 
-                diagnostic_map = [
-                    {"name": "Crude Protein", "deficit": slack_results[0], "advice": "Try adding high-protein ingredients like **Soya Meal** or **Fish Meal**, or increase their maximum inclusion limits in the sidebar setup."},
-                    {"name": "Metabolizable Energy", "deficit": slack_results[2], "advice": "Your mix is running low on energy. Consider adding a concentrated energy source like **Vegetable Oil**, or allow a higher ceiling for **Maize**."},
-                    {"name": "Lysine", "deficit": slack_results[4], "advice": "Amino Acid shortage. Ensure **L-Lysine HCL** is checked, or increase its maximum allowed allowance past 0.5% if safe."},
-                    {"name": "Methionine", "deficit": slack_results[6], "advice": "Amino Acid shortage. Ensure **DL-Methionine** is checked in your ingredient pool."},
-                    {"name": "Tryptophan", "deficit": slack_results[8], "advice": "Shortage in Tryptophan baseline. Verify ingredient options or ease amino acid ceilings."},
-                    {"name": "Calcium", "deficit": slack_results[10], "advice": "Layer birds require massive calcium levels. Try raising the maximum limit for **Limestone** or **DCP** to give the solver more room to move."},
-                    {"name": "Phosphorus", "deficit": slack_results[12], "advice": "Consider increasing the maximum limits for **DCP** or adding phosphorus-rich ingredients like **Rice Bran**."},
-                    {"name": "Protein Quality Index", "deficit": slack_results[14] if len(slack_results) > 14 else 0.0, "advice": "The mix failed because it used too many low-quality ingredients. Uncheck low-tier options like **Cotton Seed Cake** or **Coconut Cake**, or activate **Soya Meal** / **Fish Meal** to restore standard amino acid bioavailability ratios."}
-                ]
-                
-                has_deficits = False
-                for item in diagnostic_map:
-                    if item["deficit"] > 0.001:
-                        has_deficits = True
-                        st.warning(f"⚠️ **{item['name']} Deficit Detected:** {item['advice']}")
-                
-                # Catching ratio rules or space blockades
-                if not has_deficits and has_sorghum and len(slack_results) > 15 and res_diag.x[num_ingredients + 15] > 0.001:
-                    has_deficits = True
-                    st.warning("⚠️ **Sorghum Cap Limit Restriction:** Sorghum makes up more than 50% of the total energy source ingredients. Add alternative energy carriers like **Maize** or **Rice Bran** so the formula can re-balance.")
-                    
-                if not has_deficits:
-                    st.warning("🔄 **Space Constraint Bottleneck:** Your selected ingredients have the nutrients, but they cannot physically fit together under a 100% weight allocation ceiling. Try relaxing the maximum percentage constraints on your main macro items (like Maize or Brans).")
+                # Dynamic diagnostics mapping via positional indices relative to active arrays
+                st.warning("⚠️ **Optimization Diagnostics:**")
+                if slack_results[0] > 0.001:
+                    st.write("- **Protein Deficit:** Add high-protein items like **Soya Meal** or **Fish Meal**.")
+                if slack_results[2] > 0.001:
+                    st.write("- **Energy Deficit:** Increase the maximum inclusion limit for **Maize** or add **Vegetable Oil**.")
+                if slack_results[4] > 0.001:
+                    st.write("- **Lysine Shortage:** Verify that **L-Lysine HCL** is activated in the selected ingredient pool.")
+                if slack_results[6] > 0.001:
+                    st.write("- **Methionine Shortage:** Verify that **DL-Methionine** is checked.")
+                if slack_results[10] > 0.001:
+                    st.write("- **Calcium Deficit:** Increase your maximum bounds for **Limestone** or **DCP**.")
+                if len(slack_results) > 12 and slack_results[12] > 0.001:
+                    st.write("- **Sorghum Ratio Deficit:** Mix involves tight energy distribution rules. Enable additional base options like **Maize Bran**.")
             else:
-                st.warning("⚠️ The ingredient pool is severely limited. Please verify that a foundational energy source (like Maize) and macro mineral (like Limestone) are both selected to build a baseline recipe framework.")
+                st.warning("⚠️ The ingredient pool structure is too narrow. Check foundational ingredients to restore baseline functionality.")
+
+    else:
+        st.write("Section Content under development.")
+
+# -----------------------------------------------------------------------------
+# WORKSPACE LAYER B: TRADER & BUYER VIEWPORT
+# -----------------------------------------------------------------------------
+elif st.session_state["user_role"] == "Trader":
+    st.title("🛒 Trader & Buyer Directory Index")
+    selected_district = st.selectbox("Select District:", ['Kinondoni', 'Ilala', 'Temeke', 'Ubungo', 'Kigamboni'])
+    
+    if supabase:
+        try:
+            response = supabase.table("farm_records").select("*").eq("is_listed", True).eq("location_district", selected_district).execute()
+            if response.data:
+                st.dataframe(pd.DataFrame(response.data)[["flock_id", "flock_type", "age_days", "active_birds", "asking_price_tsh"]])
+            else:
+                st.info("No active flocks currently broadcast within this district profile footprint.")
+        except Exception as e:
+            st.error(f"Error querying marketplace index data: {e}")
 
     # --- 7. RESTORED GUIDE SECTION ---
     elif menu == txt["guide"]:
