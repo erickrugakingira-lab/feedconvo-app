@@ -303,16 +303,21 @@ if st.session_state["user_role"] == "Farmer":
         fixed_micro_pct = premix_pct + toxin_binder_pct
         remaining_pct = 1.0 - fixed_micro_pct
         
+       # Ensure your lists are initialized at the correct local function level
         ingredient_names = []
         c = [] 
         protein_vals, energy_vals, lys_vals, met_vals, tryp_vals, ca_vals, phos_vals = [], [], [], [], [], [], []
         bounds = []
 
-       # UPDATED BOUNDING LOGIC WITH POLICY MATRIX
-            # ==========================================
+        # UPDATED BOUNDING LOGIC WITH POLICY MATRIX
+        # ==========================================
+        for ing in available_ingredients:  # Ensure this matches your original outer loop
+            ingredient_names.append(ing)
+            # (Add any required values initialization here if not already handled)
+            
             if ing in INGREDIENT_POLICY:
-               policy = INGREDIENT_POLICY[ing]
-               bounds.append((policy["min"], policy["max"]))
+                policy = INGREDIENT_POLICY[ing]
+                bounds.append((policy["min"], policy["max"]))
             else:
                 # Universal fallback safety bounds for unlisted standard ingredients
                 bounds.append((0.00, 0.65))
@@ -321,18 +326,18 @@ if st.session_state["user_role"] == "Farmer":
         
         # Build Upper Bound matrix rows dynamically (Relaxed Max caps on Ca/P)
         A_ub = [
-            [-p for p in protein_vals], # Min CP
-            [p for p in protein_vals],  # Max CP
-            [-e for e in energy_vals],  # Min Energy
-            [e for e in energy_vals],   # Max Energy
-            [-l for l in lys_vals],     # Min Lysine
-            [l for l in lys_vals],      # Max Lysine
-            [-m for m in met_vals],     # Min Methionine
-            [m for m in met_vals],      # Max Methionine
+            [-p for p in protein_vals],      # Min CP
+            [p for p in protein_vals],       # Max CP
+            [-e for e in energy_vals],       # Min Energy
+            [e for e in energy_vals],        # Max Energy
+            [-l for l in lys_vals],          # Min Lysine
+            [l for l in lys_vals],           # Max Lysine
+            [-m for m in met_vals],          # Min Methionine
+            [m for m in met_vals],           # Max Methionine
             [-t_val for t_val in tryp_vals], # Min Tryptophan
             [t_val for t_val in tryp_vals],  # Max Tryptophan
-            [-ca for ca in ca_vals],    # Min Calcium (No Max cap applied)
-            [-ph for ph in phos_vals],  # Min Phosphorus (No Max cap applied)
+            [-ca for ca in ca_vals],         # Min Calcium (No Max cap applied)
+            [-ph for ph in phos_vals],       # Min Phosphorus (No Max cap applied)
         ]
         b_ub = [
             -t_data["min_cp"], t_data["max_cp"],
@@ -434,7 +439,7 @@ if st.session_state["user_role"] == "Farmer":
             mn1.metric("Calcium", f"{audit_ca:.2f}%")
             mn2.metric("Phosphorus", f"{audit_phos:.2f}%")
             
-            # Post formulation score calculation (Item 1 adjustment output representation)
+            # Post formulation score calculation
             q_metric.metric("Calculated PQI Score", f"{audit_pqi:.2f}", f"Baseline Target: {t_data['min_pqi']}")
             
         else:
@@ -479,6 +484,7 @@ if st.session_state["user_role"] == "Farmer":
 
     else:
         st.write("Section Content under development.")
+
 # -----------------------------------------------------------------------------
 # WORKSPACE LAYER B: TRADER & BUYER VIEWPORT
 # -----------------------------------------------------------------------------
@@ -496,14 +502,14 @@ elif st.session_state["user_role"] == "Trader":
         except Exception as e:
             st.error(f"Error querying marketplace index data: {e}")
 
-    # --- 7. RESTORED GUIDE SECTION ---
-    elif menu == txt["guide"]:
-        st.title("📚 Feed Formulation Guide & Legal Framework")
-        if lang == "English":
-            st.markdown("""
-            ### 🧪 Formulation Fundamentals
-            Poultry performance relies entirely on balancing **Crude Protein (CP)** for structural tissue growth and **Metabolizable Energy (ME)** for systemic function.
-            """)
+# --- 7. RESTORED GUIDE SECTION ---
+elif menu == txt["guide"]:
+    st.title("📚 Feed Formulation Guide & Legal Framework")
+    if lang == "English":
+        st.markdown("""
+        ### 🧪 Formulation Fundamentals
+        Poultry performance relies entirely on balancing **Crude Protein (CP)** for structural tissue growth and **Metabolizable Energy (ME)** for systemic function.
+        """)
         else:
             st.markdown("""
             ### 🧪 Misingi ya Lishe ya Kuku
