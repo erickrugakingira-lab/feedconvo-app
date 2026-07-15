@@ -502,7 +502,7 @@ elif st.session_state["user_role"] == "Trader":
         except Exception as e:
             st.error(f"Error querying marketplace index data: {e}")
 
-# --- 7. RESTORED GUIDE SECTION ---
+--- 7. RESTORED GUIDE SECTION ---
 elif menu == txt["guide"]:
     st.title("📚 Feed Formulation Guide & Legal Framework")
     if lang == "English":
@@ -510,23 +510,23 @@ elif menu == txt["guide"]:
         ### 🧪 Formulation Fundamentals
         Poultry performance relies entirely on balancing **Crude Protein (CP)** for structural tissue growth and **Metabolizable Energy (ME)** for systemic function.
         """)
-        else:
-            st.markdown("""
-            ### 🧪 Misingi ya Lishe ya Kuku
-            Mavuno na ukuaji bora wa kuku hutegemea uwiano thabiti wa **Crude Protein (CP)** na **Metabolizable Energy (ME)**.
-            """)
+    else: # <-- Correctly aligned with "if lang == 'English':"
+        st.markdown("""
+        ### 🧪 Misingi ya Lishe ya Kuku
+        Mavuno na ukuaji bora wa kuku hutegemea uwiano thabiti wa **Crude Protein (CP)** na **Metabolizable Energy (ME)**.
+        """)
 
-        st.subheader("🇹🇿 Tanzania Bureau of Standards (TBS) Official Targets")
-        tbs_data = [
-            {"Stage": "Broiler Starter", "TBS Crude Protein": "22.0% - 24.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
-            {"Stage": "Broiler Grower", "TBS Crude Protein": "20.0% - 22.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
-            {"Stage": "Broiler Finisher", "TBS Crude Protein": "18.0% - 20.0%", "TBS Metabolizable Energy": "3100 kcal/kg"},
-            {"Stage": "Layer Chick Starter", "TBS Crude Protein": "18.5% - 21.0%", "TBS Metabolizable Energy": "2800 kcal/kg"},
-            {"Stage": "Layer Grower", "TBS Crude Protein": "15.0% - 17.0%", "TBS Metabolizable Energy": "2700 kcal/kg"},
-            {"Stage": "Layer Phase 1 (Laying)", "TBS Crude Protein": "18.0% - 19.5%", "TBS Metabolizable Energy": "2750 kcal/kg"}
-        ]
-        st.table(pd.DataFrame(tbs_data))
-
+    # Correctly aligned to the "elif menu == txt['guide']:" level
+    st.subheader("🇹🇿 Tanzania Bureau of Standards (TBS) Official Targets")
+    tbs_data = [
+        {"Stage": "Broiler Starter", "TBS Crude Protein": "22.0% - 24.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
+        {"Stage": "Broiler Grower", "TBS Crude Protein": "20.0% - 22.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
+        {"Stage": "Broiler Finisher", "TBS Crude Protein": "18.0% - 20.0%", "TBS Metabolizable Energy": "3100 kcal/kg"},
+        {"Stage": "Layer Chick Starter", "TBS Crude Protein": "18.5% - 21.0%", "TBS Metabolizable Energy": "2800 kcal/kg"},
+        {"Stage": "Layer Grower", "TBS Crude Protein": "15.0% - 17.0%", "TBS Metabolizable Energy": "2700 kcal/kg"},
+        {"Stage": "Layer Phase 1 (Laying)", "TBS Crude Protein": "18.0% - 19.5%", "TBS Metabolizable Energy": "2750 kcal/kg"}
+    ]
+    st.table(pd.DataFrame(tbs_data))
     # --- 8. RESTORED MARKET SECTION ---
     elif menu == txt["market"]:
         st.title("🛒 Local Feed Ingredient Market Manager")
