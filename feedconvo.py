@@ -529,26 +529,26 @@ elif menu == txt["guide"]:
     st.table(pd.DataFrame(tbs_data))
     
    # --- 8. RESTORED MARKET SECTION ---
-        elif menu == txt["market"]:
-            st.title("🛒 Local Feed Ingredient Market Manager")
-            st.subheader("📋 Live Pricing Matrix Adjustments")
+   elif menu == txt["market"]:
+        st.title("🛒 Local Feed Ingredient Market Manager")
+        st.subheader("📋 Live Pricing Matrix Adjustments")
 
-            c1, c2 = st.columns(2)
-            with c1:
-                st.markdown("### 🌾 Energy & Mineral Sources")
-                for name, profile in ING_DATABASE.items():
-                    if profile["type"] in ["ME", "MIN"]:
-                        max_ceil = 12000 if profile["price"] > 8000 else 8000
-                        new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
-                        st.session_state["ING_DATABASE"][name]["price"] = new_price
+        c1, c2 = st.columns(2)
+        with c1:
+             st.markdown("### 🌾 Energy & Mineral Sources")
+             for name, profile in ING_DATABASE.items():
+                 if profile["type"] in ["ME", "MIN"]:
+                     max_ceil = 12000 if profile["price"] > 8000 else 8000
+                     new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                     st.session_state["ING_DATABASE"][name]["price"] = new_price
 
-            with c2:
-                st.markdown("### 🍗 Protein Sources (CP)")
-                for name, profile in ING_DATABASE.items():
-                    if profile["type"] == "CP":
-                        max_ceil = 12000 if profile["price"] > 8000 else 8000
-                        new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
-                        st.session_state["ING_DATABASE"][name]["price"] = new_price
+        with c2:
+              st.markdown("### 🍗 Protein Sources (CP)")
+              for name, profile in ING_DATABASE.items():
+                  if profile["type"] == "CP":
+                      max_ceil = 12000 if profile["price"] > 8000 else 8000
+                      new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                      st.session_state["ING_DATABASE"][name]["price"] = new_price
 
 # -----------------------------------------------------------------------------
 # WORKSPACE LAYER B: TRADER & BUYER PORTAL WORKFLOW
