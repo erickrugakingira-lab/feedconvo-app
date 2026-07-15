@@ -527,32 +527,33 @@ elif menu == txt["guide"]:
         {"Stage": "Layer Phase 1 (Laying)", "TBS Crude Protein": "18.0% - 19.5%", "TBS Metabolizable Energy": "2750 kcal/kg"}
     ]
     st.table(pd.DataFrame(tbs_data))
-    # --- 8. RESTORED MARKET SECTION ---
-    elif menu == txt["market"]:
-        st.title("🛒 Local Feed Ingredient Market Manager")
-        st.subheader("📋 Live Pricing Matrix Adjustments")
+    
+   # --- 8. RESTORED MARKET SECTION ---
+        elif menu == txt["market"]:
+            st.title("🛒 Local Feed Ingredient Market Manager")
+            st.subheader("📋 Live Pricing Matrix Adjustments")
 
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("### 🌾 Energy & Mineral Sources")
-            for name, profile in ING_DATABASE.items():
-                if profile["type"] in ["ME", "MIN"]:
-                    max_ceil = 12000 if profile["price"] > 8000 else 8000
-                    new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
-                    st.session_state["ING_DATABASE"][name]["price"] = new_price
+            c1, c2 = st.columns(2)
+            with c1:
+                st.markdown("### 🌾 Energy & Mineral Sources")
+                for name, profile in ING_DATABASE.items():
+                    if profile["type"] in ["ME", "MIN"]:
+                        max_ceil = 12000 if profile["price"] > 8000 else 8000
+                        new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                        st.session_state["ING_DATABASE"][name]["price"] = new_price
 
-        with c2:
-            st.markdown("### 🍗 Protein Sources (CP)")
-            for name, profile in ING_DATABASE.items():
-                if profile["type"] == "CP":
-                    max_ceil = 12000 if profile["price"] > 8000 else 8000
-                    new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
-                    st.session_state["ING_DATABASE"][name]["price"] = new_price
+            with c2:
+                st.markdown("### 🍗 Protein Sources (CP)")
+                for name, profile in ING_DATABASE.items():
+                    if profile["type"] == "CP":
+                        max_ceil = 12000 if profile["price"] > 8000 else 8000
+                        new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                        st.session_state["ING_DATABASE"][name]["price"] = new_price
 
 # -----------------------------------------------------------------------------
 # WORKSPACE LAYER B: TRADER & BUYER PORTAL WORKFLOW
 # -----------------------------------------------------------------------------
-elif st.session_state["user_role"] == "Trader":
+elif st.session_state.get("user_role") == "Trader":
     with st.sidebar:
         st.header("🛒 Buyer Navigation")
         if st.button("🔄 Switch to Farmer Layer", type="secondary"):
@@ -621,7 +622,7 @@ elif st.session_state["user_role"] == "Trader":
 
 # --- GLOBAL STABLE FOOTER ---
 st.divider()
-if st.session_state["user_role"] == "Farmer":
+if st.session_state.get("user_role") == "Farmer":
     st.caption(f"🚀 FeedConvo Pro | {season} Pricing Active")
 else:
     st.caption("🚀 FeedConvo Pro Marketplace Layer | Local Decentralized Procurement Engine Active")
