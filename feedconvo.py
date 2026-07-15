@@ -502,7 +502,7 @@ elif st.session_state["user_role"] == "Trader":
         except Exception as e:
             st.error(f"Error querying marketplace index data: {e}")
 
---- 7. RESTORED GUIDE SECTION ---
+#--- 7. RESTORED GUIDE SECTION ---
 elif menu == txt["guide"]:
     st.title("📚 Feed Formulation Guide & Legal Framework")
     if lang == "English":
