@@ -280,58 +280,41 @@ if st.session_state["user_role"] == "Farmer":
         if len(available_ingredients) < 2:
             st.warning("Please select at least 2 macro ingredients to begin solving.")
             st.stop()
+    # INGREDIENT BOUNDARY POLICY CONFIGURATION
+        # ==========================================
+        # Fallback values defining default maximum inclusion limits if not present in t_data
+        INGREDIENT_POLICY = {
+            "Limestone": {"min": 0.00, "max": 0.12 if flock_type == "Layer" else 0.06},
+            "Sorghum": {"min": 0.00, "max": 0.30},
+            "Dehulled Sorghum": {"min": 0.00, "max": 0.50},
+            "Fish Meal": {"min": 0.00, "max": 0.15 if "Starter" in stage else 0.12},
+            "DL-Methionine": {"min": 0.00, "max": 0.01 if "Starter" in stage else 0.005},
+            "L-Lysine HCL": {"min": 0.00, "max": 0.01 if "Starter" in stage else 0.005},
+            "Salt": {"min": 0.003, "max": 0.003},
+            "Maize": {"min": 0.00, "max": 0.70},
+            "DCP": {"min": 0.00, "max": 0.06},
+            "BSF Larvae": {"min": 0.00, "max": t_data.get("bsf_max", 0.15)},
+            "Maize Bran": {"min": 0.00, "max": t_data.get("bran_max", 0.12)},
+            "Vegetable Oil": {"min": 0.00, "max": t_data.get("oil_max", 0.05)}
+        }
 
         premix_pct = 0.005
         toxin_binder_pct = 0.001
         fixed_micro_pct = premix_pct + toxin_binder_pct
         remaining_pct = 1.0 - fixed_micro_pct
-
+        
         ingredient_names = []
         c = [] 
         protein_vals, energy_vals, lys_vals, met_vals, tryp_vals, ca_vals, phos_vals = [], [], [], [], [], [], []
         bounds = []
 
-        for ing in available_ingredients:
-            ingredient_names.append(ing)
-            raw_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP", "DL-Methionine", "L-Lysine HCL", "Salt"] else ING_DATABASE[ing]["price"]
-            c.append(raw_price)
-            
-            protein_vals.append(ING_DATABASE[ing]["prot"])
-            energy_vals.append(ING_DATABASE[ing]["en"])
-            lys_vals.append(ING_DATABASE[ing]["lys"])
-            met_vals.append(ING_DATABASE[ing]["met"])
-            tryp_vals.append(ING_DATABASE[ing]["tryp"])
-            ca_vals.append(ING_DATABASE[ing]["ca"])
-            phos_vals.append(ING_DATABASE[ing]["phos"])
-
-            # Boundary Inclusion Optimizations
-            if ing == "Limestone" and flock_type == "Layer":
-                bounds.append((0.00, 0.12))  # Enhanced upper bound limit (12%) for dynamic layer requirements
-            elif ing == "Sorghum":
-                bounds.append((0.00, 0.30))
-            elif ing == "Dehulled Sorghum":
-                bounds.append((0.00, 0.50))
-            elif ing == "Fish Meal":
-                # Enhanced starter diet elasticity limit adjustment
-                upper_fm = 0.15 if "Starter" in stage else 0.12
-                bounds.append((0.00, upper_fm))
-            elif ing in ["DL-Methionine", "L-Lysine HCL"]:
-                # Elastic scaling boundaries for critical micro amino acids during starter phase
-                upper_aa = 0.01 if "Starter" in stage else 0.005
-                bounds.append((0.00, upper_aa))
-            elif ing == "Salt":
-                bounds.append((0.003, 0.003))
-            elif ing == "BSF Larvae":
-                bounds.append((0.00, t_data["bsf_max"]))
-            elif ing == "Maize Bran":
-                bounds.append((0.00, t_data["bran_max"]))
-            elif ing == "Vegetable Oil":
-                bounds.append((0.00, t_data["oil_max"]))
-            elif ing == "Maize":
-                bounds.append((0.00, 0.70))
-            elif ing in ["Limestone", "DCP"]:
-                bounds.append((0.00, 0.06))
+       # UPDATED BOUNDING LOGIC WITH POLICY MATRIX
+            # ==========================================
+            if ing in INGREDIENT_POLICY:
+               policy = INGREDIENT_POLICY[ing]
+               bounds.append((policy["min"], policy["max"]))
             else:
+                # Universal fallback safety bounds for unlisted standard ingredients
                 bounds.append((0.00, 0.65))
 
         num_ingredients = len(ingredient_names)
@@ -496,7 +479,6 @@ if st.session_state["user_role"] == "Farmer":
 
     else:
         st.write("Section Content under development.")
-
 # -----------------------------------------------------------------------------
 # WORKSPACE LAYER B: TRADER & BUYER VIEWPORT
 # -----------------------------------------------------------------------------
