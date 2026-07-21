@@ -280,7 +280,7 @@ if st.session_state["user_role"] == "Farmer":
         if len(available_ingredients) < 2:
             st.warning("Please select at least 2 macro ingredients to begin solving.")
             st.stop()
-    # INGREDIENT BOUNDARY POLICY CONFIGURATION
+        # INGREDIENT BOUNDARY POLICY CONFIGURATION
         # ==========================================
         # Fallback values defining default maximum inclusion limits if not present in t_data
         INGREDIENT_POLICY = {
@@ -302,19 +302,36 @@ if st.session_state["user_role"] == "Farmer":
         toxin_binder_pct = 0.001
         fixed_micro_pct = premix_pct + toxin_binder_pct
         remaining_pct = 1.0 - fixed_micro_pct
-        
-       # Ensure your lists are initialized at the correct local function level
+
+        # Ingredients whose listed price is a fixed input cost, unaffected by seasonal market swings
+        FIXED_PRICE_INGREDIENTS = ["Limestone", "DCP", "DL-Methionine", "L-Lysine HCL", "Salt"]
+
         ingredient_names = []
-        c = [] 
+        c = []
         protein_vals, energy_vals, lys_vals, met_vals, tryp_vals, ca_vals, phos_vals = [], [], [], [], [], [], []
         bounds = []
 
         # UPDATED BOUNDING LOGIC WITH POLICY MATRIX
         # ==========================================
-        for ing in available_ingredients:  # Ensure this matches your original outer loop
+        for ing in available_ingredients:
             ingredient_names.append(ing)
-            # (Add any required values initialization here if not already handled)
-            
+            ing_data = ING_DATABASE[ing]
+
+            # Cost coefficient for the objective function — apply the same seasonal
+            # multiplier used later when reporting costs, so the optimizer is actually
+            # minimizing the price the farmer will really pay.
+            ing_price = ing_data["price"] if ing in FIXED_PRICE_INGREDIENTS else ing_data["price"] * price_multiplier
+            c.append(ing_price)
+
+            # Nutrient coefficients feeding the constraint matrix below
+            protein_vals.append(ing_data["prot"])
+            energy_vals.append(ing_data["en"])
+            lys_vals.append(ing_data["lys"])
+            met_vals.append(ing_data["met"])
+            tryp_vals.append(ing_data["tryp"])
+            ca_vals.append(ing_data["ca"])
+            phos_vals.append(ing_data["phos"])
+
             if ing in INGREDIENT_POLICY:
                 policy = INGREDIENT_POLICY[ing]
                 bounds.append((policy["min"], policy["max"]))
@@ -380,7 +397,7 @@ if st.session_state["user_role"] == "Farmer":
             for i, ing in enumerate(ingredient_names):
                 inclusion_pct = solution[i]
                 weight_kg = inclusion_pct * total_kg
-                ing_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in ["Limestone", "DCP", "DL-Methionine", "L-Lysine HCL", "Salt"] else ING_DATABASE[ing]["price"]
+                ing_price = ING_DATABASE[ing]["price"] * price_multiplier if ing not in FIXED_PRICE_INGREDIENTS else ING_DATABASE[ing]["price"]
                 cost = weight_kg * ing_price
                 
                 total_cost += cost
@@ -482,78 +499,60 @@ if st.session_state["user_role"] == "Farmer":
             else:
                 st.warning("⚠️ The ingredient pool structure is too narrow. Check foundational ingredients to restore baseline functionality.")
 
-    else:
-        st.write("Section Content under development.")
+    # --- 7. GUIDE SECTION ---
+    elif menu == txt["guide"]:
+        st.title("📚 Feed Formulation Guide & Legal Framework")
+        if lang == "English":
+            st.markdown("""
+            ### 🧪 Formulation Fundamentals
+            Poultry performance relies entirely on balancing **Crude Protein (CP)** for structural tissue growth and **Metabolizable Energy (ME)** for systemic function.
+            """)
+        else:
+            st.markdown("""
+            ### 🧪 Misingi ya Lishe ya Kuku
+            Mavuno na ukuaji bora wa kuku hutegemea uwiano thabiti wa **Crude Protein (CP)** na **Metabolizable Energy (ME)**.
+            """)
 
-# -----------------------------------------------------------------------------
-# WORKSPACE LAYER B: TRADER & BUYER VIEWPORT
-# -----------------------------------------------------------------------------
-elif st.session_state["user_role"] == "Trader":
-    st.title("🛒 Trader & Buyer Directory Index")
-    selected_district = st.selectbox("Select District:", ['Kinondoni', 'Ilala', 'Temeke', 'Ubungo', 'Kigamboni'])
-    
-    if supabase:
-        try:
-            response = supabase.table("farm_records").select("*").eq("is_listed", True).eq("location_district", selected_district).execute()
-            if response.data:
-                st.dataframe(pd.DataFrame(response.data)[["flock_id", "flock_type", "age_days", "active_birds", "asking_price_tsh"]])
-            else:
-                st.info("No active flocks currently broadcast within this district profile footprint.")
-        except Exception as e:
-            st.error(f"Error querying marketplace index data: {e}")
+        st.subheader("🇹🇿 Tanzania Bureau of Standards (TBS) Official Targets")
+        tbs_data = [
+            {"Stage": "Broiler Starter", "TBS Crude Protein": "22.0% - 24.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
+            {"Stage": "Broiler Grower", "TBS Crude Protein": "20.0% - 22.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
+            {"Stage": "Broiler Finisher", "TBS Crude Protein": "18.0% - 20.0%", "TBS Metabolizable Energy": "3100 kcal/kg"},
+            {"Stage": "Layer Chick Starter", "TBS Crude Protein": "18.5% - 21.0%", "TBS Metabolizable Energy": "2800 kcal/kg"},
+            {"Stage": "Layer Grower", "TBS Crude Protein": "15.0% - 17.0%", "TBS Metabolizable Energy": "2700 kcal/kg"},
+            {"Stage": "Layer Phase 1 (Laying)", "TBS Crude Protein": "18.0% - 19.5%", "TBS Metabolizable Energy": "2750 kcal/kg"}
+        ]
+        st.table(pd.DataFrame(tbs_data))
 
-#--- 7. RESTORED GUIDE SECTION ---
-elif menu == txt["guide"]:
-    st.title("📚 Feed Formulation Guide & Legal Framework")
-    if lang == "English":
-        st.markdown("""
-        ### 🧪 Formulation Fundamentals
-        Poultry performance relies entirely on balancing **Crude Protein (CP)** for structural tissue growth and **Metabolizable Energy (ME)** for systemic function.
-        """)
-    else: # <-- Correctly aligned with "if lang == 'English':"
-        st.markdown("""
-        ### 🧪 Misingi ya Lishe ya Kuku
-        Mavuno na ukuaji bora wa kuku hutegemea uwiano thabiti wa **Crude Protein (CP)** na **Metabolizable Energy (ME)**.
-        """)
-
-    # Correctly aligned to the "elif menu == txt['guide']:" level
-    st.subheader("🇹🇿 Tanzania Bureau of Standards (TBS) Official Targets")
-    tbs_data = [
-        {"Stage": "Broiler Starter", "TBS Crude Protein": "22.0% - 24.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
-        {"Stage": "Broiler Grower", "TBS Crude Protein": "20.0% - 22.0%", "TBS Metabolizable Energy": "3000 kcal/kg"},
-        {"Stage": "Broiler Finisher", "TBS Crude Protein": "18.0% - 20.0%", "TBS Metabolizable Energy": "3100 kcal/kg"},
-        {"Stage": "Layer Chick Starter", "TBS Crude Protein": "18.5% - 21.0%", "TBS Metabolizable Energy": "2800 kcal/kg"},
-        {"Stage": "Layer Grower", "TBS Crude Protein": "15.0% - 17.0%", "TBS Metabolizable Energy": "2700 kcal/kg"},
-        {"Stage": "Layer Phase 1 (Laying)", "TBS Crude Protein": "18.0% - 19.5%", "TBS Metabolizable Energy": "2750 kcal/kg"}
-    ]
-    st.table(pd.DataFrame(tbs_data))
-    
-   # --- 8. RESTORED MARKET SECTION ---
-   elif menu == txt["market"]:
+    # --- 8. MARKET SECTION ---
+    elif menu == txt["market"]:
         st.title("🛒 Local Feed Ingredient Market Manager")
         st.subheader("📋 Live Pricing Matrix Adjustments")
 
         c1, c2 = st.columns(2)
         with c1:
-             st.markdown("### 🌾 Energy & Mineral Sources")
-             for name, profile in ING_DATABASE.items():
-                 if profile["type"] in ["ME", "MIN"]:
-                     max_ceil = 12000 if profile["price"] > 8000 else 8000
-                     new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
-                     st.session_state["ING_DATABASE"][name]["price"] = new_price
+            st.markdown("### 🌾 Energy & Mineral Sources")
+            for name, profile in ING_DATABASE.items():
+                if profile["type"] in ["ME", "MIN"]:
+                    max_ceil = 12000 if profile["price"] > 8000 else 8000
+                    new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=50, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                    st.session_state["ING_DATABASE"][name]["price"] = new_price
 
         with c2:
-              st.markdown("### 🍗 Protein Sources (CP)")
-              for name, profile in ING_DATABASE.items():
-                  if profile["type"] == "CP":
-                      max_ceil = 12000 if profile["price"] > 8000 else 8000
-                      new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
-                      st.session_state["ING_DATABASE"][name]["price"] = new_price
+            st.markdown("### 🍗 Protein Sources (CP)")
+            for name, profile in ING_DATABASE.items():
+                if profile["type"] == "CP":
+                    max_ceil = 12000 if profile["price"] > 8000 else 8000
+                    new_price = st.number_input(f"{name} Price (TSH/kg)", min_value=100, max_value=max_ceil, value=int(profile["price"]), step=50, key=f"mkt_prc_{name}")
+                    st.session_state["ING_DATABASE"][name]["price"] = new_price
+
+    else:
+        st.write("Section Content under development.")
 
 # -----------------------------------------------------------------------------
 # WORKSPACE LAYER B: TRADER & BUYER PORTAL WORKFLOW
 # -----------------------------------------------------------------------------
-elif st.session_state.get("user_role") == "Trader":
+elif st.session_state["user_role"] == "Trader":
     with st.sidebar:
         st.header("🛒 Buyer Navigation")
         if st.button("🔄 Switch to Farmer Layer", type="secondary"):
@@ -575,8 +574,9 @@ elif st.session_state.get("user_role") == "Trader":
             filter_type = st.selectbox("Produce Type Needed:", ["All Types", "Broiler", "Layer (Culls)"])
             
         st.markdown("### 📋 Available Production Pools (Verified Biosecurity)")
-        
-        # Querying pipeline layout using state variables from farm logs
+        st.caption("Demo data shown below. Once flocks are listed by farmers, live listings will appear here.")
+
+        # Demo/placeholder pipeline data
         mock_pipeline_data = [
             {"Flock Type": "Broiler", "Region": "Dar es Salaam", "District": "Kigamboni", "Volume Available": "450 Birds", "Est. Availability": "In 9 Days", "Asking Price": "8,200 TSH/pc", "Health Check": "100% Fully Vaccinated"},
             {"Flock Type": "Layer (Culls)", "Region": "Pwani", "District": "Chalinze", "Volume Available": "1,200 Birds", "Est. Availability": "Immediate Dressed/Live", "Asking Price": "7,500 TSH/pc", "Health Check": "100% Fully Vaccinated"},
