@@ -107,25 +107,39 @@ ING_DATABASE = st.session_state["ING_DATABASE"]
 # against your specific breed's current guide before locking these in for production.
 # "max_fiber" and "rice_bran_max" are new constraints added to keep formulas practical.
 STANDARDS = {
+    # Broiler targets below are day-weighted blends derived directly from Rostagno et al.,
+    # "Brazilian Tables for Poultry and Swine" 5th ed., for HIGH PERFORMANCE (commercial
+    # hybrid: Cobb/Ross/Arbor Acres-type) genetics:
+    #   - Starter (days 1-14): blended from Table 2.28 (thermoneutral) brackets 0-8 & 8-17,
+    #     since chicks are under supplemental brooder heat during this window regardless
+    #     of ambient climate.
+    #   - Grower (days 15-28) & Finisher (days 29-49): blended from Table 2.29 (High
+    #     Performance grown at 26°C average, 21-31°C range — i.e. tropical ambient
+    #     conditions like Tanzania) brackets 8-17/17-27/27-35 and 27-35/35-43/43-49
+    #     respectively, once chicks are off supplemental heat.
+    # AA are standardized ileal digestible (SID); phosphorus is available (non-phytate) P.
+    # min/max bands are a practical tolerance placed around Rostagno's single-point
+    # targets, not a range Rostagno itself publishes. Crude fiber caps are NOT from
+    # Rostagno (these tables don't cover fiber) — sourced separately, see Section 3 notes.
     "Broiler": {
         "Starter (Wk 1-2)": {
-            "min_cp": 22.5, "max_cp": 24.5, "min_en": 2975, "max_en": 3050,
-            "min_lys": 1.15, "max_lys": 1.28, "min_met": 0.50, "max_met": 0.56,
-            "min_tryp": 0.18, "max_tryp": 0.24, "min_ca": 0.95, "min_phos": 0.42,
+            "min_cp": 23.2, "max_cp": 24.2, "min_en": 2950, "max_en": 3020,
+            "min_lys": 1.28, "max_lys": 1.38, "min_met": 0.51, "max_met": 0.56,
+            "min_tryp": 0.22, "max_tryp": 0.26, "min_ca": 1.05, "min_phos": 0.50,
             "bsf_max": 0.05, "bran_max": 0.03, "oil_max": 0.03, "rice_bran_max": 0.08,
             "max_fiber": 4.0, "min_pqi": 7.6
         },
         "Grower (Wk 3-4)": {
-            "min_cp": 20.5, "max_cp": 22.5, "min_en": 3050, "max_en": 3150,
-            "min_lys": 1.03, "max_lys": 1.15, "min_met": 0.46, "max_met": 0.52,
-            "min_tryp": 0.16, "max_tryp": 0.21, "min_ca": 0.75, "min_phos": 0.35,
+            "min_cp": 22.6, "max_cp": 23.6, "min_en": 3020, "max_en": 3090,
+            "min_lys": 1.24, "max_lys": 1.34, "min_met": 0.51, "max_met": 0.56,
+            "min_tryp": 0.21, "max_tryp": 0.25, "min_ca": 0.79, "min_phos": 0.37,
             "bsf_max": 0.10, "bran_max": 0.08, "oil_max": 0.04, "rice_bran_max": 0.12,
             "max_fiber": 5.0, "min_pqi": 6.9
         },
         "Finisher (Wk 5+)": {
-            "min_cp": 18.0, "max_cp": 20.5, "min_en": 3150, "max_en": 3250,
-            "min_lys": 0.93, "max_lys": 1.05, "min_met": 0.42, "max_met": 0.48,
-            "min_tryp": 0.14, "max_tryp": 0.19, "min_ca": 0.65, "min_phos": 0.30,
+            "min_cp": 22.2, "max_cp": 23.2, "min_en": 3080, "max_en": 3150,
+            "min_lys": 1.21, "max_lys": 1.31, "min_met": 0.50, "max_met": 0.55,
+            "min_tryp": 0.20, "max_tryp": 0.24, "min_ca": 0.68, "min_phos": 0.32,
             "bsf_max": 0.15, "bran_max": 0.12, "oil_max": 0.05, "rice_bran_max": 0.15,
             "max_fiber": 6.0, "min_pqi": 6.4
         }
