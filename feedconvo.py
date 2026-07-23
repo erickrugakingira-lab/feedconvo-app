@@ -144,25 +144,46 @@ STANDARDS = {
             "max_fiber": 6.0, "min_pqi": 6.4
         }
     },
+    # Layer targets derived from Rostagno et al. 5th ed.:
+    #   - Chick Starter (1-4wk) & Pre-Lay (16-18wk): taken directly from Table 3.13,
+    #     "Brown Replacement Pullets" (commercial layer-bound pullets — NOT the Broiler
+    #     Breeder Pullet table, which is a different bird purpose entirely).
+    #   - Pullet Grower (5-15wk): day-weighted blend of Table 3.13's Grower (5-10wk,
+    #     6 weeks) and Development (11-15wk, 5 weeks) columns.
+    #   - Layer Phase 1 (production): weighted blend of Table 3.37's three production-
+    #     phase columns (Standard Performance Brown Layers) using an assumed ~45/32/23%
+    #     split across a typical laying cycle (peak/mid/late lay) — this is a reasonable
+    #     industry-standard duration split, NOT a figure Rostagno publishes directly.
+    #     Revisit if you split Layer Phase 1 into 3 separate stages later.
+    # AA are SID (standardized ileal digestible); phosphorus is available (non-phytate) P.
+    # Note the Calcium jump into Pre-Lay (1.25%+) — deliberate, builds medullary bone Ca
+    # reserves before eggshell formation begins. Don't shorten or blend this phase away.
     "Layer": {
         "Chick Starter": {
-            "min_cp": 18.0, "max_cp": 20.5, "min_en": 2850, "max_en": 3000,
-            "min_lys": 0.78, "max_lys": 0.98, "min_met": 0.32, "max_met": 0.45,
-            "min_tryp": 0.13, "max_tryp": 0.21, "min_ca": 0.90, "min_phos": 0.35,
+            "min_cp": 17.3, "max_cp": 18.3, "min_en": 2820, "max_en": 2880,
+            "min_lys": 0.94, "max_lys": 1.02, "min_met": 0.37, "max_met": 0.42,
+            "min_tryp": 0.16, "max_tryp": 0.19, "min_ca": 1.08, "min_phos": 0.39,
             "bsf_max": 0.05, "bran_max": 0.05, "oil_max": 0.02, "rice_bran_max": 0.08,
             "max_fiber": 5.0, "min_pqi": 7.4
         },
         "Pullet Grower": {
-            "min_cp": 15.0, "max_cp": 17.5, "min_en": 2750, "max_en": 2900,
-            "min_lys": 0.58, "max_lys": 0.80, "min_met": 0.27, "max_met": 0.37,
-            "min_tryp": 0.10, "max_tryp": 0.17, "min_ca": 0.80, "min_phos": 0.30,
+            "min_cp": 12.6, "max_cp": 13.4, "min_en": 2820, "max_en": 2880,
+            "min_lys": 0.68, "max_lys": 0.74, "min_met": 0.29, "max_met": 0.33,
+            "min_tryp": 0.13, "max_tryp": 0.16, "min_ca": 0.83, "min_phos": 0.31,
             "bsf_max": 0.10, "bran_max": 0.20, "oil_max": 0.02, "rice_bran_max": 0.15,
             "max_fiber": 7.0, "min_pqi": 6.6
         },
+        "Pre-Lay": {
+            "min_cp": 15.1, "max_cp": 16.1, "min_en": 2820, "max_en": 2880,
+            "min_lys": 0.80, "max_lys": 0.87, "min_met": 0.36, "max_met": 0.41,
+            "min_tryp": 0.16, "max_tryp": 0.19, "min_ca": 1.26, "min_phos": 0.24,
+            "bsf_max": 0.10, "bran_max": 0.15, "oil_max": 0.03, "rice_bran_max": 0.15,
+            "max_fiber": 6.0, "min_pqi": 6.9
+        },
         "Layer Phase 1": {
-            "min_cp": 18.0, "max_cp": 20.0, "min_en": 2800, "max_en": 2950,
-            "min_lys": 0.72, "max_lys": 0.92, "min_met": 0.34, "max_met": 0.46,
-            "min_tryp": 0.14, "max_tryp": 0.22, "min_ca": 3.60, "min_phos": 0.35,
+            "min_cp": 13.4, "max_cp": 14.2, "min_en": 2820, "max_en": 2880,
+            "min_lys": 0.67, "max_lys": 0.73, "min_met": 0.30, "max_met": 0.35,
+            "min_tryp": 0.15, "max_tryp": 0.18, "min_ca": 3.55, "min_phos": 0.21,
             "bsf_max": 0.12, "bran_max": 0.10, "oil_max": 0.03, "rice_bran_max": 0.15,
             "max_fiber": 7.0, "min_pqi": 7.0
         }
@@ -446,6 +467,11 @@ if st.session_state["user_role"] == "Farmer":
                 audit_phos += inclusion_pct * ING_DATABASE[ing]["avail_phos"]
                 audit_pqi += inclusion_pct * ING_DATABASE[ing].get("quality_score", 0)
 
+                # Ingredients the optimizer picked at ~0% aren't part of the actual
+                # recipe — skip them so the table only shows what the farmer needs to buy.
+                if round(inclusion_pct * 100, 2) <= 0:
+                    continue
+
                 recipe_rows.append({
                     "Ingredient": ing,
                     "Inclusion %": round(inclusion_pct * 100, 2),
@@ -499,10 +525,6 @@ if st.session_state["user_role"] == "Farmer":
             q_metric.metric("Calculated PQI Score", f"{audit_pqi:.2f}", f"Baseline Target: {t_data['min_pqi']}")
 
         else:
-            st.error("❌ No mathematically feasible solution found.")
-            st.markdown("### 🔍 Troubleshooting & Formulation Advice")
-            st.info("The system couldn't find a balance that satisfies all metrics simultaneously.")
-
             actual_constraints_len = len(A_ub)
             c_diag = list(c) + [100000.0] * actual_constraints_len
             bounds_diag = list(bounds) + [(0.0, 1.0)] * actual_constraints_len
@@ -517,24 +539,32 @@ if st.session_state["user_role"] == "Farmer":
 
             res_diag = linprog(c=c_diag, A_ub=A_ub_diag, b_ub=b_ub, A_eq=A_eq_diag, b_eq=b_eq, bounds=bounds_diag, method="highs")
 
+            # Plain-language cause + one concrete fix, instead of a multi-line technical
+            # dump — pick the single biggest problem and say it simply.
+            simple_reason = {
+                "Protein Deficit (min CP)": "there isn't enough protein in your selected ingredients. Try adding **Soya Meal** or **Fish Meal**.",
+                "Energy Deficit (min ME)": "there isn't enough energy in your selected ingredients. Try increasing **Maize** or adding **Vegetable Oil**.",
+                "Digestible Lysine Shortage": "the lysine level is too low. Try adding **L-Lysine HCL**.",
+                "Digestible Methionine Shortage": "the methionine level is too low. Try adding **DL-Methionine**.",
+                "Calcium Deficit": "there isn't enough calcium. Try adding more **Limestone** or **DCP**.",
+                "Available Phosphorus Deficit": "there isn't enough available phosphorus. Try adding **DCP** or **Fish Meal**.",
+                "Crude Fiber Excess": "the mix has too much fibre. Try reducing **Rice Bran**, **Cotton Seed Cake**, or **Coconut Cake**.",
+                "Sorghum Energy Ratio Deficit": "there's too much Sorghum relative to other energy sources. Try adding **Maize Bran** or reducing Sorghum.",
+            }
+
             if res_diag.success:
                 slack_results = res_diag.x[num_ingredients:]
-                st.warning("⚠️ **Optimization Diagnostics:**")
-                advice = {
-                    "Protein Deficit (min CP)": "Add high-protein items like **Soya Meal** or **Fish Meal**.",
-                    "Energy Deficit (min ME)": "Increase the maximum inclusion limit for **Maize** or add **Vegetable Oil**.",
-                    "Digestible Lysine Shortage": "Verify that **L-Lysine HCL** is activated in the selected ingredient pool.",
-                    "Digestible Methionine Shortage": "Verify that **DL-Methionine** is checked.",
-                    "Calcium Deficit": "Increase your maximum bounds for **Limestone** or **DCP**.",
-                    "Available Phosphorus Deficit": "Increase **DCP** or **Fish Meal** inclusion — most plant sources contribute little available P.",
-                    "Crude Fiber Excess": "Reduce reliance on high-fiber ingredients like **Rice Bran**, **Cotton Seed Cake**, or **Coconut Cake**.",
-                    "Sorghum Energy Ratio Deficit": "Mix involves tight energy distribution rules. Enable additional base options like **Maize Bran**.",
-                }
+                # pick whichever constraint is violated by the largest margin
+                worst_label, worst_slack = None, 0
                 for label, slack in zip(constraint_labels, slack_results):
-                    if slack > 0.001 and label in advice:
-                        st.write(f"- **{label}:** {advice[label]}")
+                    if slack > worst_slack and label in simple_reason:
+                        worst_label, worst_slack = label, slack
+                if worst_label:
+                    st.error(f"❌ Couldn't build a working formula — {simple_reason[worst_label]}")
+                else:
+                    st.error("❌ Couldn't build a working formula — the selected ingredients can't meet this stage's targets together. Try adding a wider mix of ingredients.")
             else:
-                st.warning("⚠️ The ingredient pool structure is too narrow. Check foundational ingredients to restore baseline functionality.")
+                st.error("❌ Couldn't build a working formula — the selected ingredients are too limited. Try adding more ingredients to the pool.")
 
     # --- 7. GUIDE SECTION ---
     elif menu == txt["guide"]:
